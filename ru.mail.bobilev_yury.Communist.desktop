@@ -1,0 +1,15 @@
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Name=Communist
+Comment=Simple p2p messenger
+GenericName=Communist
+Exec=communist
+Icon=communist
+Categories=Network;InstantMessaging;
+Terminal=false
+Type=Application
+Version=1.5
+Name[ru]=Коммунист
+Comment[ru]=Программа передачи сообщений пользователь-пользователь
+GenericName[ru]=Коммунист
+Name[ru_RU]=Коммунист

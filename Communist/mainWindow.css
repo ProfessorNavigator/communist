@@ -1,0 +1,198 @@
+#mainWindow {
+	background-color: rgb(61, 194, 94);
+	font-size: 20px;
+}
+
+#settingsWindow {
+	background-color: rgb(126, 202, 38);
+	color: black;
+	font-size: 20px; 
+}
+
+#settingsLB {
+	background-color: rgb(126, 202, 38);
+	color: black;
+	font-size: 20px;
+}
+
+#inactiveButton {
+	background-image: none;
+	background-color: rgb(214, 210, 87);
+	box-shadow:
+   		inset rgba(0,0,0,.6) 0 -3px 8px,
+   		inset rgba(252,255,255,.7) 0 3px 8px,
+   		rgba(0,0,0,.8) 0 3px 8px -3px; 
+	color: black;
+	border-color: black;
+}
+
+#myMsg {
+	background-color: rgb(192, 192, 227);
+	box-shadow:
+   		inset rgba(0,0,0,.6) 0 -3px 2px,
+   		inset rgba(252,255,255,.7) 0 3px 2px,
+   		rgba(0,0,0,.8) 0 3px 2px -3px; 
+	border-color: black;
+}
+
+#frMsg {
+	background-color: rgb(121, 204, 234);
+	box-shadow:
+   		inset rgba(0,0,0,.6) 0 -3px 2px,
+   		inset rgba(252,255,255,.7) 0 3px 2px,
+   		rgba(0,0,0,.8) 0 3px 2px -3px; 
+	border-color: black;
+}
+
+#notSentMsg {
+	background-color: white;		
+}
+
+#cancelRepl {
+	background-image: none;
+	background-color: rgb(214, 164, 87);
+}
+
+#repFrame{
+	border-color: black;	
+}
+
+#connectFr {	
+	background-color: rgb(40, 181, 131);
+	color: white;
+}
+
+#SentMsg {
+	background-color: rgb(192, 192, 227);
+}
+
+#activeButton {
+	background-image: none;
+	background-color: rgb(0, 109, 255);
+	box-shadow:
+   		inset rgba(0,0,0,.6) 0 -3px 8px,
+   		inset rgba(252,255,255,.7) 0 3px 8px,
+   		rgba(0,0,0,.8) 0 3px 8px -3px; 
+	color: white;
+	border-color: black;
+}
+
+#msgNumLab {
+	background-color: rgb(29, 88, 34);
+	color: white;
+}
+
+#selectedResend {
+	background-color: rgb(29, 88, 34);
+	color: white;
+}
+
+#unseletedResend {
+	background-color: rgb(126, 202, 38);
+	color: black;
+}
+
+#friendDetLab {
+	color: black;
+}
+
+#highlightText {
+	background-color: rgb(233, 0, 255);
+	color: white;
+}
+
+#sendButton {
+	background-image: none;	
+	box-shadow:
+   		inset rgba(0,0,0,.6) 0 -3px 8px,
+   		inset rgba(252,255,255,.7) 0 3px 8px,
+   		rgba(0,0,0,.8) 0 3px 8px -3px; 
+	background-color: rgb(60, 209, 236);
+}
+
+#applyButton {
+	background-image: none;
+	box-shadow:
+   		inset rgba(0,0,0,.6) 0 -3px 8px,
+   		inset rgba(252,255,255,.7) 0 3px 8px,
+   		rgba(0,0,0,.8) 0 3px 8px -3px; 
+	background-color: rgb(60, 209, 236);	
+}
+
+#rejectButton {
+	background-image: none;
+	box-shadow:
+   		inset rgba(0,0,0,.6) 0 -3px 8px,
+   		inset rgba(252,255,255,.7) 0 3px 8px,
+   		rgba(0,0,0,.8) 0 3px 8px -3px; 
+	background-color: rgb(239, 112, 80);
+	color: aliceblue;	
+}
+
+#clearButton {
+	background-image: none;
+	box-shadow:
+   		inset rgba(0,0,0,.6) 0 -3px 8px,
+   		inset rgba(252,255,255,.7) 0 3px 8px,
+   		rgba(0,0,0,.8) 0 3px 8px -3px; 
+	background-color: rgb(247, 219, 63);
+	color: black;
+}
+
+#blklistInactive {
+	background-color: rgb(126, 202, 38);
+	color: black;
+}
+
+#blklistActive {
+	background-color: rgb(0, 109, 255);
+	color: white;
+}
+
+#blockLab {
+        background-color: red;
+        color: white;
+}
+
+#clBar {
+	color: black;
+}
+
+#fileRPrB {
+	color: black;
+}
+
+#ownKeyWin {
+	background-color: rgb(126, 202, 38);
+}
+
+#sendButton:hover {
+	background-image: none;
+	background-color: rgb(61, 155, 194);
+}
+
+#applyButton:hover {
+	background-image: none;
+	background-color: rgb(61, 155, 194);
+}
+
+#rejectButton:hover {
+	background-image: none;
+	background-color: rgb(61, 155, 194);
+}
+
+#clearButton:hover {
+	background-image: none;
+	background-color: rgb(61, 155, 194);
+}
+
+#cancelRepl:hover {
+	background-image: none;
+	background-color: rgb(61, 155, 194);
+}
+
+#sendButton:active {
+	background-image: none;
+	box-shadow: none;
+	background-color: rgb(61, 77, 194);
+}
