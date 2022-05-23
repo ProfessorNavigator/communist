@@ -123,6 +123,49 @@ NetworkOperations::NetworkOperations (
 	  strm >> Tmttear;
 	}
     }
+  itprv = std::find_if (prefvect.begin (), prefvect.end (), []
+  (auto &el)
+    {
+      return std::get<0>(el) == "Stunport";
+    });
+  if (itprv != prefvect.end ())
+    {
+      std::string ms = std::get<1> (*itprv);
+      if (ms != "")
+	{
+	  std::stringstream strm;
+	  std::locale loc ("C");
+	  strm.imbue (loc);
+	  strm << ms;
+	  strm >> stunport;
+	}
+    }
+  itprv = std::find_if (prefvect.begin (), prefvect.end (), []
+  (auto &el)
+    {
+      return std::get<0>(el) == "Stun";
+    });
+  if (itprv != prefvect.end ())
+    {
+      std::string ms = std::get<1> (*itprv);
+      if (ms != "")
+	{
+	  Enablestun = ms;
+	}
+    }
+  itprv = std::find_if (prefvect.begin (), prefvect.end (), []
+  (auto &el)
+    {
+      return std::get<0>(el) == "DirectInet";
+    });
+  if (itprv != prefvect.end ())
+    {
+      std::string ms = std::get<1> (*itprv);
+      if (ms != "")
+	{
+	  Directinet = ms;
+	}
+    }
 }
 
 NetworkOperations::~NetworkOperations ()
@@ -153,10 +196,6 @@ NetworkOperations::~NetworkOperations ()
 void
 NetworkOperations::mainFunc ()
 {
-  if (Netmode == "0")
-    {
-      processDHT ();
-    }
   std::string filename;
   AuxFunc af;
   af.homePath (&filename);
@@ -209,13 +248,6 @@ NetworkOperations::mainFunc ()
       PIP_ADAPTER_ADDRESSES pAddresses = (IP_ADAPTER_ADDRESSES*) malloc (outBufLen);
       if (GetAdaptersAddresses (AF_UNSPEC, GAA_FLAG_INCLUDE_PREFIX, NULL,
 				pAddresses, &outBufLen) != NO_ERROR)
-
-
-
-
-
-
-
 
 
 
@@ -455,6 +487,12 @@ NetworkOperations::mainFunc ()
 	}
       this->contmtx.unlock ();
 
+      if (this->Netmode == "0")
+	{
+	  this->processDHT ();
+	  this->stunSrv ();
+	}
+
       std::mutex *thrmtxc = new std::mutex;
       thrmtxc->lock ();
       this->threadvectmtx.lock ();
@@ -516,7 +554,7 @@ NetworkOperations::getOwnIps (int udpsock,
 			      std::pair<struct in_addr, int> stunsv)
 {
   std::pair<uint32_t, uint16_t> result;
-  if (Netmode == "0")
+  if (Netmode == "0" && Directinet == "notdirect")
     {
       std::vector<char> msgv;
       msgv.resize (20);
@@ -659,7 +697,7 @@ NetworkOperations::getOwnIps (int udpsock,
 	}
     }
 
-  if (Netmode == "1")
+  if (Netmode == "1" || Directinet == "direct")
     {
       uint32_t ip4;
       IPV4mtx.lock ();
@@ -2061,9 +2099,9 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 		  std::string type = "FH";
 		  std::copy (type.begin (), type.end (),
 			     std::back_inserter (msg));
-		  uint64_t lct = tm;
+		  uint64_t lct = uint64_t (tm);
 		  msg.resize (msg.size () + sizeof(lct));
-		  std::memcpy (&msg[34], &tm, sizeof(lct));
+		  std::memcpy (&msg[34], &lct, sizeof(lct));
 		  uint64_t numb = 0;
 		  msg.resize (msg.size () + sizeof(numb));
 		  std::memcpy (&msg[42], &numb, sizeof(numb));
@@ -2302,9 +2340,9 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 			     std::back_inserter (msg));
 		  std::copy (type.begin (), type.end (),
 			     std::back_inserter (msg));
-		  uint64_t lct = tm;
+		  uint64_t lct = uint64_t (tm);
 		  msg.resize (msg.size () + sizeof(lct));
-		  std::memcpy (&msg[34], &tm, sizeof(lct));
+		  std::memcpy (&msg[34], &lct, sizeof(lct));
 		  std::string unm = key;
 		  lt::dht::public_key passkey;
 		  lt::aux::from_hex (unm, passkey.bytes.data ());
@@ -5327,18 +5365,27 @@ NetworkOperations::processDHT ()
       {
 	if (std::get<1> (*itprv) != "")
 	  {
-	    p.set_str (lt::settings_pack::listen_interfaces,
-		       std::get<1> (*itprv));
+	    if (std::get<1> (*itprv) == "0.0.0.0:0,[::]:0")
+	      {
+		p.set_str (lt::settings_pack::listen_interfaces,
+			   this->IPV4 + ":0,[::]:0");
+	      }
+	    else
+	      {
+		p.set_str (lt::settings_pack::listen_interfaces,
+			   std::get<1> (*itprv));
+	      }
 	  }
 	else
 	  {
 	    p.set_str (lt::settings_pack::listen_interfaces,
-		       "0.0.0.0:0,[::]:0");
+		       this->IPV4 + ":0,[::]:0");
 	  }
       }
     else
       {
-	p.set_str (lt::settings_pack::listen_interfaces, "0.0.0.0:0,[::]:0");
+	p.set_str (lt::settings_pack::listen_interfaces,
+		   this->IPV4 + ":0,[::]:0");
       }
 
     itprv = std::find_if (this->prefvect.begin (), this->prefvect.end (), []
@@ -7521,13 +7568,24 @@ NetworkOperations::commOps ()
 						this->getfrres.end (),
 						[&key]
 						(auto &el)
-						  { return std::get<0>(el) == key;}                                                                                                                                                                                                                                                          );
+						  { return std::get<0>(el) == key;}                                                                                                                                                                                                                                                                                                          );
 					if (itgfr != this->getfrres.end ())
 					  {
 					    std::get<1> (*itgfr) =
 						from.sin_addr.s_addr;
 					    std::get<2> (*itgfr) =
 						from.sin_port;
+					  }
+					else
+					  {
+					    std::tuple<std::string, uint32_t,
+						uint16_t, int> ttup;
+					    std::get<0> (ttup) = key;
+					    std::get<1> (ttup) =
+						from.sin_addr.s_addr;
+					    std::get<2> (ttup) = from.sin_port;
+					    std::get<3> (ttup) = 1;
+					    this->getfrres.push_back (ttup);
 					  }
 					this->getfrresmtx.unlock ();
 				      }
@@ -7659,9 +7717,9 @@ NetworkOperations::fileReject (std::string key, time_t tm)
   std::copy (okarr.begin (), okarr.end (), std::back_inserter (msg));
   std::string type = "FJ";
   std::copy (type.begin (), type.end (), std::back_inserter (msg));
-  uint64_t lct = tm;
+  uint64_t lct = uint64_t (tm);
   msg.resize (msg.size () + sizeof(lct));
-  std::memcpy (&msg[34], &tm, sizeof(lct));
+  std::memcpy (&msg[34], &lct, sizeof(lct));
   uint64_t numb = 0;
   msg.resize (msg.size () + sizeof(numb));
   std::memcpy (&msg[42], &numb, sizeof(numb));
@@ -7771,9 +7829,9 @@ NetworkOperations::fileAccept (std::string key, time_t tm,
   std::copy (okarr.begin (), okarr.end (), std::back_inserter (msg));
   std::string type = "FA";
   std::copy (type.begin (), type.end (), std::back_inserter (msg));
-  uint64_t lct = tm;
+  uint64_t lct = uint64_t (tm);
   msg.resize (msg.size () + sizeof(lct));
-  std::memcpy (&msg[34], &tm, sizeof(lct));
+  std::memcpy (&msg[34], &lct, sizeof(lct));
   uint64_t numb = 0;
   msg.resize (msg.size () + sizeof(numb));
   std::memcpy (&msg[42], &numb, sizeof(numb));
@@ -10400,3 +10458,225 @@ NetworkOperations::poll (struct pollfd *pfd, int nfds, int timeout)
   return WSAPoll (pfd, nfds, timeout);
 }
 #endif
+
+void
+NetworkOperations::stunSrv ()
+{
+  int addrlen = 0;
+  if (Enablestun == "active")
+    {
+#ifdef __linux
+      int stnsrvsock = socket (AF_INET, SOCK_DGRAM | O_NONBLOCK, IPPROTO_UDP);
+#endif
+#ifdef _WIN32
+      int stnsrvsock = socket (AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+      u_long nonblocking_enabled = TRUE;
+      int ch = 0;
+      ioctlsocket (stnsrvsock, FIONBIO, &nonblocking_enabled);
+#endif
+      sockaddr_in stunsrvaddr =
+	{ };
+      stunsrvaddr.sin_family = AF_INET;
+      stunsrvaddr.sin_addr.s_addr = INADDR_ANY;
+      stunsrvaddr.sin_port = htons (stunport);
+      addrlen = sizeof(stunsrvaddr);
+      if (bind (stnsrvsock, (const sockaddr*) &stunsrvaddr, addrlen) == 0)
+	{
+	  std::mutex *thrmtx = new std::mutex;
+	  thrmtx->lock ();
+	  threadvectmtx.lock ();
+	  threadvect.push_back (std::make_tuple (thrmtx, "STUN server thread"));
+	  threadvectmtx.unlock ();
+	  std::thread *stthr = new std::thread ( [this, thrmtx, stnsrvsock]
+	  {
+	    pollfd fdsl[1];
+	    fdsl[0].fd = stnsrvsock;
+	    fdsl[0].events = POLLRDNORM;
+
+	    for (;;)
+	      {
+		if (this->cancel > 0)
+		  {
+		    break;
+		  }
+		int respol = poll (fdsl, 1, 3000);
+		if (respol > 0)
+		  {
+		    std::vector<char> msgv;
+		    msgv.resize (20);
+		    sockaddr_in from =
+		      { };
+		    socklen_t sizefrom = sizeof(from);
+		    recvfrom (stnsrvsock, msgv.data (), msgv.size (), 0, (struct sockaddr*) &from, &sizefrom);
+		    uint16_t tt = 1000;
+		    std::memcpy (&tt, &msgv[0], sizeof(tt));
+		    uint16_t tt2 = 1000;
+		    std::memcpy (&tt2, &msgv[2], sizeof(tt2));
+		    if (ntohs (tt) == 1 && ntohs (tt2) == 0)
+		      {
+			uint32_t ttt = 0;
+			std::memcpy (&ttt, &msgv[4], sizeof(ttt));
+			msgv.clear ();
+			uint16_t type = htons (32);
+			msgv.resize (msgv.size () + sizeof(type));
+			std::memcpy (&msgv[0], &type, sizeof(type));
+			uint16_t length = 64;
+			msgv.resize (msgv.size () + sizeof(length));
+			std::memcpy (&msgv[2], &length, sizeof(length));
+			uint8_t zer = 0;
+			msgv.resize (msgv.size () + sizeof(zer));
+			std::memcpy (&msgv[4], &zer, sizeof(zer));
+			uint8_t family = uint8_t (0x01);
+			msgv.resize (msgv.size () + sizeof(family));
+			std::memcpy (&msgv[5], &family, sizeof(family));
+			uint16_t port = from.sin_port;
+			port = ntohs (port);
+			port ^= 8466;
+			port = htons (port);
+			msgv.resize (msgv.size () + sizeof(port));
+			std::memcpy (&msgv[6], &port, sizeof(port));
+			uint32_t ip = from.sin_addr.s_addr;
+			ip = ntohl (ip);
+			ip ^= 554869826;
+			ip = htonl (ip);
+			msgv.resize (msgv.size () + sizeof(ip));
+			std::memcpy (&msgv[8], &ip, sizeof(ip));
+			sockaddr_in stunrp =
+			  { };
+			stunrp.sin_family = AF_INET;
+			stunrp.sin_port = from.sin_port;
+			stunrp.sin_addr.s_addr = from.sin_addr.s_addr;
+			sendto (stnsrvsock, msgv.data (), msgv.size (), 0,
+				(struct sockaddr*) &stunrp, sizeof(stunrp));
+		      }
+		  }
+	      }
+	    thrmtx->unlock ();
+	  });
+	  stthr->detach ();
+	  delete stthr;
+	}
+      else
+	{
+#ifdef __linux
+	  std::cerr << "STUN socket bind error: " << strerror (errno)
+	      << std::endl;
+#endif
+#ifdef _WIN32
+	  ch = WSAGetLastError ();
+	  std::cerr << "STUN socket bind error: " << ch << std::endl;
+  #endif
+	}
+    }
+#ifdef __linux
+  int stnsock = socket (AF_INET, SOCK_DGRAM | O_NONBLOCK, IPPROTO_UDP);
+#endif
+#ifdef _WIN32
+  int stnsock = socket (AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+  u_long nonblocking_enabled = TRUE;
+  int ch = 0;
+  ioctlsocket (stnsock, FIONBIO, &nonblocking_enabled);
+#endif
+  sockaddr_in stunaddr =
+    { };
+  stunaddr.sin_family = AF_INET;
+  stunaddr.sin_addr.s_addr = INADDR_ANY;
+  stunaddr.sin_port = 0;
+  addrlen = sizeof(stunaddr);
+  if (bind (stnsock, (const sockaddr*) &stunaddr, addrlen) == 0)
+    {
+      std::mutex *thrmtx = new std::mutex;
+      thrmtx->lock ();
+      threadvectmtx.lock ();
+      threadvect.push_back (std::make_tuple (thrmtx, "STUN check thread"));
+      threadvectmtx.unlock ();
+      std::thread *stthr = new std::thread ( [this, thrmtx, stnsock]
+      {
+	std::vector<std::tuple<std::string, uint32_t, int, time_t>> chvect;
+	for (;;)
+	  {
+	    if (this->cancel > 0)
+	      {
+		break;
+	      }
+	    this->getfrresmtx.lock ();
+	    for (size_t i = 0; i < this->getfrres.size (); i++)
+	      {
+		std::string key = std::get<0> (this->getfrres[i]);
+		auto itchv = std::find_if (chvect.begin (), chvect.end (), [&key](auto &el)
+	{
+	  return key == std::get<0>(el);
+	});
+		if (itchv == chvect.end ())
+		  {
+		    time_t sttm = time (NULL);
+		    chvect.push_back (
+			std::make_tuple (key, std::get<1> (this->getfrres[i]),
+					 0, sttm));
+		  }
+	      }
+	    this->getfrresmtx.unlock ();
+
+	    for (size_t i = 0; i < chvect.size (); i++)
+	      {
+		int chk = std::get<2> (chvect[i]);
+		time_t ltm = std::get<3> (chvect[i]);
+		time_t curtm = time (NULL);
+		if (chk == 0)
+		  {
+		    chk = chk + 1;
+		    std::get<2> (chvect[i]) = chk;
+		    std::pair<struct in_addr, uint16_t> p;
+		    p.first.s_addr = std::get<1> (chvect[i]);
+		    p.second = htons (stunport);
+		    std::pair<uint32_t, uint16_t> result;
+		    result = this->getOwnIps (stnsock, p);
+		    if (std::get<0> (result) != 0 && std::get<1> (result) != 0)
+		      {
+			this->stunipsmtx.lock ();
+			this->stunips.insert (this->stunips.begin (), p);
+			this->stunipsmtx.unlock ();
+		      }
+		    std::get<2> (chvect[i]) = curtm;
+		  }
+		else
+		  {
+		    if (chk <= 3 && curtm - ltm >= 3)
+		      {
+			chk = chk + 1;
+			std::get<2> (chvect[i]) = chk;
+			std::pair<struct in_addr, uint16_t> p;
+			p.first.s_addr = std::get<1> (chvect[i]);
+			p.second = htons (stunport);
+			std::pair<uint32_t, uint16_t> result;
+			result = this->getOwnIps (stnsock, p);
+			if (std::get<0> (result) != 0
+			    && std::get<1> (result) != 0)
+			  {
+			    this->stunipsmtx.lock ();
+			    this->stunips.insert (this->stunips.begin (), p);
+			    this->stunipsmtx.unlock ();
+			  }
+			std::get<2> (chvect[i]) = curtm;
+		      }
+		  }
+	      }
+	    sleep (3);
+	  }
+	thrmtx->unlock ();
+      });
+      stthr->detach ();
+      delete stthr;
+    }
+  else
+    {
+#ifdef __linux
+      std::cerr << "STUN checksocket bind error: " << strerror (errno)
+	  << std::endl;
+#endif
+#ifdef _WIN32
+      ch = WSAGetLastError ();
+      std::cerr << "STUN checksocket bind error: " << ch << std::endl;
+#endif
+    }
+}

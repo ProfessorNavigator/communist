@@ -8530,10 +8530,141 @@ MainWindow::settingsWindow ()
 	  soundpe->set_placeholder_text (gettext ("default"));
 	}
     }
+  else
+    {
+      soundpe->set_placeholder_text (gettext ("default"));
+    }
   prefvectmtx.unlock ();
   soundpe->set_width_chars (50);
-
   bx->append (*soundpe);
+  lbr->set_child (*bx);
+  listb->append (*lbr);
+
+  bx = Gtk::make_managed<Gtk::Box> (Gtk::Orientation::HORIZONTAL);
+  lbr = Gtk::make_managed<Gtk::ListBoxRow> ();
+  lbr->set_selectable (false);
+  Gtk::Label *enstunl = Gtk::make_managed<Gtk::Label> ();
+  enstunl->set_halign (Gtk::Align::START);
+  enstunl->set_justify (Gtk::Justification::LEFT);
+  enstunl->set_margin (5);
+  enstunl->set_wrap_mode (Pango::WrapMode::WORD);
+  enstunl->set_text (gettext ("Enable local STUN server"));
+  bx->append (*enstunl);
+
+  Gtk::CheckButton *enstunch = Gtk::make_managed<Gtk::CheckButton> ();
+  enstunch->set_margin (5);
+  enstunch->set_halign (Gtk::Align::CENTER);
+  enstunch->set_valign (Gtk::Align::CENTER);
+  prefvectmtx.lock ();
+  itprv = std::find_if (prefvect.begin (), prefvect.end (), []
+  (auto &el)
+    {
+      return std::get<0>(el) == "Stun";
+    });
+  if (itprv != prefvect.end ())
+    {
+      if (std::get<1> (*itprv) == "active")
+	{
+	  enstunch->set_active (true);
+	}
+      else
+	{
+	  enstunch->set_active (false);
+	}
+    }
+  else
+    {
+      enstunch->set_active (false);
+    }
+  prefvectmtx.unlock ();
+  bx->append (*enstunch);
+  lbr->set_child (*bx);
+  listb->append (*lbr);
+
+  bx = Gtk::make_managed<Gtk::Box> (Gtk::Orientation::HORIZONTAL);
+  lbr = Gtk::make_managed<Gtk::ListBoxRow> ();
+  lbr->set_selectable (false);
+  Gtk::Label *stunpl = Gtk::make_managed<Gtk::Label> ();
+  stunpl->set_halign (Gtk::Align::START);
+  stunpl->set_justify (Gtk::Justification::LEFT);
+  stunpl->set_margin (5);
+  stunpl->set_wrap_mode (Pango::WrapMode::WORD);
+  stunpl->set_text (gettext ("STUN port:"));
+  bx->append (*stunpl);
+
+  Gtk::Entry *stunpe = Gtk::make_managed<Gtk::Entry> ();
+  stunpe->set_halign (Gtk::Align::END);
+  stunpe->set_valign (Gtk::Align::CENTER);
+  stunpe->set_margin (5);
+  Glib::RefPtr<Gtk::EntryBuffer> stunpebuf = Gtk::EntryBuffer::create ();
+  prefvectmtx.lock ();
+  itprv = std::find_if (prefvect.begin (), prefvect.end (), []
+  (auto &el)
+    {
+      return std::get<0>(el) == "Stunport";
+    });
+  if (itprv != prefvect.end ())
+    {
+      if (Glib::ustring (std::get<1> (*itprv)) != "")
+	{
+	  stunpebuf->set_text (Glib::ustring (std::get<1> (*itprv)));
+	  stunpe->set_buffer (stunpebuf);
+	}
+      else
+	{
+	  stunpebuf->set_text ("3478");
+	  stunpe->set_buffer (stunpebuf);
+	}
+    }
+  else
+    {
+      stunpebuf->set_text ("3478");
+      stunpe->set_buffer (stunpebuf);
+    }
+  prefvectmtx.unlock ();
+  stunpe->set_width_chars (5);
+  bx->append (*stunpe);
+  lbr->set_child (*bx);
+  listb->append (*lbr);
+
+  bx = Gtk::make_managed<Gtk::Box> (Gtk::Orientation::HORIZONTAL);
+  lbr = Gtk::make_managed<Gtk::ListBoxRow> ();
+  lbr->set_selectable (false);
+  Gtk::Label *directinetl = Gtk::make_managed<Gtk::Label> ();
+  directinetl->set_halign (Gtk::Align::START);
+  directinetl->set_justify (Gtk::Justification::LEFT);
+  directinetl->set_margin (5);
+  directinetl->set_wrap_mode (Pango::WrapMode::WORD);
+  directinetl->set_text (gettext ("Direct connection to Internet"));
+  bx->append (*directinetl);
+
+  Gtk::CheckButton *directinetch = Gtk::make_managed<Gtk::CheckButton> ();
+  directinetch->set_margin (5);
+  directinetch->set_halign (Gtk::Align::CENTER);
+  directinetch->set_valign (Gtk::Align::CENTER);
+  prefvectmtx.lock ();
+  itprv = std::find_if (prefvect.begin (), prefvect.end (), []
+  (auto &el)
+    {
+      return std::get<0>(el) == "DirectInet";
+    });
+  if (itprv != prefvect.end ())
+    {
+      if (std::get<1> (*itprv) == "direct")
+	{
+	  directinetch->set_active (true);
+	}
+      else
+	{
+	  directinetch->set_active (false);
+	}
+    }
+  else
+    {
+      directinetch->set_active (false);
+    }
+  prefvectmtx.unlock ();
+  bx->append (*directinetch);
   lbr->set_child (*bx);
   listb->append (*lbr);
 
@@ -8548,7 +8679,8 @@ MainWindow::settingsWindow ()
 
   apply->signal_clicked ().connect (
       [window, this, lifcsval, locip6val, locip4val, bootstre, msgsze, partsze,
-       winszch, sendkeycmb, soundch, soundpe, shutmte, tmtteare, langchenbch]
+       winszch, sendkeycmb, soundch, soundpe, shutmte, tmtteare, langchenbch,
+       enstunch, stunpe, directinetch]
       {
 	std::string filename;
 	std::filesystem::path filepath;
@@ -8941,6 +9073,79 @@ MainWindow::settingsWindow ()
 	    else
 	      {
 		this->prefvect.push_back (std::make_tuple ("TmtTear", "20"));
+	      }
+	  }
+	itprv = std::find_if (this->prefvect.begin (), this->prefvect.end (), []
+	(auto &el)
+	  {
+	    return std::get<0>(el) == "Stun";
+	  });
+	if (itprv != this->prefvect.end ())
+	  {
+	    if (enstunch->get_active ())
+	      {
+		std::get<1> (*itprv) = "active";
+	      }
+	    else
+	      {
+		std::get<1> (*itprv) = "notactive";
+	      }
+	  }
+	else
+	  {
+	    if (enstunch->get_active ())
+	      {
+		this->prefvect.push_back (std::make_tuple ("Stun", "active"));
+	      }
+	    else
+	      {
+		this->prefvect.push_back (
+		    std::make_tuple ("Stun", "notactive"));
+	      }
+	  }
+	itprv = std::find_if (this->prefvect.begin (), this->prefvect.end (), []
+	(auto &el)
+	  {
+	    return std::get<0>(el) == "Stunport";
+	  });
+	if (itprv != this->prefvect.end ())
+	  {
+	    std::get<1> (*itprv) = std::string (
+		stunpe->get_buffer ()->get_text ());
+	  }
+	else
+	  {
+	    this->prefvect.push_back (
+		std::make_tuple ("Stunport",
+				 stunpe->get_buffer ()->get_text ()));
+	  }
+	itprv = std::find_if (this->prefvect.begin (), this->prefvect.end (), []
+	(auto &el)
+	  {
+	    return std::get<0>(el) == "DirectInet";
+	  });
+	if (itprv != this->prefvect.end ())
+	  {
+	    if (directinetch->get_active ())
+	      {
+		std::get<1> (*itprv) = "direct";
+	      }
+	    else
+	      {
+		std::get<1> (*itprv) = "notdirect";
+	      }
+	  }
+	else
+	  {
+	    if (directinetch->get_active ())
+	      {
+		this->prefvect.push_back (
+		    std::make_tuple ("DirectInet", "direct"));
+	      }
+	    else
+	      {
+		this->prefvect.push_back (
+		    std::make_tuple ("DirectInet", "notdirect"));
 	      }
 	  }
 	std::fstream f;
@@ -9684,21 +9889,22 @@ MainWindow::aboutProg ()
   Gtk::ScrolledWindow *scrab = Gtk::make_managed<Gtk::ScrolledWindow> ();
   scrab->set_policy (Gtk::PolicyType::AUTOMATIC, Gtk::PolicyType::AUTOMATIC);
   scrab->set_halign (Gtk::Align::CENTER);
-  if (scrres.get_width () < 500)
+
+  if (scrres.get_width () < 700)
     {
-      scrab->set_min_content_width (scrres.get_width () - 10);
+      scrab->set_min_content_width (scrres.get_width () * 0.7);
     }
   else
     {
-      scrab->set_min_content_width (500);
+      scrab->set_min_content_width (700);
     }
-  if (scrres.get_height () < 500)
+  if (scrres.get_height () < 700)
     {
-      scrab->set_min_content_height (scrres.get_height () - 10);
+      scrab->set_min_content_height (scrres.get_height () * 0.7);
     }
   else
     {
-      scrab->set_min_content_height (500);
+      scrab->set_min_content_height (700);
     }
   scrab->set_child (*tvab);
   noteb->append_page (*scrab, gettext ("About"));
@@ -9730,21 +9936,21 @@ MainWindow::aboutProg ()
   Gtk::ScrolledWindow *scrlc = Gtk::make_managed<Gtk::ScrolledWindow> ();
   scrlc->set_policy (Gtk::PolicyType::AUTOMATIC, Gtk::PolicyType::AUTOMATIC);
   scrlc->set_halign (Gtk::Align::CENTER);
-  if (scrres.get_width () < 500)
+  if (scrres.get_width () < 700)
     {
-      scrlc->set_min_content_width (scrres.get_width () - 10);
+      scrlc->set_min_content_width (scrres.get_width () * 0.7);
     }
   else
     {
-      scrlc->set_min_content_width (500);
+      scrlc->set_min_content_width (700);
     }
-  if (scrres.get_height () < 500)
+  if (scrres.get_height () < 700)
     {
-      scrlc->set_min_content_height (scrres.get_height () - 10);
+      scrlc->set_min_content_height (scrres.get_height () * 0.7);
     }
   else
     {
-      scrlc->set_min_content_height (500);
+      scrlc->set_min_content_height (700);
     }
   scrlc->set_child (*tvlc);
   noteb->append_page (*scrlc, gettext ("Licence"));

@@ -189,6 +189,8 @@ private:
   msgPE (std::string key, uint64_t tm);
   void
   bootstrFunc ();
+  void
+  stunSrv ();
 #ifdef _WIN32
   int
   poll (struct pollfd *pfd, int nfds, int timeout);
@@ -283,6 +285,9 @@ private:
   std::string Sharepath;
   time_t Shuttmt = 600;
   time_t Tmttear = 20;
+  uint16_t stunport = 3478;
+  std::string Enablestun = "notactive";
+  std::string Directinet = "notdirect";
   std::vector<std::tuple<std::mutex*, std::string>> threadvect;
   std::mutex threadvectmtx;
 };

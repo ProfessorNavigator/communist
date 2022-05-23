@@ -89,7 +89,13 @@ You do not need change anything if everything works fine 'out of the box'. In ot
  
  `Enable message receive sound`. Enable sound notification on message receiving.
  
- `Message sound path`. If this line is empty, program tries to use default signal. To use your own signal, input full path to file and press 'Apply' button.
+ `Message sound path`. If this line is empty, program tries to use default signal. To use your own signal, input full path.
+ 
+ `Enable STUN server` enables local STUN server (not compliant with RFCs, only for Communist network). Please, check it, if you have direct access to the Internet.
+ 
+ `STUN port` - port to be used with Communist STUN servers and requests. Must be the same on all machines in the same overlay network.
+ 
+ `Direct connection to Internet` - check it, if you have it. This option disables requests to STUN servers.
  
  Warning! After you press 'Apply' button program will be closed. You need to restart it manually.
  
@@ -103,7 +109,7 @@ You do not need change anything if everything works fine 'out of the box'. In ot
 
 ## Plans
  
- Author wants to add more message's types, such as voice messages, video messages, direct p2p audio and video calling. But unfortunately he is not qualified on audio and video recording, so it may take some time. Also he wants to add group and channel functionality, but unfortunately due to IPv4 features (NAT) this can be realised only for IPv6 networks (if you have any ideas, please contact author by e-mail or on GitFlic and Github). Nearest plans are to add simple STUN server functionality. This will allow to make Communist overlay network totally independent from even STUN servers (with some limitations of course - we need as many people as possible with 'white' IPv4 addresses).
+ Author wants to add more message's types, such as voice messages, video messages, direct p2p audio and video calling. But unfortunately he is not qualified on audio and video recording, so it may take some time. Also he wants to add group and channel functionality, but unfortunately due to IPv4 features (NAT) this can be realised only for IPv6 networks (if you have any ideas, please contact author by e-mail or on GitFlic and Github).
  
 
 ## License
