@@ -29,7 +29,7 @@ You can build Communist from source by MSYS2 project [https://www.msys2.org/](ht
 `cd build`\
 `ninja install`
 
-If everything was correct, you can find communist.exe file in `your_msys2_folder/your_mingw_folder/bin`.
+If everything was correct, you can find communist.exe file in `your_msys2_folder/mingw_folder/bin`.
 
 ## Dependencies
 
