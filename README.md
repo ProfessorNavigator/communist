@@ -20,7 +20,7 @@ You may need superuser privileges to execute last command.
 
 ### Windows
 
-You can build Communist from source by MSYS2 project [https://www.msys2.org/](https://www.msys2.org/). Follow installation instructions from their site. Install dependencies from [Dependencies](#dependencies) section and git (all must be mingw64 packages). Than create folder where you want to download source code (path must not include spaces or non Latin letters). Open mingw64 console and execute following commands (in example we download code to C:\Communist)
+You can build Communist from source by MSYS2 project [https://www.msys2.org/](https://www.msys2.org/). Follow installation instructions from their site. Install dependencies from [Dependencies](#dependencies) section and git. Than create folder where you want to download source code (path must not include spaces or non Latin letters). Open MinGW console and execute following commands (in example we download code to C:\Communist)
 
 `cd /c/Communist`\
 `git clone https://github.com/ProfessorNavigator/communist.git`\
@@ -109,7 +109,7 @@ You do not need change anything if everything works fine 'out of the box'. In ot
 
 ## Plans
  
- Author wants to add more message's types, such as voice messages, video messages, direct p2p audio and video calling. But unfortunately he is not qualified on audio and video recording, so it may take some time. Also he wants to add group and channel functionality, but unfortunately due to IPv4 features (NAT) this can be realised only for IPv6 networks (if you have any ideas, please contact author by e-mail or on GitFlic and Github).
+ Author wants to add more message's types, such as voice messages, video messages, direct p2p audio and video calling. But unfortunately he is not qualified on audio and video recording, so it may take some time. Also he wants to add group and channel functionality, but unfortunately due to IPv4 features (NAT) this can be realised only for IPv6 networks (if you have any ideas, please contact author by e-mail or on GitFlic and GitHub).
  
 
 ## License
