@@ -211,9 +211,9 @@ NetworkOperations::mainFunc ()
   {
     std::mutex *thrmtx = new std::mutex;
     thrmtx->lock ();
-    threadvectmtx.lock ();
-    threadvect.push_back (std::make_tuple (thrmtx, "Dns finished"));
-    threadvectmtx.unlock ();
+    this->threadvectmtx.lock ();
+    this->threadvect.push_back (std::make_tuple (thrmtx, "Dns finished"));
+    this->threadvectmtx.unlock ();
     std::thread *dnsfinthr = new std::thread ( [this, thrmtx]
     {
       this->sockipv6mtx.lock ();
@@ -249,14 +249,6 @@ NetworkOperations::mainFunc ()
       if (GetAdaptersAddresses (AF_UNSPEC, GAA_FLAG_INCLUDE_PREFIX, NULL,
 				pAddresses, &outBufLen) != NO_ERROR)
 
-
-
-
-
-
-
-
-
 #endif
     {
       std::cerr << "Error on getting ipv6" << std::endl;
@@ -275,7 +267,7 @@ NetworkOperations::mainFunc ()
 	      ipv6 = (struct sockaddr_in6*) ifa->ifa_addr;
 	      if (!IN6_IS_ADDR_LOOPBACK(&ipv6->sin6_addr))
 		{
-		  if (Netmode == "0")
+		  if (this->Netmode == "0")
 		    {
 		      if (!IN6_IS_ADDR_LINKLOCAL(&ipv6->sin6_addr))
 			{
@@ -286,7 +278,7 @@ NetworkOperations::mainFunc ()
 			  ipv6tmp.push_back (line);
 			}
 		    }
-		  if (Netmode == "1")
+		  if (this->Netmode == "1")
 		    {
 		      line = std::string (ifa->ifa_name) + " ";
 		      line = line
@@ -377,7 +369,7 @@ NetworkOperations::mainFunc ()
 	      this->IPV4mtx.lock ();
 	      if (this->IPV4 != "")
 		{
-		  std::cout << "Own ipv4 " << IPV4 << std::endl;
+		  std::cout << "Own ipv4 " << this->IPV4 << std::endl;
 		  this->IPV4mtx.unlock ();
 		  break;
 		}
@@ -394,7 +386,7 @@ NetworkOperations::mainFunc ()
 	      tmp.erase (0, tmp.find ((" ")) + std::string (" ").size ());
 	      this->IPV4mtx.lock ();
 	      this->IPV4 = tmp;
-	      std::cout << "Own ipv4 " << IPV4 << std::endl;
+	      std::cout << "Own ipv4 " << this->IPV4 << std::endl;
 	      this->IPV4mtx.unlock ();
 	    }
 	}
@@ -422,7 +414,7 @@ NetworkOperations::mainFunc ()
 		  getsockname (this->sockipv6, (sockaddr*) &addressp1,
 		      &len);
 		  this->ownipv6port = addressp1.sin6_port;
-		  std::cout << "Own ipv6 " << ownipv6 << " ";
+		  std::cout << "Own ipv6 " << this->ownipv6 << " ";
 		  std::cout << ntohs (addressp1.sin6_port) << std::endl;
 		  this->ownipv6mtx.unlock ();
 		  break;
@@ -449,7 +441,7 @@ NetworkOperations::mainFunc ()
 	      this->ownipv6.erase (
 		  0, this->ownipv6.find (" ") + std::string (" ").size ());
 	      this->ownipv6port = addressp1.sin6_port;
-	      std::cout << "Own ipv6 " << ownipv6 << " ";
+	      std::cout << "Own ipv6 " << this->ownipv6 << " ";
 	      std::cout << ntohs (addressp1.sin6_port) << std::endl;
 	      this->ownipv6mtx.unlock ();
 	    }
@@ -825,6 +817,10 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
       sockipv6mtx.unlock ();
       if (n >= 0 && n <= 576)
 	{
+	  buf.clear ();
+	  buf.resize (n);
+	  recvfrom (sockipv6, buf.data (), buf.size (), MSG_PEEK,
+		    (struct sockaddr*) &from6, &sizeoffrom6);
 	  rcvip6 = 1;
 	  std::vector<char> tmpmsg;
 	  tmpmsg.resize (INET6_ADDRSTRLEN);
@@ -839,6 +835,36 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 	  if (itip6 != ipv6cont.end ())
 	    {
 	      chkey = std::get<0> (*itip6);
+	      std::tuple<lt::dht::public_key, lt::dht::secret_key> ownkey;
+	      ownkey = lt::dht::ed25519_create_keypair (*seed);
+	      std::string unm = lt::aux::to_hex (std::get<0> (ownkey).bytes);
+	      lt::dht::public_key othpk;
+	      lt::aux::from_hex (chkey, othpk.bytes.data ());
+	      std::array<char, 32> scalar;
+	      scalar = lt::dht::ed25519_key_exchange (othpk,
+						      std::get<1> (ownkey));
+	      othpk = lt::dht::ed25519_add_scalar (std::get<0> (ownkey),
+						   scalar);
+	      std::string passwd = lt::aux::to_hex (othpk.bytes);
+	      buf = af.decryptStrm (unm, passwd, buf);
+	      std::array<char, 32> keyarr;
+	      std::copy_n (buf.begin (), 32, keyarr.begin ());
+	      std::string key = lt::aux::to_hex (keyarr);
+	      std::cout << chkey << "\n" << key << std::endl;
+	      if (chkey != key)
+		{
+		  recvfrom (sockipv6, buf.data (), buf.size (), 0,
+			    (struct sockaddr*) &from6, &sizeoffrom6);
+		  n = 0;
+		  std::cout << "Wrong packet from " << chip << " "
+		      << ntohs (from6.sin6_port) << std::endl;
+		}
+	    }
+	  else
+	    {
+	      recvfrom (sockipv6, buf.data (), buf.size (), 0,
+			(struct sockaddr*) &from6, &sizeoffrom6);
+	      n = 0;
 	    }
 	  ipv6contmtx.unlock ();
 	}
@@ -7249,6 +7275,8 @@ NetworkOperations::commOps ()
 			  msg = af.cryptStrm (unm, passwd, msg);
 			  sockipv6mtx.lock ();
 			  s = sendMsg6 (sockipv6, ip6, port, msg);
+			  std::cout << "Maintenance message to " << ip6 << " "
+			      << ntohs (port) << std::endl;
 			  sockipv6mtx.unlock ();
 			}
 		    }
@@ -7568,7 +7596,7 @@ NetworkOperations::commOps ()
 						this->getfrres.end (),
 						[&key]
 						(auto &el)
-						  { return std::get<0>(el) == key;}                                                                                                                                                                                                                                                                                                          );
+						  { return std::get<0>(el) == key;}                                                                                                                                                                                                                                                                                                              );
 					if (itgfr != this->getfrres.end ())
 					  {
 					    std::get<1> (*itgfr) =
@@ -10215,14 +10243,21 @@ NetworkOperations::cancelAll ()
 			(auto &el)
 			  {
 			    std::mutex *mtx = std::get<0>(el);
-			    if (mtx->try_lock())
+			    if (mtx)
 			      {
-				mtx->unlock();
-				return false;
+				if (mtx->try_lock())
+				  {
+				    mtx->unlock();
+				    return false;
+				  }
+				else
+				  {
+				    return true;
+				  }
 			      }
 			    else
 			      {
-				return true;
+				return false;
 			      }
 
 			  });

@@ -743,6 +743,49 @@ AuxFunc::toutf8 (std::string &line)
 }
 
 std::string
+AuxFunc::utf8to (std::string line)
+{
+  UErrorCode status = U_ZERO_ERROR;
+  icu::UnicodeString ustr;
+  UConverter *c = ucnv_open (NULL, &status);
+  if (!U_SUCCESS (status))
+    {
+      std::cerr << u_errorName (status) << std::endl;
+    }
+  status = U_ZERO_ERROR;
+  std::vector<char> target2;
+  ustr.remove ();
+  ustr = icu::UnicodeString::fromUTF8 (line.c_str ());
+  target2.resize (ustr.length ());
+  char16_t data[ustr.length ()];
+  for (int i = 0; i < ustr.length (); i++)
+    {
+      data[i] = ustr.charAt (i);
+    }
+  size_t cb = ucnv_fromUChars (c, target2.data (), ustr.length (), data,
+			       ustr.length (), &status);
+  if (!U_SUCCESS (status))
+    {
+      std::cerr << u_errorName (status) << std::endl;
+    }
+  if (status == U_BUFFER_OVERFLOW_ERROR)
+    {
+      status = U_ZERO_ERROR;
+      target2.clear ();
+      target2.resize (cb);
+      ucnv_fromUChars (c, target2.data (), cb, data, ustr.length (), &status);
+      if (!U_SUCCESS (status))
+	{
+	  std::cerr << u_errorName (status) << std::endl;
+	}
+    }
+  line.clear ();
+  line = std::string (target2.begin (), target2.end ());
+
+  return line;
+}
+
+std::string
 AuxFunc::stringToLower (std::string line)
 {
   std::string innerline = line;

@@ -73,6 +73,8 @@ public:
   void
   toutf8 (std::string &line);
   std::string
+  utf8to (std::string line);
+  std::string
   stringToLower (std::string line);
   std::vector<char>
   strhash (std::vector<char> &th, int type);

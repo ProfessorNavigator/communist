@@ -1393,6 +1393,8 @@ MainWindow::mainWindow ()
 	      {
 		std::string word = txt.substr (std::get<0> (tv[i]),
 					       std::get<1> (tv[i]));
+		AuxFunc af;
+		word = af.utf8to (word);
 		for (size_t j = 0, len = word.size (); j < len; j++)
 		  {
 		    if (std::ispunct ((word[j])))
@@ -1401,7 +1403,7 @@ MainWindow::mainWindow ()
 			len = word.size ();
 		      }
 		  }
-		AuxFunc af;
+		af.toutf8 (word);
 		std::string wordlow = af.stringToLower (word);
 		int cor = this->spch->spell (wordlow);
 		if (cor < 1)
@@ -3196,7 +3198,7 @@ MainWindow::networkOp ()
 	   disp14mtx, key, ind, keysm, indsm, keyrm, rp, keyfr, tm, fs, fn,
 	   keyfrr, keyfiler, filenmr, keyfilenr, filenmnr, keyfiles, filenms,
 	   keyfileerror, filenmerror, keyfileprg, fileprgp, fileprgsz,
-	   keyfileprgs, fileprgps, fileprgszs, keychcon, tmchcon]
+	   keyfileprgs, fileprgps, fileprgszs, keychcon, tmchcon, keyfrrem]
 	  {
 	    for (size_t i = 0; i < dispv.size (); i++)
 	      {
@@ -3244,6 +3246,7 @@ MainWindow::networkOp ()
 	    delete fileprgszs;
 	    delete keychcon;
 	    delete tmchcon;
+	    delete keyfrrem;
 	  });
     }
 }
