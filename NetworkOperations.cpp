@@ -189,7 +189,6 @@ NetworkOperations::~NetworkOperations ()
 #endif
 #ifdef _WIN32
   closesocket (sockipv6);
-  WSACleanup ();
 #endif
 }
 
@@ -246,8 +245,14 @@ NetworkOperations::mainFunc ()
       WSAStartup (MAKEWORD (2, 2), &WsaData);
       ULONG outBufLen = 15000;
       PIP_ADAPTER_ADDRESSES pAddresses = (IP_ADAPTER_ADDRESSES*) malloc (outBufLen);
-      if (GetAdaptersAddresses (AF_UNSPEC, GAA_FLAG_INCLUDE_PREFIX, NULL,
-				pAddresses, &outBufLen) != NO_ERROR)
+      if (GetAdaptersAddresses (AF_UNSPEC, GAA_FLAG_INCLUDE_PREFIX,
+				NULL, pAddresses, &outBufLen) != NO_ERROR)
+
+
+
+
+
+
 
 #endif
     {
@@ -723,6 +728,29 @@ NetworkOperations::getOwnIps (int udpsock,
 void
 NetworkOperations::holePunch (int sock, uint32_t ip, std::string otherkey)
 {
+  holepunchstopmtx.lock ();
+  int firstport = 1024;
+  auto hpsit = std::find_if (holepunchstop.begin (), holepunchstop.end (),
+			     [otherkey]
+			     (auto &el)
+			       {
+				 return std::get<0>(el) == otherkey;
+			       });
+  if (hpsit != holepunchstop.end ())
+    {
+      firstport = std::get<1> (*hpsit);
+      if (firstport >= 65535)
+	{
+	  firstport = 1024;
+	  std::get<1> (*hpsit) = firstport;
+	}
+    }
+  else
+    {
+      firstport = 1024;
+      holepunchstop.push_back (std::make_tuple (otherkey, firstport));
+    }
+  holepunchstopmtx.unlock ();
   std::vector<char> ipv;
   ipv.resize (INET_ADDRSTRLEN);
   uint32_t lip = ip;
@@ -744,44 +772,74 @@ NetworkOperations::holePunch (int sock, uint32_t ip, std::string otherkey)
   std::string passwd = lt::aux::to_hex (othpk.bytes);
   msgv = af.cryptStrm (unm, passwd, msgv);
 
-  for (int i = 1024; i < 65536; i = i + 5000)
+  for (int i = firstport; i < 65536; i = i + 1)
     {
       if (cancel > 0)
 	{
 	  break;
 	}
-      for (int j = i; j < i + 5000; j++)
+      sockaddr_in op =
+	{ };
+      op.sin_family = AF_INET;
+      op.sin_port = htons (i);
+      op.sin_addr.s_addr = ip;
+      int count = 0;
+      int ch = -1;
+      while (ch < 0)
 	{
-	  if (cancel > 0)
+	  ch = sendto (sock, msgv.data (), msgv.size (), 0,
+		       (struct sockaddr*) &op, sizeof(op));
+	  if (ch < 0)
 	    {
-	      break;
+#ifdef __linux
+	      std::cerr << "Hole punch error: " << strerror (errno)
+		  << std::endl;
+#endif
+#ifdef _WIN32
+	      ch = WSAGetLastError ();
+	      std::cerr << "Hole punch error: " << ch << std::endl;
+#endif
 	    }
-	  sockaddr_in op =
-	    { };
-	  op.sin_family = AF_INET;
-	  op.sin_port = htons (j);
-	  op.sin_addr.s_addr = ip;
-	  int count = 0;
-	  int ch = -1;
-	  while (ch < 0)
+	  count++;
+	  if (count > 10)
 	    {
-	      errno = 0;
-	      ch = sendto (sock, msgv.data (), msgv.size (), 0,
-			   (struct sockaddr*) &op, sizeof(op));
-	      if (ch < 0)
+	      std::cout << i << std::endl;
+	      holepunchstopmtx.lock ();
+	      hpsit = std::find_if (holepunchstop.begin (),
+				    holepunchstop.end (), [otherkey]
+				    (auto &el)
+				      {
+					return std::get<0>(el) == otherkey;
+				      });
+	      if (hpsit != holepunchstop.end ())
 		{
-		  std::cerr << "Hole punch error: " << strerror (errno)
-		      << std::endl;
+		  std::get<1> (*hpsit) = i;
 		}
-	      count++;
-	      if (count > 10000)
+	      else
 		{
-		  return void ();
+		  holepunchstop.push_back (std::make_tuple (otherkey, i));
 		}
+	      holepunchstopmtx.unlock ();
+	      return void ();
 	    }
+	  usleep (100);
 	}
-      usleep (100);
     }
+  holepunchstopmtx.lock ();
+  hpsit = std::find_if (holepunchstop.begin (), holepunchstop.end (), [otherkey]
+  (auto &el)
+    {
+      return std::get<0>(el) == otherkey;
+    });
+  if (hpsit != holepunchstop.end ())
+    {
+      std::get<1> (*hpsit) = 1024;
+    }
+  else
+    {
+      holepunchstop.push_back (std::make_tuple (otherkey, 1024));
+    }
+  holepunchstopmtx.unlock ();
 }
 
 int
@@ -848,9 +906,11 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 	      std::string passwd = lt::aux::to_hex (othpk.bytes);
 	      buf = af.decryptStrm (unm, passwd, buf);
 	      std::array<char, 32> keyarr;
-	      std::copy_n (buf.begin (), 32, keyarr.begin ());
+	      if (buf.size () >= 32)
+		{
+		  std::copy_n (buf.begin (), 32, keyarr.begin ());
+		}
 	      std::string key = lt::aux::to_hex (keyarr);
-	      std::cout << chkey << "\n" << key << std::endl;
 	      if (chkey != key)
 		{
 		  recvfrom (sockipv6, buf.data (), buf.size (), 0,
@@ -891,7 +951,10 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
       std::string passwd = lt::aux::to_hex (othpk.bytes);
       buf = af.decryptStrm (unm, passwd, buf);
       std::array<char, 32> keyarr;
-      std::copy_n (buf.begin (), 32, keyarr.begin ());
+      if (buf.size () >= 32)
+	{
+	  std::copy_n (buf.begin (), 32, keyarr.begin ());
+	}
       std::string key = lt::aux::to_hex (keyarr);
       if (chkey != key)
 	{
@@ -953,9 +1016,15 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
       std::string passwd = lt::aux::to_hex (othpk.bytes);
       buf = af.decryptStrm (unm, passwd, buf);
       std::array<char, 32> keyarr;
-      std::copy_n (buf.begin (), 32, keyarr.begin ());
+      if (buf.size () >= 32)
+	{
+	  std::copy_n (buf.begin (), 32, keyarr.begin ());
+	}
       std::string key = lt::aux::to_hex (keyarr);
-      msgtype = std::string (buf.begin () + 32, buf.begin () + 34);
+      if (buf.size () >= 34)
+	{
+	  msgtype = std::string (buf.begin () + 32, buf.begin () + 34);
+	}
       if (key == chkey)
 	{
 	  time_t crtm = time (NULL);
@@ -1030,7 +1099,7 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 	      std::cout << msgtype << std::endl;
 	      smthrcvdsig.emit (key, crtm);
 	    }
-	  if (msgtype == "MB" || msgtype == "PB")
+	  if (buf.size () >= 50 && (msgtype == "MB" || msgtype == "PB"))
 	    {
 	      std::cout << msgtype << std::endl;
 	      uint64_t tm;
@@ -1298,7 +1367,7 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 		}
 	    }
 
-	  if (msgtype == "Mb" || msgtype == "Pb")
+	  if (buf.size () >= 50 && (msgtype == "Mb" || msgtype == "Pb"))
 	    {
 	      std::cout << msgtype << std::endl;
 	      uint64_t tm;
@@ -1355,7 +1424,7 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 	      msghashmtx.unlock ();
 	    }
 
-	  if (msgtype == "Mp" || msgtype == "Pp")
+	  if (buf.size () >= 50 && (msgtype == "Mp" || msgtype == "Pp"))
 	    {
 	      std::cout << msgtype << std::endl;
 	      uint64_t tm;
@@ -1409,7 +1478,7 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 	      msgparthashmtx.unlock ();
 	    }
 
-	  if (msgtype == "Me" || msgtype == "Pe")
+	  if (buf.size () >= 50 && (msgtype == "Me" || msgtype == "Pe"))
 	    {
 	      std::cout << msgtype << std::endl;
 	      uint64_t tm;
@@ -1477,7 +1546,7 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 		}
 	    }
 
-	  if (msgtype == "ME" || msgtype == "PE")
+	  if (buf.size () >= 42 && (msgtype == "ME" || msgtype == "PE"))
 	    {
 	      std::cout << msgtype << std::endl;
 	      uint64_t tm;
@@ -1656,7 +1725,7 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 		  msgrcvdpnum.end ());
 	      msgrcvdpnummtx.unlock ();
 	    }
-	  if (msgtype == "MA" || msgtype == "PA")
+	  if (buf.size () >= 42 && (msgtype == "MA" || msgtype == "PA"))
 	    {
 	      std::cout << msgtype << std::endl;
 	      uint64_t tm;
@@ -1684,7 +1753,7 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 		}
 	      msgpartbufmtx.unlock ();
 	    }
-	  if (msgtype == "Mr" || msgtype == "Pr")
+	  if (buf.size () >= 50 && (msgtype == "Mr" || msgtype == "Pr"))
 	    {
 	      std::cout << msgtype << std::endl;
 	      uint64_t tm;
@@ -1713,7 +1782,7 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 		}
 	      msgpartbufmtx.unlock ();
 	    }
-	  if (msgtype == "MR" || msgtype == "PR")
+	  if (buf.size () >= 42 && (msgtype == "MR" || msgtype == "PR"))
 	    {
 	      std::cout << msgtype << std::endl;
 	      uint64_t tm;
@@ -1777,7 +1846,7 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 		  msgpartbuf.end ());
 	      msgpartbufmtx.unlock ();
 	    }
-	  if (msgtype == "FQ")
+	  if (buf.size () >= 50 && msgtype == "FQ")
 	    {
 	      std::cout << msgtype << std::endl;
 	      uint64_t time;
@@ -1815,7 +1884,7 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 	      filerequest.emit (key, time, fsize, fnm);
 	      fqrcvdmtx.unlock ();
 	    }
-	  if (msgtype == "FJ")
+	  if (buf.size () >= 42 && msgtype == "FJ")
 	    {
 	      std::cout << msgtype << std::endl;
 	      uint64_t tint;
@@ -1858,7 +1927,7 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 	      filesendreqmtx.unlock ();
 	      sendbufmtx.unlock ();
 	    }
-	  if (msgtype == "FA")
+	  if (buf.size () >= 42 && msgtype == "FA")
 	    {
 	      std::cout << msgtype << std::endl;
 	      uint64_t tint;
@@ -1906,7 +1975,7 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 		}
 	      filesendreqmtx.unlock ();
 	    }
-	  if (msgtype == "Fr")
+	  if (buf.size () >= 50 && msgtype == "Fr")
 	    {
 	      std::cout << msgtype << std::endl;
 	      uint64_t tint;
@@ -1981,7 +2050,7 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 		}
 	      filepartbufmtx.unlock ();
 	    }
-	  if (msgtype == "FR" || msgtype == "FI")
+	  if (buf.size () >= 42 && (msgtype == "FR" || msgtype == "FI"))
 	    {
 	      std::cout << msgtype << std::endl;
 	      uint64_t tint;
@@ -2089,7 +2158,7 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 		}
 	      filepartbufmtx.unlock ();
 	    }
-	  if (msgtype == "FB")
+	  if (buf.size () >= 42 && msgtype == "FB")
 	    {
 	      std::cout << msgtype << std::endl;
 	      uint64_t tint;
@@ -2157,7 +2226,7 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 		}
 	      filehashvectmtx.unlock ();
 	    }
-	  if (msgtype == "FH")
+	  if (buf.size () >= 42 && msgtype == "FH")
 	    {
 	      std::cout << msgtype << std::endl;
 	      uint64_t tint;
@@ -2201,7 +2270,7 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 		}
 	      filepartbufmtx.unlock ();
 	    }
-	  if (msgtype == "Fb")
+	  if (buf.size() >= 50 && msgtype == "Fb")
 	    {
 	      std::cout << msgtype << std::endl;
 	      uint64_t tint;
@@ -2395,7 +2464,7 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 		}
 	      filehashvectmtx.unlock ();
 	    }
-	  if (msgtype == "Fp")
+	  if (buf.size() >= 50 && msgtype == "Fp")
 	    {
 	      std::cout << msgtype << std::endl;
 	      uint64_t tint;
@@ -2438,7 +2507,7 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 	      filehashvectmtx.unlock ();
 
 	    }
-	  if (msgtype == "Fe")
+	  if (buf.size() >= 42 && msgtype == "Fe")
 	    {
 	      std::cout << msgtype << std::endl;
 	      uint64_t tint;
@@ -2475,7 +2544,7 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 		}
 	      filehashvectmtx.unlock ();
 	    }
-	  if (msgtype == "FE")
+	  if (buf.size() >= 42 && msgtype == "FE")
 	    {
 	      std::cout << msgtype << std::endl;
 	      uint64_t tint;
@@ -2500,7 +2569,7 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 		}
 	      fileendmtx.unlock ();
 	    }
-	  if (msgtype == "FF")
+	  if (buf.size() >= 42 && msgtype == "FF")
 	    {
 	      std::cout << msgtype << std::endl;
 	      uint64_t tint;
@@ -3352,12 +3421,17 @@ NetworkOperations::sendMsg (int sockipv4, uint32_t ip, uint16_t port,
   op.sin_addr.s_addr = ip;
   if (ip != 0 && port != 0)
     {
-      errno = 0;
       int ch = sendto (sockipv4, msg.data (), msg.size (), 0,
 		       (struct sockaddr*) &op, sizeof(op));
       if (ch < 0)
 	{
+#ifdef __linux
 	  std::cerr << "ipv4 send error: " << strerror (errno) << std::endl;
+#endif
+#ifdef _WIN32
+	  ch = WSAGetLastError ();
+	  std::cerr << "ipv4 send error: " << ch << std::endl;
+#endif
 	}
       return ch;
     }
@@ -3379,12 +3453,17 @@ NetworkOperations::sendMsg6 (int sock, std::string ip6, uint16_t port,
   inet_pton (AF_INET6, ip6l.c_str (), &op.sin6_addr);
   if (ip6 != "" && port != 0)
     {
-      errno = 0;
       int ch = sendto (sock, msg.data (), msg.size (), 0,
 		       (struct sockaddr*) &op, sizeof(op));
       if (ch < 0)
 	{
+#ifdef __linux
 	  std::cerr << "ipv6 send error: " << strerror (errno) << std::endl;
+#endif
+#ifdef _WIN32
+	  ch = WSAGetLastError ();
+	  std::cerr << "ipv6 send error: " << ch << std::endl;
+#endif
 	}
       return ch;
     }
@@ -5040,6 +5119,48 @@ NetworkOperations::removeFriend (std::string key)
 	  std::filesystem::remove_all (filepath);
 	  sendbufmtx.unlock ();
 	}
+
+      std::string line;
+      int indep = std::get<0> (*contit);
+      af.homePath (&filename);
+      filename = filename + "/.Communist/SendBufer";
+      std::filesystem::path folderpath = std::filesystem::u8path (filename);
+      std::vector<std::filesystem::path> pathvect;
+      for (auto &dir : std::filesystem::directory_iterator (folderpath))
+	{
+	  std::filesystem::path old = dir.path ();
+	  pathvect.push_back (old);
+	}
+      std::sort (pathvect.begin (), pathvect.end (), []
+      (auto &el1, auto el2)
+	{
+	  std::string line1 = el1.filename().u8string();
+	  std::string line2 = el2.filename().u8string();
+	  return std::stoi(line1) < std::stoi(line2);
+	});
+      for (size_t i = 0; i < pathvect.size (); i++)
+	{
+	  line = pathvect[i].filename ().u8string ();
+	  strm.str ("");
+	  strm.clear ();
+	  strm.imbue (loc);
+	  strm << line;
+	  int tint;
+	  strm >> tint;
+	  if (tint > indep)
+	    {
+	      tint = tint - 1;
+	      strm.str ("");
+	      strm.clear ();
+	      strm.imbue (loc);
+	      strm << tint;
+	      line = pathvect[i].parent_path ().u8string ();
+	      line = line + "/" + strm.str ();
+	      std::filesystem::path newpath (std::filesystem::u8path (line));
+	      std::filesystem::rename (pathvect[i], newpath);
+	    }
+	}
+
       af.homePath (&filename);
       filename = filename + "/.Communist/Bufer/" + index;
       filepath = std::filesystem::u8path (filename);
@@ -5047,6 +5168,46 @@ NetworkOperations::removeFriend (std::string key)
 	{
 	  std::filesystem::remove_all (filepath);
 	}
+
+      af.homePath (&filename);
+      filename = filename + "/.Communist/Bufer";
+      folderpath = std::filesystem::u8path (filename);
+      pathvect.clear ();
+      for (auto &dir : std::filesystem::directory_iterator (folderpath))
+	{
+	  std::filesystem::path old = dir.path ();
+	  pathvect.push_back (old);
+	}
+      std::sort (pathvect.begin (), pathvect.end (), []
+      (auto &el1, auto el2)
+	{
+	  std::string line1 = el1.filename().u8string();
+	  std::string line2 = el2.filename().u8string();
+	  return std::stoi(line1) < std::stoi(line2);
+	});
+      for (size_t i = 0; i < pathvect.size (); i++)
+	{
+	  line = pathvect[i].filename ().u8string ();
+	  strm.str ("");
+	  strm.clear ();
+	  strm.imbue (loc);
+	  strm << line;
+	  int tint;
+	  strm >> tint;
+	  if (tint > indep)
+	    {
+	      tint = tint - 1;
+	      strm.str ("");
+	      strm.clear ();
+	      strm.imbue (loc);
+	      strm << tint;
+	      line = pathvect[i].parent_path ().u8string ();
+	      line = line + "/" + strm.str ();
+	      std::filesystem::path newpath (std::filesystem::u8path (line));
+	      std::filesystem::rename (pathvect[i], newpath);
+	    }
+	}
+
       af.homePath (&filename);
       filename = filename + "/.Communist/" + index;
       filepath = std::filesystem::u8path (filename);
@@ -5055,13 +5216,11 @@ NetworkOperations::removeFriend (std::string key)
 	  std::filesystem::remove_all (filepath);
 	}
 
-      int indep = std::get<0> (*contit);
       contactsfull.erase (contit);
-      std::string line;
       af.homePath (&filename);
       filename = filename + "/.Communist";
-      std::filesystem::path folderpath = std::filesystem::u8path (filename);
-      std::vector<std::filesystem::path> pathvect;
+      folderpath = std::filesystem::u8path (filename);
+      pathvect.clear ();
       for (auto &dir : std::filesystem::directory_iterator (folderpath))
 	{
 	  std::filesystem::path old = dir.path ();
@@ -5347,6 +5506,16 @@ NetworkOperations::removeFriend (std::string key)
 	}),
       maintblock.end ());
   maintblockmtx.unlock ();
+
+  holepunchstopmtx.lock ();
+  holepunchstop.erase (
+      std::remove_if (holepunchstop.begin (), holepunchstop.end (), [&keyloc]
+      (auto &el)
+	{
+	  return std::get<0>(el) == keyloc;
+	}),
+      holepunchstop.end ());
+  holepunchstopmtx.unlock ();
 }
 
 void
@@ -5394,7 +5563,7 @@ NetworkOperations::processDHT ()
 	    if (std::get<1> (*itprv) == "0.0.0.0:0,[::]:0")
 	      {
 		p.set_str (lt::settings_pack::listen_interfaces,
-			   this->IPV4 + ":0,[::]:0");
+			   "0.0.0.0:0,[::]:0");
 	      }
 	    else
 	      {
@@ -5405,13 +5574,12 @@ NetworkOperations::processDHT ()
 	else
 	  {
 	    p.set_str (lt::settings_pack::listen_interfaces,
-		       this->IPV4 + ":0,[::]:0");
+		       "0.0.0.0:0,[::]:0");
 	  }
       }
     else
       {
-	p.set_str (lt::settings_pack::listen_interfaces,
-		   this->IPV4 + ":0,[::]:0");
+	p.set_str (lt::settings_pack::listen_interfaces, "0.0.0.0:0,[::]:0");
       }
 
     itprv = std::find_if (this->prefvect.begin (), this->prefvect.end (), []
@@ -6728,6 +6896,19 @@ NetworkOperations::commOps ()
 	  time_t curtime = time (NULL);
 	  time_t lr = std::get<3> (sockets4[i]);
 	  std::string key = std::get<0> (sockets4[i]);
+	  int addtime = 1;
+	  holepunchstopmtx.lock ();
+	  auto hpsit = std::find_if (holepunchstop.begin (),
+				     holepunchstop.end (), [&key]
+				     (auto &el)
+				       {
+					 return std::get<0>(el) == key;
+				       });
+	  if (hpsit != holepunchstop.end ())
+	    {
+	      addtime = 2;
+	    }
+
 	  std::mutex *smtx = std::get<2> (sockets4[i]);
 	  int sock = std::get<1> (sockets4[i]);
 	  auto it = std::find_if (blockchsock.begin (), blockchsock.end (),
@@ -6743,7 +6924,8 @@ NetworkOperations::commOps ()
 	  else
 	    {
 	      time_t lch = std::get<1> (*it);
-	      if (curtime - lr > Tmttear && curtime - lch > Tmttear * 5)
+	      if (curtime - lr > Tmttear
+		  && curtime - lch > Tmttear * 5 * addtime)
 		{
 		  std::get<1> (*it) = curtime;
 		  if (smtx)
@@ -6782,6 +6964,10 @@ NetworkOperations::commOps ()
 		      std::get<3> (sockets4[i]) = curtime;
 		      std::cerr << "Socket changed on " << key << std::endl;
 		      smtx->unlock ();
+		      if (hpsit != holepunchstop.end ())
+			{
+			  holepunchstop.erase (hpsit);
+			}
 		    }
 
 		  ownipsmtx->lock ();
@@ -6823,6 +7009,7 @@ NetworkOperations::commOps ()
 		  ownipsmtx->unlock ();
 		}
 	    }
+	  holepunchstopmtx.unlock ();
 	}
       sockmtx.unlock ();
 
@@ -7539,11 +7726,16 @@ NetworkOperations::commOps ()
 	  fds[i].events = POLLRDNORM;
 	}
       sockipv6mtx.unlock ();
-      errno = 0;
       int respol = poll (fds, sizesock, 3000);
       if (respol < 0)
 	{
+#ifdef __linux
 	  std::cerr << "Polling error: " << strerror (errno) << std::endl;
+#endif
+#ifdef _WIN32
+	  respol = WSAGetLastError ();
+	  std::cerr << "Polling error: " << respol << std::endl;
+#endif
 	}
       else
 	{
@@ -7596,7 +7788,7 @@ NetworkOperations::commOps ()
 						this->getfrres.end (),
 						[&key]
 						(auto &el)
-						  { return std::get<0>(el) == key;}                                                                                                                                                                                                                                                                                                              );
+						  { return std::get<0>(el) == key;}                           );
 					if (itgfr != this->getfrres.end ())
 					  {
 					    std::get<1> (*itgfr) =
@@ -9023,6 +9215,16 @@ NetworkOperations::blockFriend (std::string key)
 	}),
       maintblock.end ());
   maintblockmtx.unlock ();
+
+  holepunchstopmtx.lock ();
+  holepunchstop.erase (
+      std::remove_if (holepunchstop.begin (), holepunchstop.end (), [&keyloc]
+      (auto &el)
+	{
+	  return std::get<0>(el) == keyloc;
+	}),
+      holepunchstop.end ());
+  holepunchstopmtx.unlock ();
 }
 
 void
@@ -9588,7 +9790,8 @@ NetworkOperations::bootstrFunc ()
                             int sizefrom = sizeof(from);
 #endif
 			    int n = recvfrom (fd[i].fd, buf.data (),
-					      buf.size (), MSG_PEEK,
+					      buf.size (),
+					      MSG_PEEK,
 					      (struct sockaddr*) &from,
 					      &sizefrom);
 			    if (n > 0 && n <= 576)
@@ -9807,10 +10010,16 @@ NetworkOperations::bootstrFunc ()
 						    sizeof(repadr));
 						if (ch < 0)
 						  {
+#ifdef __linux
 						    std::cerr
 							<< "Send BC ip4 error: "
 							<< strerror (errno)
 							<< std::endl;
+#endif
+#ifdef _WIN32
+						    ch = WSAGetLastError ();
+						    std::cerr << "Send BC ip4 error: " << ch << std::endl;
+#endif
 						  }
 					      }
 					  }
@@ -9856,7 +10065,8 @@ NetworkOperations::bootstrFunc ()
 	                    int sizefrom = sizeof(from);
 #endif
 			    int n = recvfrom (fd[i].fd, buf.data (),
-					      buf.size (), MSG_PEEK,
+					      buf.size (),
+					      MSG_PEEK,
 					      (struct sockaddr*) &from,
 					      &sizefrom);
 			    if (n > 0 && n <= 576)
@@ -9932,9 +10142,15 @@ NetworkOperations::bootstrFunc ()
 					    sizeof(repadr));
 					if (ch < 0)
 					  {
+#ifdef __linux
 					    std::cerr << "Send BR ip6 error: "
 						<< strerror (errno)
 						<< std::endl;
+#endif
+#ifdef _WIN32
+					    ch = WSAGetLastError ();
+					    std::cerr << "Send BR ip6 error: " << ch << std::endl;
+#endif
 					  }
 
 				      }
@@ -10029,10 +10245,16 @@ NetworkOperations::bootstrFunc ()
 						sizeof(repadr));
 					    if (ch < 0)
 					      {
+#ifdef __linux
 						std::cerr
 						    << "Send BC ip6 error: "
 						    << strerror (errno)
 						    << std::endl;
+#endif
+#ifdef _WIN32
+						ch = WSAGetLastError ();
+						std::cerr << "Send BC ip6 error: " << ch << std::endl;
+#endif
 					      }
 					  }
 				      }
@@ -10586,6 +10808,12 @@ NetworkOperations::stunSrv ()
 		      }
 		  }
 	      }
+#ifdef __linux
+	    close (stnsrvsock);
+#endif
+#ifdef _WIN32
+	    closesocket (stnsrvsock);
+#endif
 	    thrmtx->unlock ();
 	  });
 	  stthr->detach ();
@@ -10600,7 +10828,7 @@ NetworkOperations::stunSrv ()
 #ifdef _WIN32
 	  ch = WSAGetLastError ();
 	  std::cerr << "STUN socket bind error: " << ch << std::endl;
-  #endif
+#endif
 	}
     }
 #ifdef __linux
@@ -10638,7 +10866,8 @@ NetworkOperations::stunSrv ()
 	    for (size_t i = 0; i < this->getfrres.size (); i++)
 	      {
 		std::string key = std::get<0> (this->getfrres[i]);
-		auto itchv = std::find_if (chvect.begin (), chvect.end (), [&key](auto &el)
+		auto itchv = std::find_if (chvect.begin (), chvect.end (), [&key]
+      (auto &el)
 	{
 	  return key == std::get<0>(el);
 	});
@@ -10698,6 +10927,12 @@ NetworkOperations::stunSrv ()
 	      }
 	    sleep (3);
 	  }
+#ifdef __linux
+	close (stnsock);
+#endif
+#ifdef _WIN32
+	closesocket (stnsock);
+#endif
 	thrmtx->unlock ();
       });
       stthr->detach ();

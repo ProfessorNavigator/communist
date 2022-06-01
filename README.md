@@ -57,6 +57,9 @@ If program cannot automatically determine your net interface on startup, you see
 
 In such case choose proper net interface and press `Choose` button.
 
+### Limitations
+If your access to Internet is carried out through the IPv4 and so called [symmetric NAT](https://en.wikipedia.org/wiki/Network_address_translation) you may need to use some kind of proxy or VPN. Communist has mechanism for hole punching even in case of symmetric NAT behaviour, but it is not properly tested and in any way is not reliable because of symmetric NAT features. Besides hole punching in case of symmetric NAT will increase traffic consumption significantly. And the best way for successful hole punching in any case is to use IPv6. 
+
 ## Settings
 
 ### Setting's window

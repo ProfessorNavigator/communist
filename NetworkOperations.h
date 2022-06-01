@@ -260,6 +260,8 @@ private:
   std::mutex fileendmtx;
   std::vector<std::tuple<std::string, time_t>> filecanceled; //0-key, 1-time from FQ msg
   std::mutex filecanceledmtx;
+  std::vector<std::tuple<std::string, int>> holepunchstop; //0-key, 1-port to start with
+  std::mutex holepunchstopmtx;
   std::string Username;
   std::string Password;
   int cancel = 0;
