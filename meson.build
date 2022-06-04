@@ -7,6 +7,7 @@ gcrypt = dependency ('libgcrypt', method : 'pkg-config')
 libtorrent = dependency ('libtorrent-rasterbar', method : 'pkg-config')
 hunspell = dependency ('hunspell', method : 'pkg-config')
 thread_dep = dependency ('threads')
+subdir ('po')
 if host_machine.system() == 'windows'
 	add_global_arguments ('-U_FILE_OFFSET_BITS', language : 'cpp')
 endif 

@@ -25,15 +25,14 @@ int
 main (int argc, char *argv[])
 {
   const char *rec = gcry_check_version (NULL);
-  std::cout << "libgcrypt " << std::string (rec) << std::endl;
+  std::cout << "Libgcrypt version: " << std::string (rec) << std::endl;
   std::string Sharepath;
   AuxFunc af;
   std::filesystem::path p (std::filesystem::u8path (af.get_selfpath ()));
-  Sharepath = p.parent_path ().u8string () + "/../share/Communist";
-  Sharepath = Sharepath + "/Translations.d";
-  bindtextdomain ("Communist", Sharepath.c_str ());
-  bind_textdomain_codeset ("Communist", "UTF-8");
-  textdomain ("Communist");
+  Sharepath = p.parent_path ().u8string () + "/../share/locale";
+  bindtextdomain ("communist", Sharepath.c_str ());
+  bind_textdomain_codeset ("communist", "UTF-8");
+  textdomain ("communist");
   auto app = CommunistApp::create ();
   return app->run (argc, argv);
 }

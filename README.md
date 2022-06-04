@@ -13,8 +13,7 @@ Communist is a simple GTK 4 based p2p messenger. It uses torrent's DHT combined 
 `git clone https://github.com/ProfessorNavigator/communist.git`\
 `cd communist`\
 `meson -Dbuildtype=release build`\
-`cd build`\
-`ninja install`
+`ninja -C build install`
 
 You may need superuser privileges to execute last command.
 
@@ -26,15 +25,14 @@ You can build Communist from source by MSYS2 project [https://www.msys2.org/](ht
 `git clone https://github.com/ProfessorNavigator/communist.git`\
 `cd communist`\
 `meson -Dbuildtype=release build`\
-`cd build`\
-`ninja install`
+`ninja -С build install`
 
 If everything was correct, you can find communist.exe file in `your_msys2_folder/mingw_folder/bin`.
 
 ## Dependencies
 
 Communist uses meson building system, so to build it from source you need meson and ninja (and git of course).\
-Also you need [gtkmm-4.0](http://www.gtkmm.org/), [libzip](https://libzip.org/), [icu](https://icu.unicode.org/) (version >= 69), [libgcrypt](https://www.gnupg.org/software/libgcrypt/index.html), [libtorrent-rasterbar](https://www.libtorrent.org/), [hunspell](https://github.com/hunspell/hunspell). All libraries must have headers (for building), so if you use for example Debian Linux, you need ...-devel versions of packages.
+Also you need [gtkmm-4.0](http://www.gtkmm.org/), [libzip](https://libzip.org/), [icu](https://icu.unicode.org/) (version >= 69), [libgcrypt](https://www.gnupg.org/software/libgcrypt/index.html), [libtorrent-rasterbar](https://www.libtorrent.org/), [hunspell](https://github.com/hunspell/hunspell) and [boost](https://www.boost.org/) (it is not used in project directly, but libtorrent-rasterbar need it). All libraries must have headers (for building), so if you use for example Debian Linux, you need ...-devel versions of packages.
 
 You may also need to install Good plugins for gstreamer. They are used to play default sound signals.
 
@@ -70,7 +68,7 @@ Program have several settings, which can be found in `Instruments->Settings`.
 
 You do not need change anything if everything works fine 'out of the box'. In other case...
 
- Spell checking is carried out by libhuspell. You can disable/enable it completely or change language. Only two languages are available now: English and Russian. It is 'hard coded', so if you need more variants - contact author (by email indicated below or by any platform you downloaded source code from, speaking languages are the same: English and Russian). Global language of the program can be changed by `LANG` variable. Available languages are the same, default language is English, Russian can be enabled by setting `LANG=ru_RU` (it will happen automatically if your system uses proper locale). If you want assist to translate the program, file `Communist.pot` is available in repository (program uses GNU gettext). Contact author by email to receive further instructions.
+Spell checking is carried out by libhuspell. You can disable/enable it completely or change language. Only two languages are available now: English and Russian. To add your own variant go to `..share/Communist/HunDict`, add directory with the name same as language and put in it proper hunspell dictionaries (names of files must be `directory_name.extension`) Global language of the program can be changed by `LANG` variable. Available languages are the same, default language is English, Russian can be enabled by setting `LANG=ru_RU` (it will happen automatically if your system uses proper locale). If you want assist to translate the program, file `Communist.pot`  is available in repository (program uses GNU gettext). Contact author by email to receive further instructions.
  
  `Network mode` has two variants: Internet and Local. In `Internet` mode program will use DHT ([libtorrent-rasterbar](https://www.libtorrent.org/) implementation now) to find friends' ip and establish direct connection. In `Local` mode DHT is disabled, program will send multicast UDP datagrams trying to find contacts. Next two lines indicate group addresses and ports to be used (be careful, they must be the same on all machines you want establish connection with). 
  

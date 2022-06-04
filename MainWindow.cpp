@@ -646,17 +646,10 @@ MainWindow::mainWindow ()
   if (itprv != prefvect.end ())
     {
       std::string vocp1, vocp2;
-      vocp1 = Sharepath + "/Translations.d/" + std::get<1> (*itprv) + "/"
+      vocp1 = Sharepath + "/HunDict/" + std::get<1> (*itprv) + "/"
 	  + std::get<1> (*itprv) + ".aff";
-      vocp2 = Sharepath + "/Translations.d/" + std::get<1> (*itprv) + "/"
+      vocp2 = Sharepath + "/HunDict/" + std::get<1> (*itprv) + "/"
 	  + std::get<1> (*itprv) + ".dic";
-      spch = new Hunspell (vocp1.c_str (), vocp2.c_str ());
-    }
-  else
-    {
-      std::string vocp1, vocp2;
-      vocp1 = Sharepath + "/Translations.d/en_GB/en_GB.aff";
-      vocp2 = Sharepath + "/Translations.d/en_GB/en_GB.dic";
       spch = new Hunspell (vocp1.c_str (), vocp2.c_str ());
     }
 
@@ -1358,7 +1351,7 @@ MainWindow::mainWindow ()
       spchst = std::get<1> (*itprv);
     }
   prefvectmtx.unlock ();
-  if (spchst == "1")
+  if (spchst == "1" && spch != nullptr)
     {
       textb->signal_changed ().connect ( [textb, this]
       {
@@ -7826,9 +7819,16 @@ MainWindow::settingsWindow ()
   Gtk::ComboBoxText *cmbtxt = Gtk::make_managed<Gtk::ComboBoxText> ();
   cmbtxt->set_halign (Gtk::Align::END);
   cmbtxt->set_margin (5);
-  cmbtxt->append ("English");
-  cmbtxt->append ("Русский");
-
+  std::filesystem::path dictp = std::filesystem::u8path (
+      std::string (Sharepath + "/HunDict"));
+  if (std::filesystem::exists (dictp))
+    {
+      for (auto &itdir : std::filesystem::directory_iterator (dictp))
+	{
+	  std::filesystem::path p = itdir.path ();
+	  cmbtxt->append (Glib::ustring (p.filename ().u8string ()));
+	}
+    }
   prefvectmtx.lock ();
   itprv = std::find_if (prefvect.begin (), prefvect.end (), []
   (auto &el)
@@ -7838,18 +7838,14 @@ MainWindow::settingsWindow ()
   if (itprv != prefvect.end ())
     {
       std::string tmp = std::get<1> (*itprv);
-      if (tmp == "en_GB")
-	{
-	  cmbtxt->set_active (0);
-	}
-      if (tmp == "ru_RU")
-	{
-	  cmbtxt->set_active (1);
-	}
+      cmbtxt->set_active_text (Glib::ustring (tmp));
     }
   else
     {
-      cmbtxt->set_active (0);
+      if (cmbtxt->get_has_entry ())
+	{
+ 	  cmbtxt->set_active (0);
+	}
     }
   prefvectmtx.unlock ();
   bx->append (*cmbtxt);
@@ -7867,27 +7863,13 @@ MainWindow::settingsWindow ()
     });
     if (itprv != this->prefvect.end ())
       {
-	if (tmp == "English")
-	  {
-	    std::get<1> (*itprv) = "en_GB";
-	  }
-	if (tmp == "Русский")
-	  {
-	    std::get<1> (*itprv) = "ru_RU";
-	  }
+	std::get<1> (*itprv) = tmp;
       }
     else
       {
 	std::tuple<std::string, std::string> ttup;
 	std::get<0> (ttup) = "Language";
-	if (tmp == "English")
-	  {
-	    std::get<1> (ttup) = "en_GB";
-	  }
-	if (tmp == "Русский")
-	  {
-	    std::get<1> (ttup) = "ru_RU";
-	  }
+	std::get<1> (ttup) = tmp;
 	this->prefvect.push_back (ttup);
       }
     this->prefvectmtx.unlock ();
