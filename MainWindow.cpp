@@ -645,11 +645,33 @@ MainWindow::mainWindow ()
     });
   if (itprv != prefvect.end ())
     {
+      std::filesystem::path dicp = std::filesystem::u8path (
+	  std::string (Sharepath + "/HunDict/languages"));
+      std::string langnum;
+      std::fstream f;
+      f.open (dicp, std::ios_base::in);
+      if (f.is_open ())
+	{
+	  while (!f.eof ())
+	    {
+	      std::string line;
+	      getline (f, line);
+	      if (line != "")
+		{
+		  langnum = line.substr (0, line.find (" "));
+		  line.erase (0, line.find (" ") + std::string (" ").size ());
+		  if (line == std::get<1> (*itprv))
+		    {
+		      break;
+		    }
+		}
+	    }
+	  f.close ();
+	}
+
       std::string vocp1, vocp2;
-      vocp1 = Sharepath + "/HunDict/" + std::get<1> (*itprv) + "/"
-	  + std::get<1> (*itprv) + ".aff";
-      vocp2 = Sharepath + "/HunDict/" + std::get<1> (*itprv) + "/"
-	  + std::get<1> (*itprv) + ".dic";
+      vocp1 = Sharepath + "/HunDict/" + langnum + "/dic.aff";
+      vocp2 = Sharepath + "/HunDict/" + langnum + "/dic.dic";
       spch = new Hunspell (vocp1.c_str (), vocp2.c_str ());
     }
 
@@ -7820,14 +7842,23 @@ MainWindow::settingsWindow ()
   cmbtxt->set_halign (Gtk::Align::END);
   cmbtxt->set_margin (5);
   std::filesystem::path dictp = std::filesystem::u8path (
-      std::string (Sharepath + "/HunDict"));
-  if (std::filesystem::exists (dictp))
+      std::string (Sharepath + "/HunDict/languages"));
+  std::vector<std::tuple<std::string, std::string>> langvect;
+  std::fstream f;
+  f.open (dictp, std::ios_base::in);
+  if (f.is_open ())
     {
-      for (auto &itdir : std::filesystem::directory_iterator (dictp))
+      while (!f.eof ())
 	{
-	  std::filesystem::path p = itdir.path ();
-	  cmbtxt->append (Glib::ustring (p.filename ().u8string ()));
+	  std::string line;
+	  getline (f, line);
+	  if (line != "")
+	    {
+	      line.erase (0, line.find (" ") + std::string (" ").size ());
+	      cmbtxt->append (Glib::ustring (line));
+	    }
 	}
+      f.close ();
     }
   prefvectmtx.lock ();
   itprv = std::find_if (prefvect.begin (), prefvect.end (), []
@@ -7844,7 +7875,7 @@ MainWindow::settingsWindow ()
     {
       if (cmbtxt->get_has_entry ())
 	{
- 	  cmbtxt->set_active (0);
+	  cmbtxt->set_active (0);
 	}
     }
   prefvectmtx.unlock ();
