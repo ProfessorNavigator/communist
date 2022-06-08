@@ -38,6 +38,7 @@
 #include <filesystem>
 #include <fstream>
 #include <unistd.h>
+#include <memory>
 #include "AuxFunc.h"
 
 #ifdef __linux
@@ -204,7 +205,9 @@ private:
   std::mutex addfrmtx;
   std::vector<std::tuple<std::string, time_t>> maintblock;
   std::mutex maintblockmtx;
-  std::vector<std::tuple<std::string, int, std::mutex*, time_t, std::mutex*>> sockets4;
+  std::vector<
+      std::tuple<std::string, int, std::shared_ptr<std::mutex>, time_t,
+	  std::shared_ptr<std::mutex>>> sockets4;
   std::mutex sockmtx;
   std::vector<std::string> getfr;
   std::mutex getfrmtx;
@@ -267,7 +270,7 @@ private:
   int cancel = 0;
   std::mutex sendbufmtx;
   std::mutex rcvmtx;
-  std::array<char, 32> *seed;
+  std::array<char, 32> *seed = nullptr;
   std::vector<std::tuple<std::string, std::string>> prefvect;
 
   int sockipv6;

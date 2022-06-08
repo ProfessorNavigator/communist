@@ -27,6 +27,20 @@ NetworkOperations::NetworkOperations (
   Password = password;
   contacts = *Contacts;
   contactsfull = *Contacts;
+  sockipv6 = 0;
+  for (size_t i = 0; i < contactsfull.size (); i++)
+    {
+      std::tuple<std::string, int, std::shared_ptr<std::mutex>, time_t,
+	  std::shared_ptr<std::mutex>> ttup;
+      std::shared_ptr<std::mutex> mtx (new std::mutex);
+      std::shared_ptr<std::mutex> mtxgip (new std::mutex);
+      std::get<0> (ttup) = std::get<1> (contactsfull[i]);
+      std::get<1> (ttup) = 0;
+      std::get<2> (ttup) = mtx;
+      std::get<3> (ttup) = 0;
+      std::get<4> (ttup) = mtxgip;
+      sockets4.push_back (ttup);
+    }
   contsizech = contacts.size () - 1;
   seed = Seed;
   Addfriends = *addfriends;
@@ -170,26 +184,7 @@ NetworkOperations::NetworkOperations (
 
 NetworkOperations::~NetworkOperations ()
 {
-  for (size_t i = 0; i < sockets4.size (); i++)
-    {
-      if (std::get<1> (sockets4[i]) >= 0)
-	{
-#ifdef __linux
-	  close (std::get<1> (sockets4[i]));
-#endif
-#ifdef _WIN32
-	  closesocket (std::get<1> (sockets4[i]));
-#endif
-	}
-      delete std::get<2> (sockets4[i]);
-      delete std::get<4> (sockets4[i]);
-    }
-#ifdef __linux
-  close (sockipv6);
-#endif
-#ifdef _WIN32
-  closesocket (sockipv6);
-#endif
+
 }
 
 void
@@ -241,15 +236,12 @@ NetworkOperations::mainFunc ()
       if (getifaddrs (&ifap) == -1)
 #endif
 #ifdef __WIN32
-      WSADATA WsaData;
+	WSADATA WsaData;
       WSAStartup (MAKEWORD (2, 2), &WsaData);
       ULONG outBufLen = 15000;
       PIP_ADAPTER_ADDRESSES pAddresses = (IP_ADAPTER_ADDRESSES*) malloc (outBufLen);
       if (GetAdaptersAddresses (AF_UNSPEC, GAA_FLAG_INCLUDE_PREFIX,
 				NULL, pAddresses, &outBufLen) != NO_ERROR)
-
-
-
 
 
 
@@ -451,6 +443,9 @@ NetworkOperations::mainFunc ()
 	      this->ownipv6mtx.unlock ();
 	    }
 	}
+#ifdef __linux
+      freeifaddrs (ifap);
+#endif
     }
       this->sockipv6mtx.unlock ();
       this->contmtx.lock ();
@@ -473,13 +468,21 @@ NetworkOperations::mainFunc ()
 	  addripv4.sin_port = 0;
 	  int addrlen1 = sizeof(addripv4);
 	  bind (sock, (const sockaddr*) &addripv4, addrlen1);
-	  std::mutex *mtx = new std::mutex;
-	  std::mutex *mtxgip = new std::mutex;
-	  time_t tm = time (NULL);
+
 	  this->sockmtx.lock ();
-	  this->sockets4.push_back (
-	      std::make_tuple (std::get<1> (this->contacts[i]), sock, mtx, tm,
-			       mtxgip));
+	  time_t tm = time (NULL);
+	  std::string keysearch = std::get<1> (this->contacts[i]);
+	  auto itsock = std::find_if (this->sockets4.begin (),
+				      this->sockets4.end (), [&keysearch]
+				      (auto &el)
+					{
+					  return std::get<0>(el) == keysearch;
+					});
+	  if (itsock != this->sockets4.end ())
+	    {
+	      std::get<1> (*itsock) = sock;
+	      std::get<3> (*itsock) = tm;
+	    }
 	  this->sockmtx.unlock ();
 	}
       this->contmtx.unlock ();
@@ -510,7 +513,7 @@ NetworkOperations::mainFunc ()
       this->addfrmtx.lock ();
       for (size_t i = 0; i < this->Addfriends.size (); i++)
 	{
-	  getNewFriends (this->Addfriends[i]);
+	  this->getNewFriends (this->Addfriends[i]);
 	}
       this->addfrmtx.unlock ();
     });
@@ -2056,6 +2059,7 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 	      uint64_t tint;
 	      std::memcpy (&tint, &buf[34], sizeof(tint));
 	      time_t tm = tint;
+	      sendbufmtx.lock ();
 	      filesendreqmtx.lock ();
 	      auto itfsr = std::find_if (
 		  filesendreq.begin (), filesendreq.end (), [&key, &tm]
@@ -2081,21 +2085,19 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 		  strm.imbue (loc);
 		  strm << pstr;
 		  strm >> msgind;
-		  msgSent.emit (key, msgind);
-		  sendbufmtx.lock ();
 		  std::filesystem::remove (p);
-		  sendbufmtx.unlock ();
+		  msgSent.emit (key, msgind);
 		  filesendreq.erase (itfsr);
 		}
 	      filesendreqmtx.unlock ();
+	      sendbufmtx.unlock ();
 
 	      filepartbufmtx.lock ();
-
 	      auto itfpb = std::find_if (
 		  filepartbuf.begin (), filepartbuf.end (), [&key, &tm]
 		  (auto &el)
 		    {
-		      if (std::get<0>(el) == key && std::get<1>(el))
+		      if (std::get<0>(el) == key && std::get<1>(el) == tm)
 			{
 			  return true;
 			}
@@ -2151,8 +2153,9 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 				}),
 			  filecanceled.end ());
 		      filecanceledmtx.unlock ();
-		      filesenterror.emit (
-			  key, std::get<2> (*itfpb).filename ().u8string ());
+		      std::string toemit =
+			  std::get<2> (*itfpb).filename ().u8string ();
+		      filesenterror.emit (key, toemit);
 		    }
 		  filepartbuf.erase (itfpb);
 		}
@@ -2270,7 +2273,7 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 		}
 	      filepartbufmtx.unlock ();
 	    }
-	  if (buf.size() >= 50 && msgtype == "Fb")
+	  if (buf.size () >= 50 && msgtype == "Fb")
 	    {
 	      std::cout << msgtype << std::endl;
 	      uint64_t tint;
@@ -2464,7 +2467,7 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 		}
 	      filehashvectmtx.unlock ();
 	    }
-	  if (buf.size() >= 50 && msgtype == "Fp")
+	  if (buf.size () >= 50 && msgtype == "Fp")
 	    {
 	      std::cout << msgtype << std::endl;
 	      uint64_t tint;
@@ -2507,7 +2510,7 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 	      filehashvectmtx.unlock ();
 
 	    }
-	  if (buf.size() >= 42 && msgtype == "Fe")
+	  if (buf.size () >= 42 && msgtype == "Fe")
 	    {
 	      std::cout << msgtype << std::endl;
 	      uint64_t tint;
@@ -2544,7 +2547,7 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 		}
 	      filehashvectmtx.unlock ();
 	    }
-	  if (buf.size() >= 42 && msgtype == "FE")
+	  if (buf.size () >= 42 && msgtype == "FE")
 	    {
 	      std::cout << msgtype << std::endl;
 	      uint64_t tint;
@@ -2569,7 +2572,7 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 		}
 	      fileendmtx.unlock ();
 	    }
-	  if (buf.size() >= 42 && msgtype == "FF")
+	  if (buf.size () >= 42 && msgtype == "FF")
 	    {
 	      std::cout << msgtype << std::endl;
 	      uint64_t tint;
@@ -3601,8 +3604,8 @@ NetworkOperations::getNewFriends (std::string key)
       addripv4.sin_port = 0;
       int addrlen1 = sizeof(addripv4);
       bind (sock, (const sockaddr*) &addripv4, addrlen1);
-      std::mutex *mtx = new std::mutex;
-      std::mutex *mtxgip = new std::mutex;
+      std::shared_ptr<std::mutex> mtx (new std::mutex);
+      std::shared_ptr<std::mutex> mtxgip (new std::mutex);
       time_t tm = time (NULL);
       sockets4.push_back (std::make_tuple (key, sock, mtx, tm, mtxgip));
     }
@@ -5026,7 +5029,8 @@ NetworkOperations::removeFriend (std::string key)
       if (itsock != sockets4.end ())
 	{
 	  int sock = std::get<1> (*itsock);
-	  std::mutex *mtx = std::get<2> (*itsock);
+	  std::shared_ptr<std::mutex> mtx = std::get<2> (*itsock);
+	  std::shared_ptr<std::mutex> mtx2 = std::get<4> (*itsock);
 	  if (mtx->try_lock ())
 	    {
 	      if (sock >= 0)
@@ -5039,8 +5043,6 @@ NetworkOperations::removeFriend (std::string key)
   #endif
 		}
 	      mtx->unlock ();
-	      delete mtx;
-	      contsizech = contsizech - 1;
 	      sockets4.erase (itsock);
 	    }
 	  else
@@ -5088,11 +5090,6 @@ NetworkOperations::removeFriend (std::string key)
       Addfriends.end ());
   addfrmtx.unlock ();
 
-  std::mutex *thrmtx = new std::mutex;
-  thrmtx->lock ();
-  threadvectmtx.lock ();
-  threadvect.push_back (std::make_tuple (thrmtx, "Contfull"));
-  threadvectmtx.unlock ();
   contfullmtx.lock ();
   auto contit = std::find_if (contactsfull.begin (), contactsfull.end (),
 			      [&keyloc]
@@ -5126,38 +5123,42 @@ NetworkOperations::removeFriend (std::string key)
       filename = filename + "/.Communist/SendBufer";
       std::filesystem::path folderpath = std::filesystem::u8path (filename);
       std::vector<std::filesystem::path> pathvect;
-      for (auto &dir : std::filesystem::directory_iterator (folderpath))
+      if (std::filesystem::exists (folderpath))
 	{
-	  std::filesystem::path old = dir.path ();
-	  pathvect.push_back (old);
-	}
-      std::sort (pathvect.begin (), pathvect.end (), []
-      (auto &el1, auto el2)
-	{
-	  std::string line1 = el1.filename().u8string();
-	  std::string line2 = el2.filename().u8string();
-	  return std::stoi(line1) < std::stoi(line2);
-	});
-      for (size_t i = 0; i < pathvect.size (); i++)
-	{
-	  line = pathvect[i].filename ().u8string ();
-	  strm.str ("");
-	  strm.clear ();
-	  strm.imbue (loc);
-	  strm << line;
-	  int tint;
-	  strm >> tint;
-	  if (tint > indep)
+	  for (auto &dir : std::filesystem::directory_iterator (folderpath))
 	    {
-	      tint = tint - 1;
+	      std::filesystem::path old = dir.path ();
+	      pathvect.push_back (old);
+	    }
+	  std::sort (pathvect.begin (), pathvect.end (), []
+	  (auto &el1, auto el2)
+	    {
+	      std::string line1 = el1.filename().u8string();
+	      std::string line2 = el2.filename().u8string();
+	      return std::stoi(line1) < std::stoi(line2);
+	    });
+	  for (size_t i = 0; i < pathvect.size (); i++)
+	    {
+	      line = pathvect[i].filename ().u8string ();
 	      strm.str ("");
 	      strm.clear ();
 	      strm.imbue (loc);
-	      strm << tint;
-	      line = pathvect[i].parent_path ().u8string ();
-	      line = line + "/" + strm.str ();
-	      std::filesystem::path newpath (std::filesystem::u8path (line));
-	      std::filesystem::rename (pathvect[i], newpath);
+	      strm << line;
+	      int tint;
+	      strm >> tint;
+	      if (tint > indep)
+		{
+		  tint = tint - 1;
+		  strm.str ("");
+		  strm.clear ();
+		  strm.imbue (loc);
+		  strm << tint;
+		  line = pathvect[i].parent_path ().u8string ();
+		  line = line + "/" + strm.str ();
+		  std::filesystem::path newpath (
+		      std::filesystem::u8path (line));
+		  std::filesystem::rename (pathvect[i], newpath);
+		}
 	    }
 	}
 
@@ -5173,38 +5174,42 @@ NetworkOperations::removeFriend (std::string key)
       filename = filename + "/.Communist/Bufer";
       folderpath = std::filesystem::u8path (filename);
       pathvect.clear ();
-      for (auto &dir : std::filesystem::directory_iterator (folderpath))
+      if (std::filesystem::exists (folderpath))
 	{
-	  std::filesystem::path old = dir.path ();
-	  pathvect.push_back (old);
-	}
-      std::sort (pathvect.begin (), pathvect.end (), []
-      (auto &el1, auto el2)
-	{
-	  std::string line1 = el1.filename().u8string();
-	  std::string line2 = el2.filename().u8string();
-	  return std::stoi(line1) < std::stoi(line2);
-	});
-      for (size_t i = 0; i < pathvect.size (); i++)
-	{
-	  line = pathvect[i].filename ().u8string ();
-	  strm.str ("");
-	  strm.clear ();
-	  strm.imbue (loc);
-	  strm << line;
-	  int tint;
-	  strm >> tint;
-	  if (tint > indep)
+	  for (auto &dir : std::filesystem::directory_iterator (folderpath))
 	    {
-	      tint = tint - 1;
+	      std::filesystem::path old = dir.path ();
+	      pathvect.push_back (old);
+	    }
+	  std::sort (pathvect.begin (), pathvect.end (), []
+	  (auto &el1, auto el2)
+	    {
+	      std::string line1 = el1.filename().u8string();
+	      std::string line2 = el2.filename().u8string();
+	      return std::stoi(line1) < std::stoi(line2);
+	    });
+	  for (size_t i = 0; i < pathvect.size (); i++)
+	    {
+	      line = pathvect[i].filename ().u8string ();
 	      strm.str ("");
 	      strm.clear ();
 	      strm.imbue (loc);
-	      strm << tint;
-	      line = pathvect[i].parent_path ().u8string ();
-	      line = line + "/" + strm.str ();
-	      std::filesystem::path newpath (std::filesystem::u8path (line));
-	      std::filesystem::rename (pathvect[i], newpath);
+	      strm << line;
+	      int tint;
+	      strm >> tint;
+	      if (tint > indep)
+		{
+		  tint = tint - 1;
+		  strm.str ("");
+		  strm.clear ();
+		  strm.imbue (loc);
+		  strm << tint;
+		  line = pathvect[i].parent_path ().u8string ();
+		  line = line + "/" + strm.str ();
+		  std::filesystem::path newpath (
+		      std::filesystem::u8path (line));
+		  std::filesystem::rename (pathvect[i], newpath);
+		}
 	    }
 	}
 
@@ -5267,6 +5272,7 @@ NetworkOperations::removeFriend (std::string key)
 	      std::get<0> (contactsfull[i]) = std::get<0> (contactsfull[i]) - 1;
 	    }
 	}
+      contsizech = contsizech - 1;
       contmtx.lock ();
       contacts.erase (
 	  std::remove_if (contacts.begin (), contacts.end (), [keyloc]
@@ -5286,7 +5292,6 @@ NetworkOperations::removeFriend (std::string key)
     }
   contfullmtx.unlock ();
   friendDeleted.emit (keyloc);
-  thrmtx->unlock ();
 
   msgpartbufmtx.lock ();
   msgpartbuf.erase (
@@ -6756,23 +6761,35 @@ NetworkOperations::commOps ()
 	}
       if (threadvectmtx.try_lock ())
 	{
-	  threadvect.erase (
-	      std::remove_if (threadvect.begin (), threadvect.end (), []
-	      (auto &el)
+	  for (;;)
+	    {
+	      auto itthrv = std::find_if (
+		  threadvect.begin (), threadvect.end (), []
+		  (auto &el)
+		    {
+		      std::mutex *thrmtx = std::get<0>(el);
+		      if (thrmtx->try_lock())
+			{
+			  thrmtx->unlock();
+			  return true;
+			}
+		      else
+			{
+			  return false;
+			}
+		    });
+	      if (itthrv != threadvect.end ())
 		{
-		  std::mutex *thrmtx = std::get<0>(el);
-		  if (thrmtx->try_lock())
-		    {
-		      thrmtx->unlock();
-		      delete thrmtx;
-		      return true;
-		    }
-		  else
-		    {
-		      return false;
-		    }
-		}),
-	      threadvect.end ());
+		  std::mutex *thrmtx = std::get<0> (*itthrv);
+		  threadvect.erase (itthrv);
+		  delete thrmtx;
+		}
+	      else
+		{
+		  break;
+		}
+	    }
+
 	  threadvectmtx.unlock ();
 	}
 
@@ -6909,7 +6926,7 @@ NetworkOperations::commOps ()
 	      addtime = 2;
 	    }
 
-	  std::mutex *smtx = std::get<2> (sockets4[i]);
+	  std::shared_ptr<std::mutex> smtx = std::get<2> (sockets4[i]);
 	  int sock = std::get<1> (sockets4[i]);
 	  auto it = std::find_if (blockchsock.begin (), blockchsock.end (),
 				  [&key]
@@ -7016,6 +7033,7 @@ NetworkOperations::commOps ()
       //Receive own ips
       if (Netmode == "0")
 	{
+
 	  std::mutex *thrmtx = nullptr;
 	  if (threadvectmtx.try_lock ())
 	    {
@@ -7036,7 +7054,8 @@ NetworkOperations::commOps ()
 		      {
 			std::string key = std::get<0> (this->sockets4[i]);
 			int sock = std::get<1> (this->sockets4[i]);
-			std::mutex *smtx = std::get<4> (this->sockets4[i]);
+			std::shared_ptr<std::mutex> smtx = std::get<4> (
+			    this->sockets4[i]);
 			ownipsmtx->lock ();
 			auto it = std::find_if (
 			    ownips.begin (), ownips.end (), [&key]
@@ -7286,6 +7305,7 @@ NetworkOperations::commOps ()
       //Get friends ips
       if (Netmode == "0")
 	{
+
 	  std::mutex *thrmtx = nullptr;
 	  if (threadvectmtx.try_lock ())
 	    {
@@ -7519,8 +7539,8 @@ NetworkOperations::commOps ()
 				      std::string passwd = lt::aux::to_hex (
 					  othpk.bytes);
 				      msg = af.cryptStrm (unm, passwd, msg);
-				      std::mutex *mtx = std::get<2> (
-					  sockets4[i]);
+				      std::shared_ptr<std::mutex> mtx =
+					  std::get<2> (sockets4[i]);
 				      mtx->lock ();
 				      sendMsg (sock, ip, port, msg);
 				      mtx->unlock ();
@@ -7562,7 +7582,8 @@ NetworkOperations::commOps ()
 							    > Tmttear)
 							  {
 							    this->sockmtx.lock ();
-							    std::mutex *mtx =
+							    std::shared_ptr<
+								std::mutex> mtx =
 								std::get<2> (
 								    sockets4[i]);
 							    std::string otherkey =
@@ -7617,8 +7638,8 @@ NetworkOperations::commOps ()
 						  lt::aux::to_hex (othpk.bytes);
 					      msg = af.cryptStrm (unm, passwd,
 								  msg);
-					      std::mutex *mtx = std::get<2> (
-						  sockets4[i]);
+					      std::shared_ptr<std::mutex> mtx =
+						  std::get<2> (sockets4[i]);
 					      mtx->lock ();
 					      sendMsg (sock, ip, port, msg);
 					      mtx->unlock ();
@@ -7647,7 +7668,8 @@ NetworkOperations::commOps ()
 				  uint16_t port = htons (3000);
 				  inet_pton (AF_INET, adr.c_str (), &ip);
 				  int sock = std::get<1> (sockets4[i]);
-				  std::mutex *mtx = std::get<2> (sockets4[i]);
+				  std::shared_ptr<std::mutex> mtx =
+				      std::get<2> (sockets4[i]);
 				  std::vector<char> msg;
 				  std::tuple<lt::dht::public_key,
 				      lt::dht::secret_key> ownkey;
@@ -7676,7 +7698,8 @@ NetworkOperations::commOps ()
 			      uint16_t port = htons (3000);
 			      inet_pton (AF_INET, adr.c_str (), &ip);
 			      int sock = std::get<1> (sockets4[i]);
-			      std::mutex *mtx = std::get<2> (sockets4[i]);
+			      std::shared_ptr<std::mutex> mtx = std::get<2> (
+				  sockets4[i]);
 			      std::vector<char> msg;
 			      std::tuple<lt::dht::public_key,
 				  lt::dht::secret_key> ownkey;
@@ -7708,7 +7731,7 @@ NetworkOperations::commOps ()
       sockmtx.lock ();
       for (size_t i = 0; i < sockets4.size (); i++)
 	{
-	  std::mutex *mtxgip = std::get<4> (sockets4[i]);
+	  std::shared_ptr<std::mutex> mtxgip = std::get<4> (sockets4[i]);
 	  if (mtxgip->try_lock ())
 	    {
 	      sforpoll.push_back (std::get<1> (sockets4[i]));
@@ -7772,7 +7795,8 @@ NetworkOperations::commOps ()
 				      });
 				if (it != this->sockets4.end ())
 				  {
-				    std::mutex *mtx = std::get<2> (*it);
+				    std::shared_ptr<std::mutex> mtx =
+					std::get<2> (*it);
 				    std::string key = std::get<0> (*it);
 				    mtx->lock ();
 				    sockaddr_in from =
@@ -7788,7 +7812,7 @@ NetworkOperations::commOps ()
 						this->getfrres.end (),
 						[&key]
 						(auto &el)
-						  { return std::get<0>(el) == key;}                           );
+						  { return std::get<0>(el) == key;}                                                                                      );
 					if (itgfr != this->getfrres.end ())
 					  {
 					    std::get<1> (*itgfr) =
@@ -7844,7 +7868,7 @@ NetworkOperations::commOps ()
 	    }
 	  std::string key = std::get<0> (sockets4[i]);
 	  int sock = std::get<1> (sockets4[i]);
-	  std::mutex *mtx = std::get<2> (sockets4[i]);
+	  std::shared_ptr<std::mutex> mtx = std::get<2> (sockets4[i]);
 	  time_t lrt4 = std::get<3> (sockets4[i]);
 	  time_t curtime = time (NULL);
 	  time_t lrt6 = 0;
@@ -8008,7 +8032,7 @@ NetworkOperations::fileReject (std::string key, time_t tm)
 		{
 		  uint32_t ip = std::get<1> (*itgfr);
 		  uint16_t port = std::get<2> (*itgfr);
-		  std::mutex *mtx = std::get<2> (*it4);
+		  std::shared_ptr<std::mutex> mtx = std::get<2> (*it4);
 		  mtx->lock ();
 		  sendMsg (std::get<1> (*it4), ip, port, msg);
 		  mtx->unlock ();
@@ -8120,7 +8144,7 @@ NetworkOperations::fileAccept (std::string key, time_t tm,
 		{
 		  uint32_t ip = std::get<1> (*itgfr);
 		  uint16_t port = std::get<2> (*itgfr);
-		  std::mutex *mtx = std::get<2> (*it4);
+		  std::shared_ptr<std::mutex> mtx = std::get<2> (*it4);
 		  mtx->lock ();
 		  sendMsg (std::get<1> (*it4), ip, port, msg);
 		  mtx->unlock ();
@@ -8936,7 +8960,7 @@ NetworkOperations::blockFriend (std::string key)
       if (itsock != sockets4.end ())
 	{
 	  int sock = std::get<1> (*itsock);
-	  std::mutex *mtx = std::get<2> (*itsock);
+	  std::shared_ptr<std::mutex> mtx = std::get<2> (*itsock);
 	  if (mtx->try_lock ())
 	    {
 	      if (sock >= 0)
@@ -8949,7 +8973,7 @@ NetworkOperations::blockFriend (std::string key)
 #endif
 		}
 	      mtx->unlock ();
-	      delete mtx;
+	      sockets4.erase (itsock);
 	    }
 	  else
 	    {
@@ -8963,7 +8987,6 @@ NetworkOperations::blockFriend (std::string key)
 	      sockmtx.unlock ();
 	      return void ();
 	    }
-	  sockets4.erase (itsock);
 	}
       sockmtx.unlock ();
     }
@@ -9272,8 +9295,8 @@ NetworkOperations::startFriend (std::string key, int ind)
       addripv4.sin_port = 0;
       int addrlen1 = sizeof(addripv4);
       bind (sock, (const sockaddr*) &addripv4, addrlen1);
-      std::mutex *mtx = new std::mutex;
-      std::mutex *mtxgip = new std::mutex;
+      std::shared_ptr<std::mutex> mtx (new std::mutex);
+      std::shared_ptr<std::mutex> mtxgip (new std::mutex);
       time_t tm = time (NULL);
       sockets4.push_back (std::make_tuple (key, sock, mtx, tm, mtxgip));
     }
@@ -10464,43 +10487,79 @@ NetworkOperations::cancelAll ()
 			this->threadvect.begin (), this->threadvect.end (), []
 			(auto &el)
 			  {
-			    std::mutex *mtx = std::get<0>(el);
-			    if (mtx)
+			    std::mutex *gmtx = std::get<0>(el);
+
+			    if (gmtx)
 			      {
-				if (mtx->try_lock())
+				if (gmtx->try_lock())
 				  {
-				    mtx->unlock();
-				    return false;
+				    gmtx->unlock();
+				    return true;
 				  }
 				else
 				  {
-				    return true;
-				  }
-			      }
+				    return false;
+				  }}
 			    else
 			      {
-				return false;
+				return true;
 			      }
 
 			  });
-		    if (itthrv == this->threadvect.end ())
+		    if (itthrv != this->threadvect.end ())
+		      {
+			std::mutex *gmtx = std::get<0> (*itthrv);
+			this->threadvect.erase (itthrv);
+			delete gmtx;
+		      }
+		    if (this->threadvect.size () == 0)
 		      {
 			break;
 		      }
 		    usleep (100);
 		  }
-
-		for (size_t i = 0; i < this->threadvect.size (); i++)
-		  {
-		    delete std::get<0> (this->threadvect[i]);
-		  }
-		this->threadvect.clear ();
 		this->threadvectmtx.unlock ();
-		this->canceled.emit ();
 		break;
 	      }
+	    usleep (100);
 	  }
+	for (size_t i = 0; i < this->sockets4.size (); i++)
+	  {
+	    if (std::get<1> (this->sockets4[i]) >= 0)
+	      {
+#ifdef __linux
+	close (std::get<1> (this->sockets4[i]));
+#endif
+#ifdef _WIN32
+	  	int ch = closesocket (std::get<1> (this->sockets4[i]));
+	  	if (ch != 0)
+	  	  {
+	  	    ch = WSAGetLastError ();
+	  	    std::cerr << "ipv4 close socket error: " << ch << std::endl;
+	  	  }
+	  #endif
+      }
+  }
+this->sockets4.clear ();
 
+#ifdef __linux
+	close (this->sockipv6);
+#endif
+#ifdef _WIN32
+	int ch = closesocket (this->sockipv6);
+	if (ch != 0)
+	  {
+	    ch = WSAGetLastError ();
+	    std::cerr << "ipv6 close socket error: " << ch << std::endl;
+	  }
+	ch = WSACleanup ();
+	if (ch != 0)
+	  {
+	    ch = WSAGetLastError ();
+	    std::cerr << "Windows cleanup error: " << ch << std::endl;
+	  }
+#endif
+	this->canceled.emit ();
       });
   thr->detach ();
   delete thr;

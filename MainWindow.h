@@ -32,6 +32,7 @@
 #include <tuple>
 #include <hunspell.hxx>
 #include <libintl.h>
+#include <memory>
 #include "AuxFunc.h"
 #include "NetworkOperations.h"
 
@@ -199,7 +200,7 @@ private:
   Gtk::Grid *msg_win_gr = nullptr;
   std::vector<std::tuple<Gtk::Widget*, std::filesystem::path>> msg_grid_vect;
   std::mutex msg_grid_vectmtx;
-  NetworkOperations *oper = nullptr;
+  std::shared_ptr<NetworkOperations> oper;
   Gtk::Label *repllabe = nullptr;
   Gtk::Button *replcancel = nullptr;
   Gtk::Grid *replgrid = nullptr;

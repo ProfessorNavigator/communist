@@ -170,6 +170,7 @@ MainWindow::MainWindow ()
 	bar->set_show_text (true);
 
 	int *thc = new int (0);
+	std::mutex *thm = new std::mutex;
 	this->set_child (*bar);
 	Glib::Dispatcher *disppulscl = new Glib::Dispatcher;
 	disppulscl->connect ( [bar]
@@ -180,27 +181,33 @@ MainWindow::MainWindow ()
 	{
 	  delete disppulscl;
 	});
-	std::thread *wth = new std::thread ( [disppulscl, thc, this]
+	std::thread *wth = new std::thread ( [disppulscl, this, thc, thm]
 	{
 	  int count = 0;
 	  for (;;)
 	    {
+	      thm->lock ();
 	      if (*thc == 1 || count > 50)
 		{
 		  break;
+		  thm->unlock ();
 		}
+	      thm->unlock ();
 	      disppulscl->emit ();
 	      count++;
 	      usleep (100000);
 	    }
 	  delete thc;
+	  delete thm;
 	  this->dispclose.emit ();
 	});
 	wth->detach ();
 	delete wth;
-	this->oper->canceled.connect ( [thc]
+	this->oper->canceled.connect ( [this, thc, thm]
 	{
+	  thm->lock ();
 	  *thc = 1;
+	  thm->unlock ();
 	});
 	this->oper->cancelAll ();
       }
@@ -599,6 +606,7 @@ MainWindow::userCheck ()
 void
 MainWindow::mainWindow ()
 {
+  contacts.clear ();
   AuxFunc af;
   prefvectmtx.lock ();
   auto itprv = std::find_if (prefvect.begin (), prefvect.end (), []
@@ -677,7 +685,17 @@ MainWindow::mainWindow ()
 
   prefvectmtx.unlock ();
   autoRemoveMsg ();
+  std::vector<std::string> blockedc;
   frvectmtx.lock ();
+  for (size_t i = 0; i < friendvect.size (); i++)
+    {
+      if (std::get<6> (friendvect[i]) != nullptr)
+	{
+	  std::string key = std::string (
+	      std::get<2> (friendvect[i])->get_text ());
+	  blockedc.push_back (key);
+	}
+    }
   friendvect.clear ();
   frvectmtx.unlock ();
   std::string filename;
@@ -1216,8 +1234,27 @@ MainWindow::mainWindow ()
 		  sigc::bind (sigc::mem_fun (*this, &MainWindow::selectContact),
 			      winright, std::string (keylab->get_text ()),
 			      std::string (nicklab->get_text ())));
+	      std::string searchk (forlab[0]);
+	      auto itbll = std::find (blockedc.begin (), blockedc.end (),
+				      searchk);
+	      if (itbll != blockedc.end ())
+		{
+		  Gtk::Label *blocklab = Gtk::make_managed<Gtk::Label> ();
+		  blocklab->set_name ("blockLab");
+		  blocklab->get_style_context ()->add_provider (
+		      css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+		  blocklab->set_text (gettext ("Blocked"));
+		  gridtr->attach_next_to (*blocklab, *nicklab,
+					  Gtk::PositionType::RIGHT, 1, 1);
+		  std::get<6> (frtup) = blocklab;
+		}
+	      else
+		{
+		  std::get<6> (frtup) = nullptr;
+		}
+
 	      std::get<3> (frtup) = nullptr;
-	      std::get<6> (frtup) = nullptr;
+
 	      frvectmtx.lock ();
 	      friendvect.push_back (frtup);
 	      frvectmtx.unlock ();
@@ -1435,7 +1472,7 @@ MainWindow::mainWindow ()
 			prx.set_value (Pango::Underline::ERROR);
 #endif
 #ifdef _WIN32
-		    prx.set_value (Pango::Underline::ERROR_LINE);
+			prx.set_value (Pango::Underline::ERROR_LINE);
 #endif
 			tgtb->add (tg);
 		      }
@@ -1615,7 +1652,7 @@ MainWindow::infoMessage (Gtk::Entry *usname, Gtk::Entry *passwd,
       window->set_default_size (rq2.get_width (), -1);
       Glib::RefPtr<Gtk::Application> app = this->get_application ();
       app->add_window (*window);
-      window->present ();
+      window->show ();
     }
 }
 
@@ -1855,7 +1892,7 @@ MainWindow::openImage ()
 		  dialog));
   Glib::RefPtr<Gtk::Application> app = this->get_application ();
   app->add_window (*dialog);
-  dialog->present ();
+  dialog->show ();
 }
 
 void
@@ -1996,7 +2033,7 @@ MainWindow::saveProfile ()
 	  if (label->get_text () != "")
 	    {
 	      window->set_application (this->get_application ());
-	      window->present ();
+	      window->show ();
 	      notcompl = 1;
 	      break;
 	    }
@@ -2146,8 +2183,15 @@ MainWindow::ownKey ()
   close->signal_clicked ().connect (
       sigc::mem_fun (*window, &Gtk::Window::close));
   grid->attach (*close, 1, 1, 1, 1);
+  window->signal_close_request ().connect ( [window]
+  {
+    window->hide ();
+    delete window;
+    return true;
+  },
+					   false);
 
-  window->present ();
+  window->show ();
 }
 
 void
@@ -2796,8 +2840,11 @@ MainWindow::formMsgWinGrid (std::vector<std::filesystem::path> &msg,
 void
 MainWindow::deleteContact ()
 {
-  contmenupop->unparent ();
-  contmenupop = nullptr;
+  if (contmenupop != nullptr)
+    {
+      contmenupop->unparent ();
+      contmenupop = nullptr;
+    }
   if (fordelkey != "")
     {
       Gtk::Window *window = new Gtk::Window;
@@ -2856,7 +2903,7 @@ MainWindow::deleteContact ()
       },
 					       false);
 
-      window->present ();
+      window->show ();
     }
 }
 
@@ -2954,10 +3001,10 @@ MainWindow::networkOp ()
       contmtx.lock ();
       addfrmtx.lock ();
       prefvectmtx.lock ();
-      NetworkOperations *op = new NetworkOperations (Username, Password,
+      std::shared_ptr<NetworkOperations> op (new NetworkOperations (Username, Password,
 						     &contacts, &seed,
 						     &Addfriends, &prefvect,
-						     Sharepath);
+						     Sharepath));
       oper = op;
       prefvectmtx.unlock ();
       addfrmtx.unlock ();
@@ -3208,11 +3255,11 @@ MainWindow::networkOp ()
       op->mainFunc ();
 
       op->canceled.connect (
-	  [this, dispv, disp1mtx, disp2mtx, disp3mtx, disp4mtx, disp5mtx,
+	  [dispv, disp1mtx, disp2mtx, disp3mtx, disp4mtx, disp5mtx,
 	   disp6mtx, disp7mtx, disp8mtx, disp9mtx, disp12mtx, disp13mtx,
-	   disp14mtx, key, ind, keysm, indsm, keyrm, rp, keyfr, tm, fs, fn,
-	   keyfrr, keyfiler, filenmr, keyfilenr, filenmnr, keyfiles, filenms,
-	   keyfileerror, filenmerror, keyfileprg, fileprgp, fileprgsz,
+	   disp14mtx, disp15mtx, key, ind, keysm, indsm, keyrm, rp, keyfr, tm,
+	   fs, fn, keyfrr, keyfiler, filenmr, keyfilenr, filenmnr, keyfiles,
+	   filenms, keyfileerror, filenmerror, keyfileprg, fileprgp, fileprgsz,
 	   keyfileprgs, fileprgps, fileprgszs, keychcon, tmchcon, keyfrrem]
 	  {
 	    for (size_t i = 0; i < dispv.size (); i++)
@@ -3232,8 +3279,7 @@ MainWindow::networkOp ()
 	    delete disp12mtx;
 	    delete disp13mtx;
 	    delete disp14mtx;
-	    delete this->oper;
-	    this->oper = nullptr;
+	    delete disp15mtx;
 	    delete key;
 	    delete ind;
 	    delete keysm;
@@ -3708,7 +3754,7 @@ MainWindow::editAddFriends ()
   },
 					   false);
 
-  window->present ();
+  window->show ();
 }
 
 void
@@ -5107,7 +5153,7 @@ MainWindow::resendWindow (std::string othkey, std::filesystem::path msgpath)
 			  return true;
 			},
 								 false);
-			errwin->present ();
+			errwin->show ();
 		      }
 		    else
 		      {
@@ -5299,7 +5345,7 @@ MainWindow::resendWindow (std::string othkey, std::filesystem::path msgpath)
     return true;
   },
 					   false);
-  window->present ();
+  window->show ();
 }
 void
 MainWindow::removeMsg (std::string othkey, std::filesystem::path msgpath,
@@ -5550,7 +5596,7 @@ MainWindow::removeMsg (std::string othkey, std::filesystem::path msgpath,
     return true;
   },
 					   false);
-  window->present ();
+  window->show ();
 }
 
 void
@@ -5694,7 +5740,6 @@ MainWindow::msgRcvdSlot (std::string *key, std::filesystem::path *p,
 	    }
 	}
       prefvectmtx.unlock ();
-      mf->play ();
       auto tup = *frit;
       Gtk::Button *but = std::get<0> (tup);
       Gtk::Requisition rq1, rq2;
@@ -6343,7 +6388,7 @@ MainWindow::editProfile ()
 	  });
 	Glib::RefPtr<Gtk::Application> app = this->get_application ();
 	app->add_window (*dialog);
-	dialog->present ();
+	dialog->show ();
       });
   leftgrid->attach (*addavatar, 0, 1, 1, 1);
 
@@ -6384,7 +6429,7 @@ MainWindow::editProfile ()
     return true;
   },
   false);
-  window->present ();
+  window->show ();
 }
 
 void
@@ -6429,7 +6474,7 @@ MainWindow::saveProfileEP (Gtk::Window *windowb)
       Gtk::Requisition rq1, rq2;
       grid->get_preferred_size (rq1, rq2);
       window->set_default_size (rq2.get_width () + 10, rq2.get_height () + 10);
-      window->present ();
+      window->show ();
     }
   else
     {
@@ -6555,7 +6600,7 @@ MainWindow::attachFileDialog ()
       },
 					    false);
 
-      fcd->present ();
+      fcd->show ();
     }
 }
 void
@@ -6985,7 +7030,7 @@ MainWindow::fileRequestSlot (std::string *key, uint64_t *tm, uint64_t *filesize,
 						    this->dld_grid->attach(*lab, 0, 0, 1, 1);
 						    this->dld_grid->attach(*frprgb, 0, 1, 1, 1);
 						    this->dld_grid->attach(*cncl, 1, 1, 1, 1);
-						    this->dld_win->present();
+						    this->dld_win->show();
 						  }
 						this->fileprogrvect.push_back (prbtup);
 						this->fileprogrvectmtx.unlock();
@@ -7016,7 +7061,7 @@ MainWindow::fileRequestSlot (std::string *key, uint64_t *tm, uint64_t *filesize,
 					    delete window;
 					    return true;
 					  }, false);
-				    window->present();
+				    window->show();
 				  }
 				else
 				  {
@@ -7130,7 +7175,7 @@ MainWindow::fileRequestSlot (std::string *key, uint64_t *tm, uint64_t *filesize,
 					    this->dld_grid->attach(*lab, 0, 0, 1, 1);
 					    this->dld_grid->attach(*frprgb, 0, 1, 1, 1);
 					    this->dld_grid->attach(*cncl, 1, 1, 1, 1);
-					    this->dld_win->present();
+					    this->dld_win->show();
 					  }
 					this->fileprogrvect.push_back (prbtup);
 					this->fileprogrvectmtx.unlock();
@@ -7174,7 +7219,7 @@ MainWindow::fileRequestSlot (std::string *key, uint64_t *tm, uint64_t *filesize,
 		    },
 							  false);
 
-		    fcd->present ();
+		    fcd->show ();
 
 		    window->close ();
 		  });
@@ -7220,7 +7265,7 @@ MainWindow::fileRequestSlot (std::string *key, uint64_t *tm, uint64_t *filesize,
 	      },
 						       false);
 
-	      window->present ();
+	      window->show ();
 	    }
 	  frvectmtx.unlock ();
 	}
@@ -7293,7 +7338,7 @@ MainWindow::fileRejectedSlot (std::string *keyr, std::mutex *disp5mtx)
 					       false);
 
       window->set_application (this->get_application ());
-      window->present ();
+      window->show ();
     }
   frvectmtx.unlock ();
 }
@@ -7414,7 +7459,7 @@ MainWindow::fileRcvdStatus (std::string *key, std::string *filename,
 	return true;
       },
 					       false);
-      window->present ();
+      window->show ();
     }
 
   fileprogrvectmtx.lock ();
@@ -7500,8 +7545,11 @@ MainWindow::contMenu (int numcl, double x, double y,
 void
 MainWindow::friendDetails (Gtk::Button *button)
 {
-  contmenupop->unparent ();
-  contmenupop = nullptr;
+  if (contmenupop != nullptr)
+    {
+      contmenupop->unparent ();
+      contmenupop = nullptr;
+    }
   frvectmtx.lock ();
   auto itfr = std::find_if (friendvect.begin (), friendvect.end (), [button]
   (auto &el)
@@ -7678,7 +7726,7 @@ MainWindow::friendDetails (Gtk::Button *button)
 	  },
 						   false);
 	  window->set_application (this->get_application ());
-	  window->present ();
+	  window->show ();
 	}
       contmtx.unlock ();
     }
@@ -7699,9 +7747,11 @@ MainWindow::on_draw_frpd (const Cairo::RefPtr<Cairo::Context> &cr, int width,
 void
 MainWindow::tempBlockCont ()
 {
-  contmenupop->unparent ();
-  contmenupop = nullptr;
-
+  if (contmenupop != nullptr)
+    {
+      contmenupop->unparent ();
+      contmenupop = nullptr;
+    }
   Gtk::Button *but = selectedc;
   frvectmtx.lock ();
   auto itfrv = std::find_if (friendvect.begin (), friendvect.end (), [but]
@@ -9228,7 +9278,7 @@ MainWindow::settingsWindow ()
 	},
 						     false);
 
-	windowinfo->present ();
+	windowinfo->show ();
 
       });
 
@@ -9272,7 +9322,7 @@ MainWindow::settingsWindow ()
     return true;
   },
 					   false);
-  window->present ();
+  window->show ();
 }
 
 Gdk::Rectangle
@@ -9376,7 +9426,7 @@ MainWindow::ipv6Window ()
   },
 					   false);
 
-  window->present ();
+  window->show ();
 }
 
 void
@@ -9452,7 +9502,7 @@ MainWindow::ipv4Window ()
   },
 					   false);
 
-  window->present ();
+  window->show ();
 }
 
 void
@@ -9616,7 +9666,7 @@ MainWindow::fileSendProg (std::string *keyg, std::filesystem::path *filepathg,
 	  this->dld_grid->attach (*lab, 0, 0, 1, 1);
 	  this->dld_grid->attach (*frprgb, 0, 1, 1, 1);
 	  this->dld_grid->attach (*cncl, 1, 1, 1, 1);
-	  this->dld_win->present ();
+	  this->dld_win->show ();
 	}
       this->fileprogrvect.push_back (prbtup);
     }
@@ -9978,7 +10028,7 @@ MainWindow::aboutProg ()
     return true;
   },
 					   false);
-  window->present ();
+  window->show ();
 }
 
 void

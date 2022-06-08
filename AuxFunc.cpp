@@ -732,7 +732,6 @@ AuxFunc::toutf8 (std::string &line)
   UConverter *conv = ucnv_open (NULL, &status);
   int32_t len = ucnv_toUChars (conv, target.data (), srclen, line.c_str (),
 			       srclen, &status);
-  ucnv_close (conv);
   if (!U_SUCCESS (status))
     {
       std::cerr << u_errorName (status) << std::endl;
@@ -740,6 +739,7 @@ AuxFunc::toutf8 (std::string &line)
   icu::UnicodeString ustr (target.data (), len);
   line.clear ();
   ustr.toUTF8String (line);
+  ucnv_close (conv);
 }
 
 std::string
@@ -781,6 +781,7 @@ AuxFunc::utf8to (std::string line)
     }
   line.clear ();
   line = std::string (target2.begin (), target2.end ());
+  ucnv_close(c);
 
   return line;
 }
