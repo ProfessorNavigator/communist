@@ -30,36 +30,42 @@ AuxFunc::~AuxFunc ()
 void
 AuxFunc::homePath (std::string *filename)
 {
-  try
+  char *fnm = getenv ("USERPROFILE");
+  if (fnm)
     {
       *filename = std::string (getenv ("USERPROFILE"));
     }
-  catch (std::exception &e)
+  else
     {
-      try
+      fnm = getenv ("HOMEDRIVE");
+      if (fnm)
 	{
 	  *filename = std::string (getenv ("HOMEDRIVE"));
 	}
-      catch (std::exception &e)
+      else
 	{
-	  try
+	  fnm = getenv ("HOMEPATH");
+	  if (fnm)
 	    {
 	      *filename = std::string (getenv ("HOMEPATH"));
 	    }
-	  catch (std::exception &e)
+	  else
 	    {
-	      try
+	      fnm = getenv ("HOME");
+	      if (fnm)
 		{
 		  *filename = std::string (getenv ("HOME"));
 		}
-	      catch (std::exception &e)
+	      else
 		{
-		  try
+		  fnm = getenv ("SystemDrive");
+		  if (fnm)
 		    {
 		      *filename = std::string (getenv ("SystemDrive"));
 		    }
-		  catch (std::exception &e)
+		  else
 		    {
+		      std::cerr << "Cannot find user home folder" << std::endl;
 		      exit (1);
 		    }
 		}
@@ -781,7 +787,7 @@ AuxFunc::utf8to (std::string line)
     }
   line.clear ();
   line = std::string (target2.begin (), target2.end ());
-  ucnv_close(c);
+  ucnv_close (c);
 
   return line;
 }

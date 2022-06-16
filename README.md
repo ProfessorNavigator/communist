@@ -66,6 +66,8 @@ Program have several settings, which can be found in `Instruments->Settings`.
 
 ![](rdmimg/settings.png)
 
+![](rdmimg/settings_l2.png)
+
 You do not need change anything if everything works fine 'out of the box'. In other case...
 
 Spell checking is carried out by libhuspell. You can enable/disable it completely or change language. Only two languages are available now: English and Russian. To add your own variant open `../share/Communist/HunDict/languages`, add there line with number and language name, then add to `../share/Communist/HunDict` directory with the name same as number and put in it proper hunspell dictionaries (names of files must be `dic.aff` and `dic.dic`) Global language of the program can be changed by `LANG` variable. Available languages are the same, default language is English, Russian can be enabled by setting `LANG=ru_RU` (it will happen automatically if your system uses proper locale). If you want assist to translate the program, file `Communist.pot`  is available in repository (program uses GNU gettext). Contact author by email to receive further instructions.
@@ -106,7 +108,7 @@ Spell checking is carried out by libhuspell. You can enable/disable it completel
 
 ### View
  
- There is  ../share/Communist/mainWindow.css file. You can customize program's view by changing css properties inside it (see source code and [https://docs.gtk.org/gtk4/css-properties.html]() for more details).
+ There is  ../share/Communist/mainWindow.css file. You can customize program's view by changing css properties inside it (see source code and [https://docs.gtk.org/gtk4/css-properties.html]() for more details). Put your own image to ../share/Communist/background.jpeg if you want to change background of main window (image must be in jpeg).
 
 ## Plans
  

@@ -706,8 +706,25 @@ MainWindow::mainWindow ()
   profilevector.clear ();
   Image = 0;
   this->set_title (gettext ("Communist"));
+  Gtk::Overlay *mw_ovl = Gtk::make_managed<Gtk::Overlay> ();
+  this->set_child (*mw_ovl);
   Gtk::Grid *grid = Gtk::make_managed<Gtk::Grid> ();
-  this->set_child (*grid);
+  Gtk::DrawingArea *bckgrnd = Gtk::make_managed<Gtk::DrawingArea> ();
+  bckgrnd->set_draw_func (
+      [this]
+      (const Cairo::RefPtr<Cairo::Context> &cr,
+       int width,
+       int height)
+	 {
+	   Glib::ustring file = Glib::ustring (this->Sharepath + "/background.jpeg");
+	   Glib::RefPtr<Gdk::Pixbuf> imageloc = Gdk::Pixbuf::create_from_file (file);
+	   imageloc = imageloc->scale_simple (width, height, Gdk::InterpType::BILINEAR);
+	   Gdk::Cairo::set_source_pixbuf (cr, imageloc, 0, 0);
+	   cr->rectangle (0, 0, width, height);
+	   cr->fill ();
+	 });
+  mw_ovl->set_child (*bckgrnd);
+  mw_ovl->add_overlay (*grid);
   Glib::RefPtr<Gio::SimpleActionGroup> pref = Gio::SimpleActionGroup::create ();
   pref->add_action ("editpr", sigc::mem_fun (*this, &MainWindow::editProfile));
   pref->add_action ("ownkey", sigc::mem_fun (*this, &MainWindow::ownKey));
@@ -780,6 +797,9 @@ MainWindow::mainWindow ()
   else
     {
       auto pMenuBar = Gtk::make_managed<Gtk::PopoverMenuBar> (gmenu);
+      pMenuBar->set_name ("mainMenu");
+      pMenuBar->get_style_context ()->add_provider (
+	  css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
       box->append (*pMenuBar);
     }
   box->set_halign (Gtk::Align::START);
@@ -3001,10 +3021,9 @@ MainWindow::networkOp ()
       contmtx.lock ();
       addfrmtx.lock ();
       prefvectmtx.lock ();
-      std::shared_ptr<NetworkOperations> op (new NetworkOperations (Username, Password,
-						     &contacts, &seed,
-						     &Addfriends, &prefvect,
-						     Sharepath));
+      std::shared_ptr<NetworkOperations> op (
+	  new NetworkOperations (Username, Password, &contacts, &seed,
+				 &Addfriends, &prefvect, Sharepath));
       oper = op;
       prefvectmtx.unlock ();
       addfrmtx.unlock ();
@@ -3255,11 +3274,11 @@ MainWindow::networkOp ()
       op->mainFunc ();
 
       op->canceled.connect (
-	  [dispv, disp1mtx, disp2mtx, disp3mtx, disp4mtx, disp5mtx,
-	   disp6mtx, disp7mtx, disp8mtx, disp9mtx, disp12mtx, disp13mtx,
-	   disp14mtx, disp15mtx, key, ind, keysm, indsm, keyrm, rp, keyfr, tm,
-	   fs, fn, keyfrr, keyfiler, filenmr, keyfilenr, filenmnr, keyfiles,
-	   filenms, keyfileerror, filenmerror, keyfileprg, fileprgp, fileprgsz,
+	  [dispv, disp1mtx, disp2mtx, disp3mtx, disp4mtx, disp5mtx, disp6mtx,
+	   disp7mtx, disp8mtx, disp9mtx, disp12mtx, disp13mtx, disp14mtx,
+	   disp15mtx, key, ind, keysm, indsm, keyrm, rp, keyfr, tm, fs, fn,
+	   keyfrr, keyfiler, filenmr, keyfilenr, filenmnr, keyfiles, filenms,
+	   keyfileerror, filenmerror, keyfileprg, fileprgp, fileprgsz,
 	   keyfileprgs, fileprgps, fileprgszs, keychcon, tmchcon, keyfrrem]
 	  {
 	    for (size_t i = 0; i < dispv.size (); i++)
@@ -5726,7 +5745,7 @@ MainWindow::msgRcvdSlot (std::string *key, std::filesystem::path *p,
 	{
 	  if (std::get<1> (*itprv) == "active")
 	    {
-	      if (mf->has_audio ())
+	      if (mf)
 		{
 		  mf->play ();
 		}
@@ -5734,7 +5753,7 @@ MainWindow::msgRcvdSlot (std::string *key, std::filesystem::path *p,
 	}
       else
 	{
-	  if (mf->has_audio ())
+	  if (mf)
 	    {
 	      mf->play ();
 	    }
@@ -8256,7 +8275,7 @@ MainWindow::settingsWindow ()
     }
   else
     {
-      bootstrebuf->set_text ("dht.libtorrent.org:25401");
+      bootstrebuf->set_text ("router.bittorrent.com:6881");
     }
   prefvectmtx.unlock ();
   if (bootstrebuf->get_length () > 0)
@@ -8898,7 +8917,7 @@ MainWindow::settingsWindow ()
 	      }
 	    else
 	      {
-		std::get<1> (*itprv) = "dht.libtorrent.org:25401";
+		std::get<1> (*itprv) = "router.bittorrent.com:6881";
 	      }
 	  }
 	else
@@ -8913,7 +8932,7 @@ MainWindow::settingsWindow ()
 	      {
 		this->prefvect.push_back (
 		    std::make_tuple ("Bootstrapdht",
-				     "dht.libtorrent.org:25401"));
+				     "router.bittorrent.com:6881"));
 	      }
 	  }
 

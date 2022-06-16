@@ -246,6 +246,16 @@ NetworkOperations::mainFunc ()
 
 
 
+
+
+
+
+
+
+
+
+
+
 #endif
     {
       std::cerr << "Error on getting ipv6" << std::endl;
@@ -1790,6 +1800,7 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 	      std::cout << msgtype << std::endl;
 	      uint64_t tm;
 	      std::memcpy (&tm, &buf[34], sizeof(tm));
+	      sendbufmtx.lock ();
 	      msgpartbufmtx.lock ();
 	      auto itmpb = std::find_if (
 		  msgpartbuf.begin (), msgpartbuf.end (), [key, tm]
@@ -1825,6 +1836,7 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 		  msgpartbuf.erase (itmpb);
 		}
 	      msgpartbufmtx.unlock ();
+	      sendbufmtx.unlock ();
 	    }
 	  if (msgtype == "MI" || msgtype == "PI")
 	    {
@@ -5602,13 +5614,13 @@ NetworkOperations::processDHT ()
 	else
 	  {
 	    p.set_str (lt::setting_by_name ("dht_bootstrap_nodes"),
-		       "dht.libtorrent.org:25401");
+		       "router.bittorrent.com:6881");
 	  }
       }
     else
       {
 	p.set_str (lt::setting_by_name ("dht_bootstrap_nodes"),
-		   "dht.libtorrent.org:25401");
+		   "router.bittorrent.com:6881");
       }
     ses.apply_settings (p);
 
@@ -5941,7 +5953,7 @@ NetworkOperations::processDHT ()
 					  { return std::get<0>(el) == othk;});
 				    if (itr != rcvd.end ())
 				      {
-					if (chip > 0)
+					if (chip > 0 && seq >= 0)
 					  {
 					    *itr = make_tuple (othk, ip, port,
 							       seq);
@@ -5950,7 +5962,7 @@ NetworkOperations::processDHT ()
 				      }
 				    else
 				      {
-					if (chip > 0)
+					if (chip > 0 && seq >= 0)
 					  {
 					    rcvd.push_back (
 						std::make_tuple (othk, ip, port,
@@ -6410,74 +6422,87 @@ NetworkOperations::getvResult (std::string key, uint32_t ip, uint16_t port,
   std::vector<char> temp;
   uint32_t iploc = ip;
   temp.resize (INET_ADDRSTRLEN);
-  std::cout << "ip4 " << key << " "
-      << inet_ntop (AF_INET, &iploc, temp.data (), temp.size ()) << ":"
-      << ntohs (port) << " seq=" << seq << std::endl;
-  contmtx.lock ();
-  auto itc = std::find_if (contacts.begin (), contacts.end (), [&keyloc]
-  (auto &el)
+  if (inet_ntop (AF_INET, &iploc, temp.data (), temp.size ()))
     {
-      return std::get<1>(el) == keyloc;
-    });
-  if (itc != contacts.end ())
-    {
-      getfrresmtx.lock ();
-      auto it = std::find_if (getfrres.begin (), getfrres.end (), [&keyloc]
+      std::cout << "ip4 " << key << " " << temp.data () << ":" << ntohs (port)
+	  << " seq=" << seq << std::endl;
+      contmtx.lock ();
+      auto itc = std::find_if (contacts.begin (), contacts.end (), [&keyloc]
       (auto &el)
 	{
-	  return std::get<0>(el) == keyloc;
+	  return std::get<1>(el) == keyloc;
 	});
-      if (it == getfrres.end ())
+      if (itc != contacts.end ())
 	{
-	  if (ip != 0)
+	  getfrresmtx.lock ();
+	  auto it = std::find_if (getfrres.begin (), getfrres.end (), [&keyloc]
+	  (auto &el)
 	    {
-	      getfrres.push_back (ttup);
-	      maintblockmtx.lock ();
-	      time_t bltm = time (NULL);
-	      auto itmnt = std::find_if (maintblock.begin (), maintblock.end (),
-					 [keyloc]
-					 (auto &el)
-					   {
-					     return std::get<0>(el) == keyloc;
-					   });
-	      if (itmnt != maintblock.end ())
-		{
-		  std::get<1> (*itmnt) = bltm;
-		}
-	      else
-		{
-		  maintblock.push_back (std::make_tuple (key, bltm));
-		}
-	      maintblockmtx.unlock ();
-	    }
-	}
-      else
-	{
-	  if (std::get<3> (*it) < seq && ip != 0)
+	      return std::get<0>(el) == keyloc;
+	    });
+	  if (it == getfrres.end ())
 	    {
-	      *it = ttup;
-	      maintblockmtx.lock ();
-	      time_t bltm = time (NULL);
-	      auto itmnt = std::find_if (maintblock.begin (), maintblock.end (),
-					 [keyloc]
-					 (auto &el)
-					   {
-					     return std::get<0>(el) == keyloc;
-					   });
-	      if (itmnt != maintblock.end ())
+	      if (ip != 0)
 		{
-		  std::get<1> (*itmnt) = bltm;
+		  getfrres.push_back (ttup);
+		  maintblockmtx.lock ();
+		  time_t bltm = time (NULL);
+		  auto itmnt = std::find_if (
+		      maintblock.begin (), maintblock.end (), [keyloc]
+		      (auto &el)
+			{
+			  return std::get<0>(el) == keyloc;
+			});
+		  if (itmnt != maintblock.end ())
+		    {
+		      std::get<1> (*itmnt) = bltm;
+		    }
+		  else
+		    {
+		      maintblock.push_back (std::make_tuple (key, bltm));
+		    }
+		  maintblockmtx.unlock ();
 		}
-	      else
-		{
-		  maintblock.push_back (std::make_tuple (key, bltm));
-		}
-	      maintblockmtx.unlock ();
 	    }
+	  else
+	    {
+	      if (std::get<3> (*it) < seq && ip != 0)
+		{
+		  *it = ttup;
+		  maintblockmtx.lock ();
+		  time_t bltm = time (NULL);
+		  auto itmnt = std::find_if (
+		      maintblock.begin (), maintblock.end (), [keyloc]
+		      (auto &el)
+			{
+			  return std::get<0>(el) == keyloc;
+			});
+		  if (itmnt != maintblock.end ())
+		    {
+		      std::get<1> (*itmnt) = bltm;
+		    }
+		  else
+		    {
+		      maintblock.push_back (std::make_tuple (key, bltm));
+		    }
+		  maintblockmtx.unlock ();
+		}
+	    }
+	  getfrresmtx.unlock ();
 	}
-      getfrresmtx.unlock ();
+      contmtx.unlock ();
     }
-  contmtx.unlock ();
+  else
+    {
+#ifdef __linux
+      std::cerr << "DHT error on getting ipv4: " << errno << std::endl;
+#endif
+#ifdef _WIN32
+      int respol = WSAGetLastError ();
+      std::cerr << "DHT error on getting ipv4: " << respol << std::endl;
+#endif
+
+    }
 }
 
 void
@@ -7812,7 +7837,7 @@ NetworkOperations::commOps ()
 						this->getfrres.end (),
 						[&key]
 						(auto &el)
-						  { return std::get<0>(el) == key;}                                                                                      );
+						  { return std::get<0>(el) == key;}                                                                                                );
 					if (itgfr != this->getfrres.end ())
 					  {
 					    std::get<1> (*itgfr) =
@@ -7921,6 +7946,7 @@ NetworkOperations::commOps ()
 			  }
 			this->getfrresmtx.unlock ();
 			mtx->lock ();
+
 			sendMsgGlob (sock, key, ip, port);
 			mtx->unlock ();
 			sendingthrmtx->lock ();
