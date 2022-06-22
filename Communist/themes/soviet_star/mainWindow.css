@@ -1,0 +1,245 @@
+/*Main window stylesheet. Background and font size.*/
+#mainWindow {
+	background-color: rgba(207, 161, 178, 1);	
+	background-size: cover;	
+	font-size: 20px;
+}
+
+/*Main window menu stylesheet. Font color.*/
+#mainMenu {
+	color: black;	
+}
+
+/*Main window menu stylesheet. Font color and background color on mouse pointer hover.*/
+#mainMenu:hover {
+	color: black;
+	background-color:white;
+}
+
+/*Auxiliary menus stylesheet. Background color, font color, font size.*/
+#settingsWindow {
+	background-color: rgb(207, 161, 178);
+	color: black;
+	font-size: 20px; 
+}
+
+/*Settings windows' blocks background color, font color, font size*/
+#settingsLB {
+	background-color: rgb(207, 161, 178);
+	color: black;
+	font-size: 20px;
+}
+
+/*Inactive contacts tabs stylesheet.*/
+#inactiveButton {
+	background-image: none;
+	background-color: rgba(242, 227, 135, 1);
+	box-shadow:
+   		inset rgba(0,0,0,.6) 0 -3px 8px,
+   		inset rgba(252,255,255,.7) 0 3px 8px,
+   		rgba(0,0,0,.8) 0 3px 8px -3px; 
+	color: black;
+	border-color: black;
+}
+
+/*Own messages stylesheet.*/
+#myMsg {
+	background-color: rgb(192, 192, 227);
+	box-shadow:
+   		inset rgba(0,0,0,.6) 0 -3px 2px,
+   		inset rgba(252,255,255,.7) 0 3px 2px,
+   		rgba(0,0,0,.8) 0 3px 2px -3px; 
+	border-color: black;
+	color: black;
+}
+
+/*Friend's messages stylesheet.*/
+#frMsg {
+	background-color: rgb(121, 204, 234);
+	box-shadow:
+   		inset rgba(0,0,0,.6) 0 -3px 2px,
+   		inset rgba(252,255,255,.7) 0 3px 2px,
+   		rgba(0,0,0,.8) 0 3px 2px -3px; 
+	border-color: black;
+	color: black;
+}
+
+/*"Messsage not sent" indicator stylesheet.*/
+#notSentMsg {
+	background-color: white;		
+}
+
+/*File attachment line and reply line cancel button stylesheet.*/
+#cancelRepl {
+	background-image: none;
+	background-color: rgb(214, 164, 87);
+	border-color: black;
+}
+
+/*Reply stylesheet (on message tab).*/
+#repFrame{
+	border-color: black;	
+}
+
+/*"Friend online" indicator stylesheet.*/
+#connectFr {	
+	background-color: rgb(40, 181, 131);
+	color: white;
+}
+
+/*"Message was sent" indicator stylesheet.*/
+#SentMsg {
+	background-color: rgb(192, 192, 227);
+}
+
+/*"Active friend" tab stylesheet.*/
+#activeButton {
+	background-image: none;
+	background-color: rgb(0, 109, 255);
+	box-shadow:
+   		inset rgba(0,0,0,.6) 0 -3px 8px,
+   		inset rgba(252,255,255,.7) 0 3px 8px,
+   		rgba(0,0,0,.8) 0 3px 8px -3px; 
+	color: white;
+	border-color: black;
+}
+
+/*"Not read message quantity" indicator stylesheet.*/
+#msgNumLab {
+	background-color: rgb(29, 88, 34);
+	color: white;
+}
+
+/*"Friend details" window labels stylesheet.*/
+#friendDetLab {
+	color: black;
+}
+
+/*"File" lable (attached file line) stylesheet.*/
+#highlightText {
+	background-color: rgb(233, 0, 255);
+	color: white;
+}
+
+/*File address label and reply label (attached file line and reply line) stylesheet*/
+#fileAddress {
+	color: black;
+	background-color: rgba(255, 249, 170, 0.33);
+}
+
+/*Message send button stylesheet.*/
+#sendButton {
+	background-image: none;	
+	box-shadow:
+   		inset rgba(0,0,0,.6) 0 -3px 8px,
+   		inset rgba(252,255,255,.7) 0 3px 8px,
+   		rgba(0,0,0,.8) 0 3px 8px -3px; 
+	background-color: rgb(60, 209, 236);
+	border-color: black;
+}
+
+/*Different windows "confirmation button" stylesheet (including "Add contact" button).*/
+#applyButton {
+	background-image: none;
+	box-shadow:
+   		inset rgba(0,0,0,.6) 0 -3px 8px,
+   		inset rgba(252,255,255,.7) 0 3px 8px,
+   		rgba(0,0,0,.8) 0 3px 8px -3px; 
+	background-color: rgb(60, 209, 236);
+	color: black;
+	border-color: black;	
+}
+
+/*Different windows "cancel button" stylesheet (including "Remove contact" button).*/
+#rejectButton {
+	background-image: none;
+	box-shadow:
+   		inset rgba(0,0,0,.6) 0 -3px 8px,
+   		inset rgba(252,255,255,.7) 0 3px 8px,
+   		rgba(0,0,0,.8) 0 3px 8px -3px; 
+	background-color: rgb(239, 112, 80);
+	color: aliceblue;
+	border-color: black;	
+}
+
+/*Different windows "clear button" stylesheet.*/
+#clearButton {
+	background-image: none;
+	box-shadow:
+   		inset rgba(0,0,0,.6) 0 -3px 8px,
+   		inset rgba(252,255,255,.7) 0 3px 8px,
+   		rgba(0,0,0,.8) 0 3px 8px -3px; 
+	background-color: rgb(247, 219, 63);
+	color: black;
+	border-color: black;
+}
+
+/*"Friend request" windows' inactive item stylesheet.*/
+#blklistInactive {
+	background-color: rgb(207, 161, 178);
+	color: black;
+}
+
+/*"Friend request" windows' selected item stylesheet.*/
+#blklistActive {
+	background-color: rgb(0, 109, 255);
+	color: white;
+}
+
+/*"Contact is blocked" label stylesheet*/
+#blockLab {
+        background-color: red;
+        color: white;
+}
+
+/*Main windows' closing progress bar stylesheet.*/
+#clBar {
+	color: black;
+}
+
+/*File send and receive progress bar stylesheet*/
+#fileRPrB {
+	color: black;
+}
+
+/*"Own key" window stylesheet.*/
+#ownKeyWin {
+	background-color: rgb(207, 161, 178);
+}
+
+/*"Send message" button hovering stylesheet*/
+#sendButton:hover {
+	background-image: none;
+	background-color: rgb(61, 155, 194);
+}
+
+/*Different window's "confirmation" button hovering stylesheet.*/
+#applyButton:hover {
+	background-image: none;
+	background-color: rgb(61, 155, 194);
+}
+
+/*Different window's "cancel" button hovering stylesheet.*/
+#rejectButton:hover {
+	background-image: none;
+	background-color: rgb(61, 155, 194);
+}
+
+/*Different window's "clear" button hovering stylesheet.*/
+#clearButton:hover {
+	background-image: none;
+	background-color: rgb(61, 155, 194);
+}
+
+/*File attachment line and reply line cancel button hovering stylesheet.*/
+#cancelRepl:hover {
+	background-image: none;
+	background-color: rgb(61, 155, 194);
+}
+
+/*Message sending button "activation" stylesheet.*/
+#sendButton:active {
+	background-image: none;
+	box-shadow: none;
+	background-color: rgb(61, 77, 194);
+}

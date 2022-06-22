@@ -70,6 +70,8 @@ Program have several settings, which can be found in `Instruments->Settings`.
 
 You do not need change anything if everything works fine 'out of the box'. In other case...
 
+`Theme` - you can choose appearance of the program. There are two themes available now: default and soviet_union. You can create your own theme: add directory to ../share/Communist/themes . This directory must contain four files: background.jpeg (this is background of main window), file-icon.png (icon on "attach file" button), ico.png ("send message" button) and mainWindow.css (some necessary styling, see existing files as example). 
+
 Spell checking is carried out by libhuspell. You can enable/disable it completely or change language. Only two languages are available now: English and Russian. To add your own variant open `../share/Communist/HunDict/languages`, add there line with number and language name, then add to `../share/Communist/HunDict` directory with the name same as number and put in it proper hunspell dictionaries (names of files must be `dic.aff` and `dic.dic`) Global language of the program can be changed by `LANG` variable. Available languages are the same, default language is English, Russian can be enabled by setting `LANG=ru_RU` (it will happen automatically if your system uses proper locale). If you want assist to translate the program, file `Communist.pot`  is available in repository (program uses GNU gettext). Contact author by email to receive further instructions.
  
  `Network mode` has two variants: Internet and Local. In `Internet` mode program will use DHT ([libtorrent-rasterbar](https://www.libtorrent.org/) implementation now) to find friends' ip and establish direct connection. In `Local` mode DHT is disabled, program will send multicast UDP datagrams trying to find contacts. Next two lines indicate group addresses and ports to be used (be careful, they must be the same on all machines you want establish connection with). 
@@ -105,10 +107,6 @@ Spell checking is carried out by libhuspell. You can enable/disable it completel
 ### STUN list
  
  Program uses STUN servers to determine own 'external' IPv4 address. Some server's addresses are already placed to ../share/Communist/StunList file, but you may need to change them. Program will work even with one STUN server available, but optimal quantity is three (3). Each server's address must be placed to new line and must include ip  address and port or 'string' address and port (see default StunList file as example). If you place addresses in 'string' form, be aware that program needs to determine their ips  by DNS request first,  this operation may take some time on startup.
-
-### View
- 
- There is  ../share/Communist/mainWindow.css file. You can customize program's view by changing css properties inside it (see source code and [https://docs.gtk.org/gtk4/css-properties.html]() for more details). Put your own image to ../share/Communist/background.jpeg if you want to change background of main window (image must be in jpeg).
 
 ## Plans
  

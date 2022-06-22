@@ -334,14 +334,61 @@ MainWindow::MainWindow ()
     return true;
   },
   false);
-  css_provider = Gtk::CssProvider::create ();
   AuxFunc af;
   std::filesystem::path p (std::filesystem::u8path (af.get_selfpath ()));
-  css_provider->load_from_path (
-      Glib::ustring (
-	  p.parent_path ().u8string () + "/../share/Communist/mainWindow.css"));
   Sharepath = p.parent_path ().u8string () + "/../share/Communist";
   std::string filename;
+  af.homePath (&filename);
+  filename = filename + "/.config/Communist/Prefs";
+  std::filesystem::path prefpath = std::filesystem::u8path (filename);
+  std::fstream f;
+  f.open (prefpath, std::ios_base::in);
+  if (f.is_open ())
+    {
+      while (!f.eof ())
+	{
+	  std::string line;
+	  getline (f, line);
+	  if (line != "")
+	    {
+	      std::tuple<std::string, std::string> ttup;
+	      std::get<0> (ttup) = line.substr (0, line.find (":"));
+	      line.erase (0, line.find (" ") + std::string (" ").size ());
+	      std::get<1> (ttup) = line;
+	      prefvectmtx.lock ();
+	      prefvect.push_back (ttup);
+	      prefvectmtx.unlock ();
+	    }
+	}
+      f.close ();
+    }
+  prefvectmtx.lock ();
+  auto itprv = std::find_if (prefvect.begin (), prefvect.end (), []
+  (auto &el)
+    {
+      return std::get<0>(el) == "Theme";
+    });
+  if (itprv != prefvect.end ())
+    {
+      Theme = std::get<1> (*itprv);
+      filename = Sharepath + "/themes/" + Theme;
+      std::filesystem::path thpath = std::filesystem::u8path (filename);
+      if (!std::filesystem::exists (thpath))
+	{
+	  Theme = "default";
+	}
+    }
+  else
+    {
+      Theme = "default";
+    }
+  prefvectmtx.unlock ();
+
+  css_provider = Gtk::CssProvider::create ();
+
+  css_provider->load_from_path (
+      Glib::ustring (Sharepath + "/themes/" + Theme + "/mainWindow.css"));
+
 #ifdef __linux
   filename = std::filesystem::temp_directory_path ().u8string ();
 #endif
@@ -416,35 +463,8 @@ MainWindow::~MainWindow ()
 void
 MainWindow::userCheck ()
 {
-  prefvectmtx.lock ();
-  prefvect.clear ();
-  prefvectmtx.unlock ();
   std::string filename;
   AuxFunc af;
-  af.homePath (&filename);
-  filename = filename + "/.config/Communist/Prefs";
-  std::filesystem::path prefpath = std::filesystem::u8path (filename);
-  std::fstream f;
-  f.open (prefpath, std::ios_base::in);
-  if (f.is_open ())
-    {
-      while (!f.eof ())
-	{
-	  std::string line;
-	  getline (f, line);
-	  if (line != "")
-	    {
-	      std::tuple<std::string, std::string> ttup;
-	      std::get<0> (ttup) = line.substr (0, line.find (":"));
-	      line.erase (0, line.find (" ") + std::string (" ").size ());
-	      std::get<1> (ttup) = line;
-	      prefvectmtx.lock ();
-	      prefvect.push_back (ttup);
-	      prefvectmtx.unlock ();
-	    }
-	}
-      f.close ();
-    }
   af.homePath (&filename);
   filename = filename + "/.Communist";
   std::filesystem::path filepath = std::filesystem::u8path (filename);
@@ -508,8 +528,8 @@ MainWindow::userCheck ()
       yes->set_margin (5);
       yes->set_halign (Gtk::Align::CENTER);
       yes->set_name ("applyButton");
-      yes->get_style_context ()->add_provider (
-	  css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+      yes->get_style_context ()->add_provider (css_provider,
+      GTK_STYLE_PROVIDER_PRIORITY_USER);
       yes->signal_clicked ().connect (
 	  sigc::bind (sigc::mem_fun (*this, &MainWindow::infoMessage), usname,
 		      password, reppassword));
@@ -522,8 +542,8 @@ MainWindow::userCheck ()
       cancel->set_margin (5);
       cancel->set_halign (Gtk::Align::CENTER);
       cancel->set_name ("rejectButton");
-      cancel->get_style_context ()->add_provider (
-	  css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+      cancel->get_style_context ()->add_provider (css_provider,
+      GTK_STYLE_PROVIDER_PRIORITY_USER);
       cancel->signal_clicked ().connect ( [this]
       {
 	std::string filename;
@@ -578,8 +598,8 @@ MainWindow::userCheck ()
       yes->set_margin (5);
       yes->set_halign (Gtk::Align::CENTER);
       yes->set_name ("applyButton");
-      yes->get_style_context ()->add_provider (
-	  css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+      yes->get_style_context ()->add_provider (css_provider,
+      GTK_STYLE_PROVIDER_PRIORITY_USER);
       yes->signal_clicked ().connect (
 	  sigc::bind (sigc::mem_fun (*this, &MainWindow::userCheckFun), usname,
 		      password));
@@ -592,8 +612,8 @@ MainWindow::userCheck ()
       cancel->set_margin (5);
       cancel->set_halign (Gtk::Align::CENTER);
       cancel->set_name ("rejectButton");
-      cancel->get_style_context ()->add_provider (
-	  css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+      cancel->get_style_context ()->add_provider (css_provider,
+      GTK_STYLE_PROVIDER_PRIORITY_USER);
       cancel->signal_clicked ().connect (
 	  sigc::mem_fun (*this, &Gtk::Window::close));
       grid->attach (*cancel, 1, 4, 1, 1);
@@ -716,7 +736,8 @@ MainWindow::mainWindow ()
        int width,
        int height)
 	 {
-	   Glib::ustring file = Glib::ustring (this->Sharepath + "/background.jpeg");
+	   Glib::ustring file = Glib::ustring (this->Sharepath + "/themes/" +
+	       this->Theme + "/background.jpeg");
 	   Glib::RefPtr<Gdk::Pixbuf> imageloc = Gdk::Pixbuf::create_from_file (file);
 	   imageloc = imageloc->scale_simple (width, height, Gdk::InterpType::BILINEAR);
 	   Gdk::Cairo::set_source_pixbuf (cr, imageloc, 0, 0);
@@ -890,8 +911,8 @@ MainWindow::mainWindow ()
   addcont->set_margin (5);
   addcont->set_halign (Gtk::Align::CENTER);
   addcont->set_name ("applyButton");
-  addcont->get_style_context ()->add_provider (
-      css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+  addcont->get_style_context ()->add_provider (css_provider,
+  GTK_STYLE_PROVIDER_PRIORITY_USER);
   addcont->signal_clicked ().connect (
       sigc::mem_fun (*this, &MainWindow::addFriends));
   leftgrid->attach (*addcont, 0, 1, 1, 1);
@@ -901,8 +922,8 @@ MainWindow::mainWindow ()
   delcont->set_margin (5);
   delcont->set_halign (Gtk::Align::CENTER);
   delcont->set_name ("rejectButton");
-  delcont->get_style_context ()->add_provider (
-      css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+  delcont->get_style_context ()->add_provider (css_provider,
+  GTK_STYLE_PROVIDER_PRIORITY_USER);
   delcont->signal_clicked ().connect (
       sigc::mem_fun (*this, &MainWindow::deleteContact));
   Gtk::Button tb;
@@ -1304,8 +1325,9 @@ MainWindow::mainWindow ()
   Gtk::DrawingArea *drarfb = Gtk::make_managed<Gtk::DrawingArea> ();
   drarfb->set_size_request (rqq1.get_width (), rqq1.get_height ());
   drarfb->set_draw_func (
-      sigc::bind (sigc::mem_fun (*this, &MainWindow::on_draw_sb),
-		  Glib::ustring (Sharepath + "/file-icon.png")));
+      sigc::bind (
+	  sigc::mem_fun (*this, &MainWindow::on_draw_sb),
+	  Glib::ustring (Sharepath + "/themes/" + Theme + "/file-icon.png")));
   attachfile->set_child (*drarfb);
   attachfile->signal_clicked ().connect (
       sigc::mem_fun (*this, &MainWindow::attachFileDialog));
@@ -1532,7 +1554,7 @@ MainWindow::mainWindow ()
       sigc::bind (sigc::mem_fun (*this, &MainWindow::sendMsg), msgtos));
   Gtk::DrawingArea *drarsb = Gtk::make_managed<Gtk::DrawingArea> ();
   drarsb->set_size_request (rq2.get_width (), rq2.get_height ());
-  std::string spi = Sharepath + "/ico.png";
+  std::string spi = Sharepath + "/themes/" + Theme + "/ico.png";
   drarsb->set_draw_func (
       sigc::bind (sigc::mem_fun (*this, &MainWindow::on_draw_sb),
 		  Glib::ustring (spi)));
@@ -1561,7 +1583,7 @@ MainWindow::mainWindow ()
     }
   else
     {
-      this->set_default_size (rq2.get_width (), -1);
+      this->set_default_size (rq2.get_width (), rq2.get_height ());
     }
 
   Glib::RefPtr<Gtk::GestureClick> rightgridclck = Gtk::GestureClick::create ();
@@ -1629,8 +1651,8 @@ MainWindow::infoMessage (Gtk::Entry *usname, Gtk::Entry *passwd,
       grid->set_halign (Gtk::Align::CENTER);
       window->set_child (*grid);
       window->set_name ("settingsWindow");
-      window->get_style_context ()->add_provider (
-	  css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+      window->get_style_context ()->add_provider (css_provider,
+      GTK_STYLE_PROVIDER_PRIORITY_USER);
 
       Gtk::Label *label = new Gtk::Label;
       if (username == "")
@@ -1654,8 +1676,8 @@ MainWindow::infoMessage (Gtk::Entry *usname, Gtk::Entry *passwd,
       close->set_margin (5);
       close->set_halign (Gtk::Align::CENTER);
       close->set_name ("applyButton");
-      close->get_style_context ()->add_provider (
-	  css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+      close->get_style_context ()->add_provider (css_provider,
+      GTK_STYLE_PROVIDER_PRIORITY_USER);
       close->signal_clicked ().connect (
 	  sigc::mem_fun (*window, &Gtk::Window::close));
       grid->attach (*close, 0, 1, 1, 1);
@@ -1769,8 +1791,8 @@ MainWindow::createProfile ()
   generate->set_margin (5);
   generate->set_halign (Gtk::Align::START);
   generate->set_name ("applyButton");
-  generate->get_style_context ()->add_provider (
-      css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+  generate->get_style_context ()->add_provider (css_provider,
+  GTK_STYLE_PROVIDER_PRIORITY_USER);
   generate->signal_clicked ().connect (
       sigc::bind (sigc::mem_fun (*this, &MainWindow::keyGenerate), key));
   rightgrid->attach (*generate, 0, 1, 3, 1);
@@ -1801,8 +1823,8 @@ MainWindow::createProfile ()
   saveprof->set_margin (5);
   saveprof->set_halign (Gtk::Align::CENTER);
   saveprof->set_name ("applyButton");
-  saveprof->get_style_context ()->add_provider (
-      css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+  saveprof->get_style_context ()->add_provider (css_provider,
+  GTK_STYLE_PROVIDER_PRIORITY_USER);
   saveprof->signal_clicked ().connect (
       sigc::mem_fun (*this, &MainWindow::saveProfile));
   rightgrid->attach (*saveprof, 0, 5, 1, 1);
@@ -1834,8 +1856,8 @@ MainWindow::createProfile ()
   cancela->set_margin (5);
   cancela->set_halign (Gtk::Align::CENTER);
   cancela->set_name ("rejectButton");
-  cancela->get_style_context ()->add_provider (
-      css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+  cancela->get_style_context ()->add_provider (css_provider,
+  GTK_STYLE_PROVIDER_PRIORITY_USER);
   cancela->signal_clicked ().connect ( [this]
   {
     std::string filename;
@@ -2525,8 +2547,8 @@ MainWindow::formMsgWinGrid (std::vector<std::filesystem::path> &msg,
       Gtk::Frame *repfr = Gtk::make_managed<Gtk::Frame> ();
       repfr->set_halign (Gtk::Align::START);
       repfr->set_name ("repFrame");
-      repfr->get_style_context ()->add_provider (
-	  css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+      repfr->get_style_context ()->add_provider (css_provider,
+      GTK_STYLE_PROVIDER_PRIORITY_USER);
       repfr->set_margin (2);
       Gtk::Label *repl = Gtk::make_managed<Gtk::Label> ();
       repl->set_halign (Gtk::Align::START);
@@ -2870,8 +2892,8 @@ MainWindow::deleteContact ()
       Gtk::Window *window = new Gtk::Window;
       window->set_application (this->get_application ());
       window->set_name ("settingsWindow");
-      window->get_style_context ()->add_provider (
-	  css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+      window->get_style_context ()->add_provider (css_provider,
+      GTK_STYLE_PROVIDER_PRIORITY_USER);
       window->set_title (gettext ("Remove contact"));
       Gtk::Grid *grid = Gtk::make_managed<Gtk::Grid> ();
       window->set_child (*grid);
@@ -2892,8 +2914,8 @@ MainWindow::deleteContact ()
       yes->set_margin (5);
       yes->set_halign (Gtk::Align::CENTER);
       yes->set_name ("clearButton");
-      yes->get_style_context ()->add_provider (
-	  css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+      yes->get_style_context ()->add_provider (css_provider,
+      GTK_STYLE_PROVIDER_PRIORITY_USER);
       yes->signal_clicked ().connect (
 	  sigc::mem_fun (*this, &MainWindow::deleteContactFunc));
       yes->signal_clicked ().connect (
@@ -3021,9 +3043,10 @@ MainWindow::networkOp ()
       contmtx.lock ();
       addfrmtx.lock ();
       prefvectmtx.lock ();
-      std::shared_ptr<NetworkOperations> op (
-	  new NetworkOperations (Username, Password, &contacts, &seed,
-				 &Addfriends, &prefvect, Sharepath));
+      NetworkOperations *op = new NetworkOperations (Username, Password,
+						     &contacts, &seed,
+						     &Addfriends, &prefvect,
+						     Sharepath);
       oper = op;
       prefvectmtx.unlock ();
       addfrmtx.unlock ();
@@ -3274,11 +3297,11 @@ MainWindow::networkOp ()
       op->mainFunc ();
 
       op->canceled.connect (
-	  [dispv, disp1mtx, disp2mtx, disp3mtx, disp4mtx, disp5mtx, disp6mtx,
-	   disp7mtx, disp8mtx, disp9mtx, disp12mtx, disp13mtx, disp14mtx,
-	   disp15mtx, key, ind, keysm, indsm, keyrm, rp, keyfr, tm, fs, fn,
-	   keyfrr, keyfiler, filenmr, keyfilenr, filenmnr, keyfiles, filenms,
-	   keyfileerror, filenmerror, keyfileprg, fileprgp, fileprgsz,
+	  [this, dispv, disp1mtx, disp2mtx, disp3mtx, disp4mtx, disp5mtx,
+	   disp6mtx, disp7mtx, disp8mtx, disp9mtx, disp12mtx, disp13mtx,
+	   disp14mtx, disp15mtx, key, ind, keysm, indsm, keyrm, rp, keyfr, tm,
+	   fs, fn, keyfrr, keyfiler, filenmr, keyfilenr, filenmnr, keyfiles,
+	   filenms, keyfileerror, filenmerror, keyfileprg, fileprgp, fileprgsz,
 	   keyfileprgs, fileprgps, fileprgszs, keychcon, tmchcon, keyfrrem]
 	  {
 	    for (size_t i = 0; i < dispv.size (); i++)
@@ -3299,6 +3322,8 @@ MainWindow::networkOp ()
 	    delete disp13mtx;
 	    delete disp14mtx;
 	    delete disp15mtx;
+	    delete this->oper;
+	    this->oper = nullptr;
 	    delete key;
 	    delete ind;
 	    delete keysm;
@@ -3622,8 +3647,8 @@ MainWindow::editAddFriends ()
       lab->set_text (Glib::ustring (req[i]));
       lab->set_margin (5);
       lab->set_name ("blklistInactive");
-      lab->get_style_context ()->add_provider (
-	  css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+      lab->get_style_context ()->add_provider (css_provider,
+      GTK_STYLE_PROVIDER_PRIORITY_USER);
       Glib::RefPtr<Gtk::GestureClick> clck = Gtk::GestureClick::create ();
       clck->set_button (0);
       clck->signal_pressed ().connect (
@@ -4304,8 +4329,8 @@ MainWindow::sendMsg (Gtk::TextView *tv)
 	  Glib::RefPtr<Gtk::GestureClick> clck = Gtk::GestureClick::create ();
 	  clck->set_button (0);
 	  fr->set_name ("myMsg");
-	  fr->get_style_context ()->add_provider (
-	      css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+	  fr->get_style_context ()->add_provider (css_provider,
+	  GTK_STYLE_PROVIDER_PRIORITY_USER);
 	  fr->set_child (*grmsg);
 	  fr->set_margin (5);
 	  fr->set_size_request (rq2.get_width () * 0.5, -1);
@@ -4720,13 +4745,16 @@ MainWindow::creatReply (int numcl, double x, double y, Gtk::Frame *fr,
 	this->repllabe->set_max_width_chars (50);
 	this->repllabe->set_ellipsize (Pango::EllipsizeMode::END);
 	this->repllabe->set_text (message->get_text ());
+	this->repllabe->set_name ("fileAddress");
+	this->repllabe->get_style_context ()->add_provider (css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
 
 	this->replcancel = Gtk::make_managed<Gtk::Button> ();
 	this->replcancel->set_valign (Gtk::Align::CENTER);
 	this->replcancel->set_halign (Gtk::Align::END);
 	this->replcancel->set_margin (5);
 	this->replcancel->set_name ("cancelRepl");
-	this->replcancel->get_style_context ()->add_provider (css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+	this->replcancel->get_style_context ()->add_provider (
+	    css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
 	this->replcancel->set_icon_name ("window-close-symbolic");
 	this->replcancel->signal_clicked ().connect ( [this]
 	{
@@ -5393,8 +5421,8 @@ MainWindow::removeMsg (std::string othkey, std::filesystem::path msgpath,
   confirm->set_halign (Gtk::Align::CENTER);
   confirm->set_margin (5);
   confirm->set_name ("clearButton");
-  confirm->get_style_context ()->add_provider (
-      css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+  confirm->get_style_context ()->add_provider (css_provider,
+  GTK_STYLE_PROVIDER_PRIORITY_USER);
   confirm->set_label (gettext ("Yes"));
 
   confirm->signal_clicked ().connect ( [window, this, othkey, msgpath, widg]
@@ -5792,8 +5820,8 @@ MainWindow::msgRcvdSlot (std::string *key, std::filesystem::path *p,
       std::get<1> (tup) = ngr;
       but->set_halign (Gtk::Align::START);
       but->set_size_request (rq2.get_width (), -1);
-      but->get_style_context ()->add_provider (
-	  css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+      but->get_style_context ()->add_provider (css_provider,
+      GTK_STYLE_PROVIDER_PRIORITY_USER);
 
       Gtk::Label *keylab = Gtk::make_managed<Gtk::Label> ();
       keylab->set_text (keyt);
@@ -5940,8 +5968,8 @@ MainWindow::msgRcvdSlot (std::string *key, std::filesystem::path *p,
 	  fr->set_halign (Gtk::Align::END);
 	  fr->add_controller (clck);
 	  fr->set_name ("frMsg");
-	  fr->get_style_context ()->add_provider (
-	      css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+	  fr->get_style_context ()->add_provider (css_provider,
+	  GTK_STYLE_PROVIDER_PRIORITY_USER);
 
 	  Gtk::Label *date = Gtk::make_managed<Gtk::Label> ();
 	  date->set_halign (Gtk::Align::START);
@@ -6314,8 +6342,8 @@ MainWindow::editProfile ()
   saveprof->set_margin (5);
   saveprof->set_halign (Gtk::Align::CENTER);
   saveprof->set_name ("applyButton");
-  saveprof->get_style_context ()->add_provider (
-      css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+  saveprof->get_style_context ()->add_provider (css_provider,
+  GTK_STYLE_PROVIDER_PRIORITY_USER);
   saveprof->signal_clicked ().connect (
       sigc::bind (sigc::mem_fun (*this, &MainWindow::saveProfileEP), window));
   rightgrid->attach (*saveprof, 0, 3, 1, 1);
@@ -6346,8 +6374,8 @@ MainWindow::editProfile ()
   cancela->set_margin (5);
   cancela->set_halign (Gtk::Align::CENTER);
   cancela->set_name ("rejectButton");
-  cancela->get_style_context ()->add_provider (
-      css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+  cancela->get_style_context ()->add_provider (css_provider,
+  GTK_STYLE_PROVIDER_PRIORITY_USER);
   cancela->signal_clicked ().connect (
       sigc::mem_fun (*window, &Gtk::Window::close));
   rightgrid->attach (*cancela, 2, 3, 1, 1);
@@ -6460,8 +6488,8 @@ MainWindow::saveProfileEP (Gtk::Window *windowb)
       Gtk::Window *window = new Gtk::Window;
       window->set_application (this->get_application ());
       window->set_name ("settingsWindow");
-      window->get_style_context ()->add_provider (
-	  css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+      window->get_style_context ()->add_provider (css_provider,
+      GTK_STYLE_PROVIDER_PRIORITY_USER);
       window->set_title (gettext ("Error"));
       Gtk::Grid *grid = Gtk::make_managed<Gtk::Grid> ();
       grid->set_halign (Gtk::Align::CENTER);
@@ -6478,8 +6506,8 @@ MainWindow::saveProfileEP (Gtk::Window *windowb)
       button->set_halign (Gtk::Align::CENTER);
       button->set_margin (5);
       button->set_name ("applyButton");
-      button->get_style_context ()->add_provider (
-	  css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+      button->get_style_context ()->add_provider (css_provider,
+      GTK_STYLE_PROVIDER_PRIORITY_USER);
       button->signal_clicked ().connect (
 	  sigc::mem_fun (*window, &Gtk::Window::close));
       grid->attach (*button, 0, 1, 1, 1);
@@ -6663,6 +6691,11 @@ MainWindow::attachFileFunc (int rid, Gtk::FileChooserDialog *fcd)
 	      attachedfile->set_halign (Gtk::Align::START);
 	      attachedfile->set_margin (5);
 	      attachedfile->set_ellipsize (Pango::EllipsizeMode::START);
+	      attachedfile->set_name ("fileAddress");
+	      attachedfile->get_style_context ()->add_provider (
+		  css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+	      Rightgrid->insert_next_to (*attachfbutton,
+					 Gtk::PositionType::BOTTOM);
 	      Rightgrid->attach_next_to (*attachedfile, *attach,
 					 Gtk::PositionType::RIGHT, 1, 1);
 
@@ -7322,8 +7355,8 @@ MainWindow::fileRejectedSlot (std::string *keyr, std::mutex *disp5mtx)
       window->set_transient_for (*this);
       window->set_modal (true);
       window->set_name ("settingsWindow");
-      window->get_style_context ()->add_provider (
-	  css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+      window->get_style_context ()->add_provider (css_provider,
+      GTK_STYLE_PROVIDER_PRIORITY_USER);
       Gtk::Grid *grid = Gtk::make_managed<Gtk::Grid> ();
       grid->set_halign (Gtk::Align::CENTER);
       window->set_child (*grid);
@@ -7342,8 +7375,8 @@ MainWindow::fileRejectedSlot (std::string *keyr, std::mutex *disp5mtx)
       close->set_halign (Gtk::Align::CENTER);
       close->set_margin (5);
       close->set_name ("applyButton");
-      close->get_style_context ()->add_provider (
-	  css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+      close->get_style_context ()->add_provider (css_provider,
+      GTK_STYLE_PROVIDER_PRIORITY_USER);
       grid->attach (*close, 0, 1, 1, 1);
 
       close->signal_clicked ().connect (
@@ -7399,8 +7432,8 @@ MainWindow::fileRcvdStatus (std::string *key, std::string *filename,
       window->set_transient_for (*this);
       window->set_modal (true);
       window->set_name ("settingsWindow");
-      window->get_style_context ()->add_provider (
-	  css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+      window->get_style_context ()->add_provider (css_provider,
+      GTK_STYLE_PROVIDER_PRIORITY_USER);
       Gtk::Grid *grid = Gtk::make_managed<Gtk::Grid> ();
       grid->set_halign (Gtk::Align::CENTER);
       window->set_child (*grid);
@@ -7463,8 +7496,8 @@ MainWindow::fileRcvdStatus (std::string *key, std::string *filename,
       close->set_halign (Gtk::Align::CENTER);
       close->set_margin (5);
       close->set_name ("applyButton");
-      close->get_style_context ()->add_provider (
-	  css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+      close->get_style_context ()->add_provider (css_provider,
+      GTK_STYLE_PROVIDER_PRIORITY_USER);
       close->signal_clicked ().connect ( [window]
       {
 	window->close ();
@@ -7858,6 +7891,73 @@ MainWindow::settingsWindow ()
   bx = Gtk::make_managed<Gtk::Box> (Gtk::Orientation::HORIZONTAL);
   lbr = Gtk::make_managed<Gtk::ListBoxRow> ();
   lbr->set_selectable (false);
+  Gtk::Label *thmlb = Gtk::make_managed<Gtk::Label> ();
+  thmlb->set_halign (Gtk::Align::START);
+  thmlb->set_justify (Gtk::Justification::LEFT);
+  thmlb->set_margin (5);
+  thmlb->set_wrap_mode (Pango::WrapMode::WORD);
+  thmlb->set_text (gettext ("Theme:"));
+  bx->append (*thmlb);
+
+  Gtk::ComboBoxText *cmbthm = Gtk::make_managed<Gtk::ComboBoxText> ();
+  cmbthm->set_halign (Gtk::Align::END);
+  cmbthm->set_margin (5);
+  std::filesystem::path thmp = std::filesystem::u8path (
+      std::string (Sharepath + "/themes"));
+  for (auto &dirit : std::filesystem::directory_iterator (thmp))
+    {
+      std::filesystem::path p = dirit.path ();
+      cmbthm->append (Glib::ustring (p.filename ().u8string ()));
+    }
+  prefvectmtx.lock ();
+  auto itprv = std::find_if (prefvect.begin (), prefvect.end (), []
+  (auto &el)
+    {
+      return std::get<0>(el) == "Theme";
+    });
+  if (itprv != prefvect.end ())
+    {
+      std::string tmp = std::get<1> (*itprv);
+      cmbthm->set_active_text (Glib::ustring (tmp));
+    }
+  else
+    {
+      if (cmbthm->get_has_entry ())
+	{
+	  cmbthm->set_active_text ("default");
+	}
+    }
+  prefvectmtx.unlock ();
+  bx->append (*cmbthm);
+  lbr->set_child (*bx);
+  listb->append (*lbr);
+
+  cmbthm->signal_changed ().connect ( [cmbthm, this]
+  {
+    std::string tmp (cmbthm->get_active_text ());
+    this->prefvectmtx.lock ();
+    auto itprv = std::find_if (this->prefvect.begin (), this->prefvect.end (), []
+  (auto &el)
+    {
+      return std::get<0>(el) == "Theme";
+    });
+    if (itprv != this->prefvect.end ())
+      {
+	std::get<1> (*itprv) = tmp;
+      }
+    else
+      {
+	std::tuple<std::string, std::string> ttup;
+	std::get<0> (ttup) = "Theme";
+	std::get<1> (ttup) = tmp;
+	this->prefvect.push_back (ttup);
+      }
+    this->prefvectmtx.unlock ();
+  });
+
+  bx = Gtk::make_managed<Gtk::Box> (Gtk::Orientation::HORIZONTAL);
+  lbr = Gtk::make_managed<Gtk::ListBoxRow> ();
+  lbr->set_selectable (false);
   Gtk::Label *langchenb = Gtk::make_managed<Gtk::Label> ();
   langchenb->set_halign (Gtk::Align::START);
   langchenb->set_justify (Gtk::Justification::LEFT);
@@ -7871,7 +7971,7 @@ MainWindow::settingsWindow ()
   langchenbch->set_halign (Gtk::Align::CENTER);
   langchenbch->set_valign (Gtk::Align::CENTER);
   prefvectmtx.lock ();
-  auto itprv = std::find_if (prefvect.begin (), prefvect.end (), []
+  itprv = std::find_if (prefvect.begin (), prefvect.end (), []
   (auto &el)
     {
       return std::get<0>(el) == "Spellcheck";
@@ -7944,7 +8044,7 @@ MainWindow::settingsWindow ()
     {
       if (cmbtxt->get_has_entry ())
 	{
-	  cmbtxt->set_active (0);
+	  cmbtxt->set_active (1);
 	}
     }
   prefvectmtx.unlock ();
@@ -8027,7 +8127,8 @@ MainWindow::settingsWindow ()
     strm << netcmb->get_active_row_number ();
     std::string ch = strm.str ();
     this->prefvectmtx.lock ();
-    auto itprv = std::find_if (this->prefvect.begin (), this->prefvect.end (), [](auto &el)
+    auto itprv = std::find_if (this->prefvect.begin (), this->prefvect.end (), []
+  (auto &el)
     {
       return std::get<0>(el) == "Netmode";
     });
@@ -8185,7 +8286,8 @@ MainWindow::settingsWindow ()
     strm << autoremcmb->get_active_row_number ();
     std::string ch = strm.str ();
     this->prefvectmtx.lock ();
-    auto itprv = std::find_if (this->prefvect.begin (), this->prefvect.end (), [](auto &el)
+    auto itprv = std::find_if (this->prefvect.begin (), this->prefvect.end (), []
+  (auto &el)
     {
       return std::get<0>(el) == "Autoremove";
     });
@@ -9604,16 +9706,16 @@ MainWindow::fileSendProg (std::string *keyg, std::filesystem::path *filepathg,
       frprgb->set_margin (5);
       frprgb->set_show_text (true);
       frprgb->set_name ("fileRPrB");
-      frprgb->get_style_context ()->add_provider (
-	  css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+      frprgb->get_style_context ()->add_provider (css_provider,
+      GTK_STYLE_PROVIDER_PRIORITY_USER);
       frprgb->set_fraction (0);
 
       Gtk::Button *cncl = Gtk::make_managed<Gtk::Button> ();
       cncl->set_halign (Gtk::Align::CENTER);
       cncl->set_margin (5);
       cncl->set_name ("cancelRepl");
-      cncl->get_style_context ()->add_provider (
-	  css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+      cncl->get_style_context ()->add_provider (css_provider,
+      GTK_STYLE_PROVIDER_PRIORITY_USER);
       cncl->set_icon_name ("window-close-symbolic");
       cncl->signal_clicked ().connect ( [this, key, filepath]
       {

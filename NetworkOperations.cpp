@@ -30,10 +30,9 @@ NetworkOperations::NetworkOperations (
   sockipv6 = 0;
   for (size_t i = 0; i < contactsfull.size (); i++)
     {
-      std::tuple<std::string, int, std::shared_ptr<std::mutex>, time_t,
-	  std::shared_ptr<std::mutex>> ttup;
-      std::shared_ptr<std::mutex> mtx (new std::mutex);
-      std::shared_ptr<std::mutex> mtxgip (new std::mutex);
+      std::tuple<std::string, int, std::mutex*, time_t, std::mutex*> ttup;
+      std::mutex *mtx = new std::mutex;
+      std::mutex *mtxgip = new std::mutex;
       std::get<0> (ttup) = std::get<1> (contactsfull[i]);
       std::get<1> (ttup) = 0;
       std::get<2> (ttup) = mtx;
@@ -184,7 +183,46 @@ NetworkOperations::NetworkOperations (
 
 NetworkOperations::~NetworkOperations ()
 {
+  for (size_t i = 0; i < sockets4.size (); i++)
+    {
+      if (std::get<1> (sockets4[i]) >= 0)
+	{
+#ifdef __linux
+	  close (std::get<1> (sockets4[i]));
+#endif
+#ifdef _WIN32
+  	  	int ch = closesocket (std::get<1> (sockets4[i]));
+  	  	if (ch != 0)
+  	  	  {
+  	  	    ch = WSAGetLastError ();
+  	  	    std::cerr << "ipv4 close socket error: " << ch << std::endl;
+  	  	  }
+  	  #endif
+	}
+      std::mutex *mtx1 = std::get<2> (sockets4[i]);
+      std::mutex *mtx2 = std::get<4> (sockets4[i]);
+      delete mtx1;
+      delete mtx2;
+    }
+  sockets4.clear ();
 
+#ifdef __linux
+  close (sockipv6);
+#endif
+#ifdef _WIN32
+  	int ch = closesocket (sockipv6);
+  	if (ch != 0)
+  	  {
+  	    ch = WSAGetLastError ();
+  	    std::cerr << "ipv6 close socket error: " << ch << std::endl;
+  	  }
+  	ch = WSACleanup ();
+  	if (ch != 0)
+  	  {
+  	    ch = WSAGetLastError ();
+  	    std::cerr << "Windows cleanup error: " << ch << std::endl;
+  	  }
+  #endif
 }
 
 void
@@ -242,19 +280,6 @@ NetworkOperations::mainFunc ()
       PIP_ADAPTER_ADDRESSES pAddresses = (IP_ADAPTER_ADDRESSES*) malloc (outBufLen);
       if (GetAdaptersAddresses (AF_UNSPEC, GAA_FLAG_INCLUDE_PREFIX,
 				NULL, pAddresses, &outBufLen) != NO_ERROR)
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #endif
     {
@@ -816,7 +841,6 @@ NetworkOperations::holePunch (int sock, uint32_t ip, std::string otherkey)
 	  count++;
 	  if (count > 10)
 	    {
-	      std::cout << i << std::endl;
 	      holepunchstopmtx.lock ();
 	      hpsit = std::find_if (holepunchstop.begin (),
 				    holepunchstop.end (), [otherkey]
@@ -1017,7 +1041,9 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 	      << inet_ntop (AF_INET6, &from6.sin6_addr, tmpmsg.data (),
 			    tmpmsg.size ()) << " " << ntohs (from6.sin6_port)
 	      << " Type ";
+
 	}
+
       std::tuple<lt::dht::public_key, lt::dht::secret_key> ownkey;
       ownkey = lt::dht::ed25519_create_keypair (*seed);
       std::string unm = lt::aux::to_hex (std::get<0> (ownkey).bytes);
@@ -1057,7 +1083,10 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 	      maintblock.push_back (std::make_tuple (key, crtm));
 	    }
 	  maintblockmtx.unlock ();
-	  std::get<3> (*itsock) = crtm;
+	  if (itsock != sockets4.end ())
+	    {
+	      std::get<3> (*itsock) = crtm;
+	    }
 	  if (rcvip6 > 0)
 	    {
 	      ipv6contmtx.lock ();
@@ -3422,6 +3451,7 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 	}
       contmtx.unlock ();
     }
+
   return result;
 }
 
@@ -3616,8 +3646,8 @@ NetworkOperations::getNewFriends (std::string key)
       addripv4.sin_port = 0;
       int addrlen1 = sizeof(addripv4);
       bind (sock, (const sockaddr*) &addripv4, addrlen1);
-      std::shared_ptr<std::mutex> mtx (new std::mutex);
-      std::shared_ptr<std::mutex> mtxgip (new std::mutex);
+      std::mutex *mtx = new std::mutex;
+      std::mutex *mtxgip = new std::mutex;
       time_t tm = time (NULL);
       sockets4.push_back (std::make_tuple (key, sock, mtx, tm, mtxgip));
     }
@@ -5041,8 +5071,8 @@ NetworkOperations::removeFriend (std::string key)
       if (itsock != sockets4.end ())
 	{
 	  int sock = std::get<1> (*itsock);
-	  std::shared_ptr<std::mutex> mtx = std::get<2> (*itsock);
-	  std::shared_ptr<std::mutex> mtx2 = std::get<4> (*itsock);
+	  std::mutex *mtx = std::get<2> (*itsock);
+	  std::mutex *mtx2 = std::get<4> (*itsock);
 	  if (mtx->try_lock ())
 	    {
 	      if (sock >= 0)
@@ -5055,6 +5085,8 @@ NetworkOperations::removeFriend (std::string key)
   #endif
 		}
 	      mtx->unlock ();
+	      delete mtx;
+	      delete mtx2;
 	      sockets4.erase (itsock);
 	    }
 	  else
@@ -6416,16 +6448,110 @@ void
 NetworkOperations::getvResult (std::string key, uint32_t ip, uint16_t port,
 			       int seq)
 {
-  std::tuple<std::string, uint32_t, uint16_t, int> ttup;
-  std::string keyloc = key;
-  ttup = std::make_tuple (key, ip, port, seq);
-  std::vector<char> temp;
-  uint32_t iploc = ip;
-  temp.resize (INET_ADDRSTRLEN);
-  if (inet_ntop (AF_INET, &iploc, temp.data (), temp.size ()))
+  if (seq > 0)
     {
-      std::cout << "ip4 " << key << " " << temp.data () << ":" << ntohs (port)
-	  << " seq=" << seq << std::endl;
+      std::tuple<std::string, uint32_t, uint16_t, int> ttup;
+      std::string keyloc = key;
+      ttup = std::make_tuple (key, ip, port, seq);
+      std::vector<char> temp;
+      uint32_t iploc = ip;
+      temp.resize (INET_ADDRSTRLEN);
+      if (inet_ntop (AF_INET, &iploc, temp.data (), temp.size ()))
+	{
+	  std::cout << "ip4 " << key << " " << temp.data () << ":"
+	      << ntohs (port) << " seq=" << seq << std::endl;
+	  contmtx.lock ();
+	  auto itc = std::find_if (contacts.begin (), contacts.end (), [&keyloc]
+	  (auto &el)
+	    {
+	      return std::get<1>(el) == keyloc;
+	    });
+	  if (itc != contacts.end ())
+	    {
+	      getfrresmtx.lock ();
+	      auto it = std::find_if (getfrres.begin (), getfrres.end (),
+				      [&keyloc]
+				      (auto &el)
+					{
+					  return std::get<0>(el) == keyloc;
+					});
+	      if (it == getfrres.end ())
+		{
+		  if (ip != 0)
+		    {
+		      getfrres.push_back (ttup);
+		      maintblockmtx.lock ();
+		      time_t bltm = time (NULL);
+		      auto itmnt = std::find_if (
+			  maintblock.begin (), maintblock.end (), [keyloc]
+			  (auto &el)
+			    {
+			      return std::get<0>(el) == keyloc;
+			    });
+		      if (itmnt != maintblock.end ())
+			{
+			  std::get<1> (*itmnt) = bltm;
+			}
+		      else
+			{
+			  maintblock.push_back (std::make_tuple (key, bltm));
+			}
+		      maintblockmtx.unlock ();
+		    }
+		}
+	      else
+		{
+		  if (std::get<3> (*it) < seq && ip != 0)
+		    {
+		      *it = ttup;
+		      maintblockmtx.lock ();
+		      time_t bltm = time (NULL);
+		      auto itmnt = std::find_if (
+			  maintblock.begin (), maintblock.end (), [keyloc]
+			  (auto &el)
+			    {
+			      return std::get<0>(el) == keyloc;
+			    });
+		      if (itmnt != maintblock.end ())
+			{
+			  std::get<1> (*itmnt) = bltm;
+			}
+		      else
+			{
+			  maintblock.push_back (std::make_tuple (key, bltm));
+			}
+		      maintblockmtx.unlock ();
+		    }
+		}
+	      getfrresmtx.unlock ();
+	    }
+	  contmtx.unlock ();
+	}
+      else
+	{
+#ifdef __linux
+	  std::cerr << "DHT error on getting ipv4: " << errno << std::endl;
+#endif
+#ifdef _WIN32
+      int respol = WSAGetLastError ();
+      std::cerr << "DHT error on getting ipv4: " << respol << std::endl;
+#endif
+
+	}
+    }
+}
+
+void
+NetworkOperations::getvResult6 (std::string key, std::string ip, uint16_t port,
+				int seq)
+{
+  if (seq > 0)
+    {
+      std::tuple<std::string, std::string, uint16_t, int> ttup;
+      std::string keyloc = key;
+      ttup = std::make_tuple (key, ip, port, seq);
+      std::cout << "ip6 " << key << " " << ip << " " << ntohs (port) << " seq="
+	  << seq << std::endl;
       contmtx.lock ();
       auto itc = std::find_if (contacts.begin (), contacts.end (), [&keyloc]
       (auto &el)
@@ -6434,114 +6560,27 @@ NetworkOperations::getvResult (std::string key, uint32_t ip, uint16_t port,
 	});
       if (itc != contacts.end ())
 	{
-	  getfrresmtx.lock ();
-	  auto it = std::find_if (getfrres.begin (), getfrres.end (), [&keyloc]
+	  ipv6contmtx.lock ();
+	  auto it = std::find_if (ipv6cont.begin (), ipv6cont.end (), [&keyloc]
 	  (auto &el)
 	    {
 	      return std::get<0>(el) == keyloc;
 	    });
-	  if (it == getfrres.end ())
+	  if (it != ipv6cont.end ())
 	    {
-	      if (ip != 0)
+	      if (seq >= std::get<3> (*it))
 		{
-		  getfrres.push_back (ttup);
-		  maintblockmtx.lock ();
-		  time_t bltm = time (NULL);
-		  auto itmnt = std::find_if (
-		      maintblock.begin (), maintblock.end (), [keyloc]
-		      (auto &el)
-			{
-			  return std::get<0>(el) == keyloc;
-			});
-		  if (itmnt != maintblock.end ())
-		    {
-		      std::get<1> (*itmnt) = bltm;
-		    }
-		  else
-		    {
-		      maintblock.push_back (std::make_tuple (key, bltm));
-		    }
-		  maintblockmtx.unlock ();
+		  *it = ttup;
 		}
 	    }
 	  else
 	    {
-	      if (std::get<3> (*it) < seq && ip != 0)
-		{
-		  *it = ttup;
-		  maintblockmtx.lock ();
-		  time_t bltm = time (NULL);
-		  auto itmnt = std::find_if (
-		      maintblock.begin (), maintblock.end (), [keyloc]
-		      (auto &el)
-			{
-			  return std::get<0>(el) == keyloc;
-			});
-		  if (itmnt != maintblock.end ())
-		    {
-		      std::get<1> (*itmnt) = bltm;
-		    }
-		  else
-		    {
-		      maintblock.push_back (std::make_tuple (key, bltm));
-		    }
-		  maintblockmtx.unlock ();
-		}
+	      ipv6cont.push_back (ttup);
 	    }
-	  getfrresmtx.unlock ();
+	  ipv6contmtx.unlock ();
 	}
       contmtx.unlock ();
     }
-  else
-    {
-#ifdef __linux
-      std::cerr << "DHT error on getting ipv4: " << errno << std::endl;
-#endif
-#ifdef _WIN32
-      int respol = WSAGetLastError ();
-      std::cerr << "DHT error on getting ipv4: " << respol << std::endl;
-#endif
-
-    }
-}
-
-void
-NetworkOperations::getvResult6 (std::string key, std::string ip, uint16_t port,
-				int seq)
-{
-  std::tuple<std::string, std::string, uint16_t, int> ttup;
-  std::string keyloc = key;
-  ttup = std::make_tuple (key, ip, port, seq);
-  std::cout << "ip6 " << key << " " << ip << " " << ntohs (port) << " seq="
-      << seq << std::endl;
-  contmtx.lock ();
-  auto itc = std::find_if (contacts.begin (), contacts.end (), [&keyloc]
-  (auto &el)
-    {
-      return std::get<1>(el) == keyloc;
-    });
-  if (itc != contacts.end ())
-    {
-      ipv6contmtx.lock ();
-      auto it = std::find_if (ipv6cont.begin (), ipv6cont.end (), [&keyloc]
-      (auto &el)
-	{
-	  return std::get<0>(el) == keyloc;
-	});
-      if (it != ipv6cont.end ())
-	{
-	  if (seq >= std::get<3> (*it))
-	    {
-	      *it = ttup;
-	    }
-	}
-      else
-	{
-	  ipv6cont.push_back (ttup);
-	}
-      ipv6contmtx.unlock ();
-    }
-  contmtx.unlock ();
 
 }
 
@@ -6951,7 +6990,7 @@ NetworkOperations::commOps ()
 	      addtime = 2;
 	    }
 
-	  std::shared_ptr<std::mutex> smtx = std::get<2> (sockets4[i]);
+	  std::mutex *smtx = std::get<2> (sockets4[i]);
 	  int sock = std::get<1> (sockets4[i]);
 	  auto it = std::find_if (blockchsock.begin (), blockchsock.end (),
 				  [&key]
@@ -7078,79 +7117,39 @@ NetworkOperations::commOps ()
 		    for (size_t i = 0; i < this->sockets4.size (); i++)
 		      {
 			std::string key = std::get<0> (this->sockets4[i]);
-			int sock = std::get<1> (this->sockets4[i]);
-			std::shared_ptr<std::mutex> smtx = std::get<4> (
-			    this->sockets4[i]);
-			ownipsmtx->lock ();
-			auto it = std::find_if (
-			    ownips.begin (), ownips.end (), [&key]
+			int chiplr = 0;
+			this->ipv6lrmtx.lock ();
+			auto itipv6lr = std::find_if (
+			    this->ipv6lr.begin (), this->ipv6lr.end (), [&key]
 			    (auto &el)
 			      {
 				return std::get<0>(el) == key;
 			      });
-			if (it == ownips.end ())
+			if (itipv6lr != this->ipv6lr.end ())
 			  {
-			    std::vector<size_t> rplcstun;
-			    this->stunipsmtx.lock ();
-			    for (size_t j = 0; j < this->stunips.size (); j++)
+			    if (time (NULL) - std::get<1> (*itipv6lr)
+				> this->Tmttear)
 			      {
-				smtx->lock ();
-				std::pair<uint32_t, uint16_t> p =
-				    this->getOwnIps (sock, this->stunips[j]);
-				if (p.first != 0)
-				  {
-				    ips.push_back (p);
-				  }
-				else
-				  {
-				    rplcstun.push_back (j);
-				  }
-				smtx->unlock ();
-				if (ips.size () == 3)
-				  {
-				    break;
-				  }
+				chiplr = 1;
 			      }
-			    for (size_t j = 0; j < rplcstun.size (); j++)
-			      {
-				std::pair<struct in_addr, uint16_t> replpair;
-				replpair = this->stunips[rplcstun[j]];
-				this->stunips.erase (
-				    this->stunips.begin () + rplcstun[j]);
-				this->stunips.push_back (replpair);
-			      }
-			    this->stunipsmtx.unlock ();
-			    for (size_t j = 0; j < ips.size (); j++)
-			      {
-				if (j > 0)
-				  {
-				    if (ips[0] != ips[j])
-				      {
-					ips[0].second = 0;
-					break;
-				      }
-				  }
-			      }
-
-			    if (ips.size () > 0)
-			      {
-				std::tuple<std::string, uint32_t, uint16_t,
-				    time_t> ttup;
-				ttup = std::make_tuple (key, ips[0].first,
-							ips[0].second, curtime);
-				ownips.push_back (ttup);
-				this->putOwnIps (key, ips[0].first,
-						 ips[0].second);
-			      }
-			    ips.clear ();
 			  }
 			else
 			  {
-			    time_t curtime = time (NULL);
-			    time_t lr = std::get<3> (this->sockets4[i]);
-			    if (curtime - lr > Tmttear
-				&& curtime - lr <= Shuttmt
-				&& curtime - std::get<3> (*it) > Tmttear)
+			    chiplr = 1;
+			  }
+			this->ipv6lrmtx.unlock ();
+			if (chiplr > 0)
+			  {
+			    int sock = std::get<1> (this->sockets4[i]);
+			    std::mutex *smtx = std::get<4> (this->sockets4[i]);
+			    ownipsmtx->lock ();
+			    auto it = std::find_if (
+				ownips.begin (), ownips.end (), [&key]
+				(auto &el)
+				  {
+				    return std::get<0>(el) == key;
+				  });
+			    if (it == ownips.end ())
 			      {
 				std::vector<size_t> rplcstun;
 				this->stunipsmtx.lock ();
@@ -7195,6 +7194,7 @@ NetworkOperations::commOps ()
 					  }
 				      }
 				  }
+
 				if (ips.size () > 0)
 				  {
 				    std::tuple<std::string, uint32_t, uint16_t,
@@ -7202,84 +7202,157 @@ NetworkOperations::commOps ()
 				    ttup = std::make_tuple (key, ips[0].first,
 							    ips[0].second,
 							    curtime);
-				    if (std::get<1> (ttup) != std::get<1> (*it)
-					|| std::get<1> (ttup)
-					    != std::get<1> (*it))
-				      {
-					this->putOwnIps (key, ips[0].first,
-							 ips[0].second);
-				      }
-				    *it = ttup;
+				    ownips.push_back (ttup);
+				    this->putOwnIps (key, ips[0].first,
+						     ips[0].second);
 				  }
 				ips.clear ();
-
 			      }
-			    if (curtime - lr > Shuttmt
-				&& curtime - std::get<3> (*it) >= 300)
+			    else
 			      {
-				std::vector<size_t> rplcstun;
-				this->stunipsmtx.lock ();
-				for (size_t j = 0; j < this->stunips.size ();
-				    j++)
+				time_t curtime = time (NULL);
+				time_t lr = std::get<3> (this->sockets4[i]);
+				if (curtime - lr > Tmttear
+				    && curtime - lr <= Shuttmt
+				    && curtime - std::get<3> (*it) > Tmttear)
 				  {
-				    smtx->lock ();
-				    std::pair<uint32_t, uint16_t> p =
-					this->getOwnIps (sock,
-							 this->stunips[j]);
-				    if (p.first != 0)
+				    std::vector<size_t> rplcstun;
+				    this->stunipsmtx.lock ();
+				    for (size_t j = 0;
+					j < this->stunips.size (); j++)
 				      {
-					ips.push_back (p);
-				      }
-				    else
-				      {
-					rplcstun.push_back (j);
-				      }
-				    smtx->unlock ();
-				    if (ips.size () == 3)
-				      {
-					break;
-				      }
-				  }
-				for (size_t j = 0; j < rplcstun.size (); j++)
-				  {
-				    std::pair<struct in_addr, uint16_t> replpair;
-				    replpair = this->stunips[rplcstun[j]];
-				    this->stunips.erase (
-					this->stunips.begin () + rplcstun[j]);
-				    this->stunips.push_back (replpair);
-				  }
-				this->stunipsmtx.unlock ();
-				for (size_t j = 0; j < ips.size (); j++)
-				  {
-				    if (j > 0)
-				      {
-					if (ips[0] != ips[j])
+					smtx->lock ();
+					std::pair<uint32_t, uint16_t> p =
+					    this->getOwnIps (sock,
+							     this->stunips[j]);
+					if (p.first != 0)
 					  {
-					    ips[0].second = 0;
+					    ips.push_back (p);
+					  }
+					else
+					  {
+					    rplcstun.push_back (j);
+					  }
+					smtx->unlock ();
+					if (ips.size () == 3)
+					  {
 					    break;
 					  }
 				      }
-				  }
-				if (ips.size () > 0)
-				  {
-				    std::tuple<std::string, uint32_t, uint16_t,
-					time_t> ttup;
-				    ttup = std::make_tuple (key, ips[0].first,
-							    ips[0].second,
-							    curtime);
-				    if (std::get<1> (ttup) != std::get<1> (*it)
-					|| std::get<1> (ttup)
-					    != std::get<1> (*it))
+				    for (size_t j = 0; j < rplcstun.size ();
+					j++)
 				      {
-					this->putOwnIps (key, ips[0].first,
-							 ips[0].second);
+					std::pair<struct in_addr, uint16_t> replpair;
+					replpair = this->stunips[rplcstun[j]];
+					this->stunips.erase (
+					    this->stunips.begin ()
+						+ rplcstun[j]);
+					this->stunips.push_back (replpair);
 				      }
-				    *it = ttup;
+				    this->stunipsmtx.unlock ();
+				    for (size_t j = 0; j < ips.size (); j++)
+				      {
+					if (j > 0)
+					  {
+					    if (ips[0] != ips[j])
+					      {
+						ips[0].second = 0;
+						break;
+					      }
+					  }
+				      }
+				    if (ips.size () > 0)
+				      {
+					std::tuple<std::string, uint32_t,
+					    uint16_t, time_t> ttup;
+					ttup = std::make_tuple (key,
+								ips[0].first,
+								ips[0].second,
+								curtime);
+					if (std::get<1> (ttup)
+					    != std::get<1> (*it)
+					    || std::get<1> (ttup)
+						!= std::get<1> (*it))
+					  {
+					    this->putOwnIps (key, ips[0].first,
+							     ips[0].second);
+					  }
+					*it = ttup;
+				      }
+				    ips.clear ();
+
 				  }
-				ips.clear ();
+				if (curtime - lr > Shuttmt
+				    && curtime - std::get<3> (*it) >= 300)
+				  {
+				    std::vector<size_t> rplcstun;
+				    this->stunipsmtx.lock ();
+				    for (size_t j = 0;
+					j < this->stunips.size (); j++)
+				      {
+					smtx->lock ();
+					std::pair<uint32_t, uint16_t> p =
+					    this->getOwnIps (sock,
+							     this->stunips[j]);
+					if (p.first != 0)
+					  {
+					    ips.push_back (p);
+					  }
+					else
+					  {
+					    rplcstun.push_back (j);
+					  }
+					smtx->unlock ();
+					if (ips.size () == 3)
+					  {
+					    break;
+					  }
+				      }
+				    for (size_t j = 0; j < rplcstun.size ();
+					j++)
+				      {
+					std::pair<struct in_addr, uint16_t> replpair;
+					replpair = this->stunips[rplcstun[j]];
+					this->stunips.erase (
+					    this->stunips.begin ()
+						+ rplcstun[j]);
+					this->stunips.push_back (replpair);
+				      }
+				    this->stunipsmtx.unlock ();
+				    for (size_t j = 0; j < ips.size (); j++)
+				      {
+					if (j > 0)
+					  {
+					    if (ips[0] != ips[j])
+					      {
+						ips[0].second = 0;
+						break;
+					      }
+					  }
+				      }
+				    if (ips.size () > 0)
+				      {
+					std::tuple<std::string, uint32_t,
+					    uint16_t, time_t> ttup;
+					ttup = std::make_tuple (key,
+								ips[0].first,
+								ips[0].second,
+								curtime);
+					if (std::get<1> (ttup)
+					    != std::get<1> (*it)
+					    || std::get<1> (ttup)
+						!= std::get<1> (*it))
+					  {
+					    this->putOwnIps (key, ips[0].first,
+							     ips[0].second);
+					  }
+					*it = ttup;
+				      }
+				    ips.clear ();
+				  }
 			      }
+			    ownipsmtx->unlock ();
 			  }
-			ownipsmtx->unlock ();
 		      }
 		    this->sockmtx.unlock ();
 		    thrmtx->unlock ();
@@ -7431,7 +7504,7 @@ NetworkOperations::commOps ()
 	  time_t blockmaint = 0;
 	  maintblockmtx.lock ();
 	  auto itmnt = std::find_if (maintblock.begin (), maintblock.end (),
-				     [key]
+				     [&key]
 				     (auto &el)
 				       {
 					 return std::get<0>(el) == key;
@@ -7513,7 +7586,27 @@ NetworkOperations::commOps ()
 			}
 		    }
 		  ipv6contmtx.unlock ();
-		  if (s <= 0)
+		  int chiplr = 0;
+		  ipv6lrmtx.lock ();
+		  auto itipv6lr = std::find_if (
+		      ipv6lr.begin (), ipv6lr.end (), [&key]
+		      (auto &el)
+			{
+			  return std::get<0>(el) == key;
+			});
+		  if (itipv6lr != ipv6lr.end ())
+		    {
+		      if (time (NULL) - std::get<1> (*itipv6lr) > Tmttear)
+			{
+			  chiplr = 1;
+			}
+		    }
+		  else
+		    {
+		      chiplr = 1;
+		    }
+		  this->ipv6lrmtx.unlock ();
+		  if (s <= 0 || chiplr > 0)
 		    {
 		      getfrresmtx.lock ();
 		      auto it4 = std::find_if (
@@ -7564,8 +7657,8 @@ NetworkOperations::commOps ()
 				      std::string passwd = lt::aux::to_hex (
 					  othpk.bytes);
 				      msg = af.cryptStrm (unm, passwd, msg);
-				      std::shared_ptr<std::mutex> mtx =
-					  std::get<2> (sockets4[i]);
+				      std::mutex *mtx = std::get<2> (
+					  sockets4[i]);
 				      mtx->lock ();
 				      sendMsg (sock, ip, port, msg);
 				      mtx->unlock ();
@@ -7607,8 +7700,7 @@ NetworkOperations::commOps ()
 							    > Tmttear)
 							  {
 							    this->sockmtx.lock ();
-							    std::shared_ptr<
-								std::mutex> mtx =
+							    std::mutex *mtx =
 								std::get<2> (
 								    sockets4[i]);
 							    std::string otherkey =
@@ -7663,8 +7755,8 @@ NetworkOperations::commOps ()
 						  lt::aux::to_hex (othpk.bytes);
 					      msg = af.cryptStrm (unm, passwd,
 								  msg);
-					      std::shared_ptr<std::mutex> mtx =
-						  std::get<2> (sockets4[i]);
+					      std::mutex *mtx = std::get<2> (
+						  sockets4[i]);
 					      mtx->lock ();
 					      sendMsg (sock, ip, port, msg);
 					      mtx->unlock ();
@@ -7693,8 +7785,7 @@ NetworkOperations::commOps ()
 				  uint16_t port = htons (3000);
 				  inet_pton (AF_INET, adr.c_str (), &ip);
 				  int sock = std::get<1> (sockets4[i]);
-				  std::shared_ptr<std::mutex> mtx =
-				      std::get<2> (sockets4[i]);
+				  std::mutex *mtx = std::get<2> (sockets4[i]);
 				  std::vector<char> msg;
 				  std::tuple<lt::dht::public_key,
 				      lt::dht::secret_key> ownkey;
@@ -7723,8 +7814,7 @@ NetworkOperations::commOps ()
 			      uint16_t port = htons (3000);
 			      inet_pton (AF_INET, adr.c_str (), &ip);
 			      int sock = std::get<1> (sockets4[i]);
-			      std::shared_ptr<std::mutex> mtx = std::get<2> (
-				  sockets4[i]);
+			      std::mutex *mtx = std::get<2> (sockets4[i]);
 			      std::vector<char> msg;
 			      std::tuple<lt::dht::public_key,
 				  lt::dht::secret_key> ownkey;
@@ -7756,7 +7846,7 @@ NetworkOperations::commOps ()
       sockmtx.lock ();
       for (size_t i = 0; i < sockets4.size (); i++)
 	{
-	  std::shared_ptr<std::mutex> mtxgip = std::get<4> (sockets4[i]);
+	  std::mutex *mtxgip = std::get<4> (sockets4[i]);
 	  if (mtxgip->try_lock ())
 	    {
 	      sforpoll.push_back (std::get<1> (sockets4[i]));
@@ -7820,8 +7910,7 @@ NetworkOperations::commOps ()
 				      });
 				if (it != this->sockets4.end ())
 				  {
-				    std::shared_ptr<std::mutex> mtx =
-					std::get<2> (*it);
+				    std::mutex *mtx = std::get<2> (*it);
 				    std::string key = std::get<0> (*it);
 				    mtx->lock ();
 				    sockaddr_in from =
@@ -7837,7 +7926,7 @@ NetworkOperations::commOps ()
 						this->getfrres.end (),
 						[&key]
 						(auto &el)
-						  { return std::get<0>(el) == key;}                                                                                                );
+						  { return std::get<0>(el) == key;}                                                                                                                 );
 					if (itgfr != this->getfrres.end ())
 					  {
 					    std::get<1> (*itgfr) =
@@ -7893,7 +7982,7 @@ NetworkOperations::commOps ()
 	    }
 	  std::string key = std::get<0> (sockets4[i]);
 	  int sock = std::get<1> (sockets4[i]);
-	  std::shared_ptr<std::mutex> mtx = std::get<2> (sockets4[i]);
+	  std::mutex *mtx = std::get<2> (sockets4[i]);
 	  time_t lrt4 = std::get<3> (sockets4[i]);
 	  time_t curtime = time (NULL);
 	  time_t lrt6 = 0;
@@ -8058,7 +8147,7 @@ NetworkOperations::fileReject (std::string key, time_t tm)
 		{
 		  uint32_t ip = std::get<1> (*itgfr);
 		  uint16_t port = std::get<2> (*itgfr);
-		  std::shared_ptr<std::mutex> mtx = std::get<2> (*it4);
+		  std::mutex *mtx = std::get<2> (*it4);
 		  mtx->lock ();
 		  sendMsg (std::get<1> (*it4), ip, port, msg);
 		  mtx->unlock ();
@@ -8170,7 +8259,7 @@ NetworkOperations::fileAccept (std::string key, time_t tm,
 		{
 		  uint32_t ip = std::get<1> (*itgfr);
 		  uint16_t port = std::get<2> (*itgfr);
-		  std::shared_ptr<std::mutex> mtx = std::get<2> (*it4);
+		  std::mutex *mtx = std::get<2> (*it4);
 		  mtx->lock ();
 		  sendMsg (std::get<1> (*it4), ip, port, msg);
 		  mtx->unlock ();
@@ -8986,7 +9075,7 @@ NetworkOperations::blockFriend (std::string key)
       if (itsock != sockets4.end ())
 	{
 	  int sock = std::get<1> (*itsock);
-	  std::shared_ptr<std::mutex> mtx = std::get<2> (*itsock);
+	  std::mutex *mtx = std::get<2> (*itsock);
 	  if (mtx->try_lock ())
 	    {
 	      if (sock >= 0)
@@ -9321,8 +9410,8 @@ NetworkOperations::startFriend (std::string key, int ind)
       addripv4.sin_port = 0;
       int addrlen1 = sizeof(addripv4);
       bind (sock, (const sockaddr*) &addripv4, addrlen1);
-      std::shared_ptr<std::mutex> mtx (new std::mutex);
-      std::shared_ptr<std::mutex> mtxgip (new std::mutex);
+      std::mutex *mtx = new std::mutex;
+      std::mutex *mtxgip = new std::mutex;
       time_t tm = time (NULL);
       sockets4.push_back (std::make_tuple (key, sock, mtx, tm, mtxgip));
     }
@@ -10549,42 +10638,6 @@ NetworkOperations::cancelAll ()
 	      }
 	    usleep (100);
 	  }
-	for (size_t i = 0; i < this->sockets4.size (); i++)
-	  {
-	    if (std::get<1> (this->sockets4[i]) >= 0)
-	      {
-#ifdef __linux
-	close (std::get<1> (this->sockets4[i]));
-#endif
-#ifdef _WIN32
-	  	int ch = closesocket (std::get<1> (this->sockets4[i]));
-	  	if (ch != 0)
-	  	  {
-	  	    ch = WSAGetLastError ();
-	  	    std::cerr << "ipv4 close socket error: " << ch << std::endl;
-	  	  }
-	  #endif
-      }
-  }
-this->sockets4.clear ();
-
-#ifdef __linux
-	close (this->sockipv6);
-#endif
-#ifdef _WIN32
-	int ch = closesocket (this->sockipv6);
-	if (ch != 0)
-	  {
-	    ch = WSAGetLastError ();
-	    std::cerr << "ipv6 close socket error: " << ch << std::endl;
-	  }
-	ch = WSACleanup ();
-	if (ch != 0)
-	  {
-	    ch = WSAGetLastError ();
-	    std::cerr << "Windows cleanup error: " << ch << std::endl;
-	  }
-#endif
 	this->canceled.emit ();
       });
   thr->detach ();
