@@ -13,8 +13,10 @@ if host_machine.system() == 'windows'
 endif 
 executable ('communist', sources : src, dependencies : [gtkmm, icu, zip, gcrypt, libtorrent, hunspell, thread_dep], install : true, gui_app : true)
 install_subdir ('Communist', install_dir : 'share')
-install_data ('ru.mail.bobilev_yury.Communist.desktop', install_dir : 'share/applications')
 if host_machine.system() == 'linux'
 	install_data ('ru.mail.bobilev_yury.Communist.desktop', install_dir : 'share/applications')
 	install_data ('communist.png', install_dir : 'share/icons/hicolor/128x128/apps')
+endif
+if host_machine.system() == 'windows'
+	install_data ('communist.ico', install_dir : 'share/Communist')
 endif

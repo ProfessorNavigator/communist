@@ -281,6 +281,7 @@ NetworkOperations::mainFunc ()
       if (GetAdaptersAddresses (AF_UNSPEC, GAA_FLAG_INCLUDE_PREFIX,
 				NULL, pAddresses, &outBufLen) != NO_ERROR)
 
+
 #endif
     {
       std::cerr << "Error on getting ipv6" << std::endl;
@@ -1177,37 +1178,40 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 		      filename = filename + "/.Communist/" + indstr;
 		      filepath = std::filesystem::u8path (filename);
 		      std::vector<int> indv;
-		      for (auto &dit : std::filesystem::directory_iterator (
-			  filepath))
+		      if (std::filesystem::exists (filepath))
 			{
-			  std::filesystem::path tp = dit.path ();
-			  if (tp.filename ().u8string () != "Profile"
-			      && tp.filename ().u8string () != "Yes")
+			  for (auto &dit : std::filesystem::directory_iterator (
+			      filepath))
 			    {
-			      int vint;
+			      std::filesystem::path tp = dit.path ();
+			      if (tp.filename ().u8string () != "Profile"
+				  && tp.filename ().u8string () != "Yes")
+				{
+				  int vint;
+				  strm.clear ();
+				  strm.str ("");
+				  strm.imbue (loc);
+				  std::string fnm = tp.filename ().u8string ();
+				  std::string::size_type n;
+				  n = fnm.find ("f");
+				  if (n != std::string::npos)
+				    {
+				      fnm = fnm.substr (0, n);
+				    }
+				  strm << fnm;
+				  strm >> vint;
+				  indv.push_back (vint);
+				}
+			    }
+			  std::sort (indv.begin (), indv.end ());
+			  if (indv.size () > 0)
+			    {
 			      strm.clear ();
 			      strm.str ("");
 			      strm.imbue (loc);
-			      std::string fnm = tp.filename ().u8string ();
-			      std::string::size_type n;
-			      n = fnm.find ("f");
-			      if (n != std::string::npos)
-				{
-				  fnm = fnm.substr (0, n);
-				}
-			      strm << fnm;
-			      strm >> vint;
-			      indv.push_back (vint);
+			      strm << indv[indv.size () - 1];
+			      filename = filename + "/" + strm.str ();
 			    }
-			}
-		      std::sort (indv.begin (), indv.end ());
-		      if (indv.size () > 0)
-			{
-			  strm.clear ();
-			  strm.str ("");
-			  strm.imbue (loc);
-			  strm << indv[indv.size () - 1];
-			  filename = filename + "/" + strm.str ();
 			}
 		    }
 		  filepath = std::filesystem::u8path (filename);
@@ -1924,8 +1928,8 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 	      if (itfqrcvd == fqrcvd.end ())
 		{
 		  fqrcvd.push_back (fqtup);
+		  filerequest.emit (key, time, fsize, fnm);
 		}
-	      filerequest.emit (key, time, fsize, fnm);
 	      fqrcvdmtx.unlock ();
 	    }
 	  if (buf.size () >= 42 && msgtype == "FJ")
@@ -7926,7 +7930,7 @@ NetworkOperations::commOps ()
 						this->getfrres.end (),
 						[&key]
 						(auto &el)
-						  { return std::get<0>(el) == key;}                                                                                                                 );
+						  { return std::get<0>(el) == key;}                                                                                                                  );
 					if (itgfr != this->getfrres.end ())
 					  {
 					    std::get<1> (*itgfr) =
