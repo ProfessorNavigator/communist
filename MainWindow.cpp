@@ -342,7 +342,9 @@ MainWindow::MainWindow ()
   filename = filename + "/.config/Communist/Prefs";
   std::filesystem::path prefpath = std::filesystem::u8path (filename);
   std::fstream f;
+  try {
   f.open (prefpath, std::ios_base::in);
+  } catch (...) {}
   if (f.is_open ())
     {
       while (!f.eof ())
@@ -565,7 +567,7 @@ MainWindow::userCheck ()
       Gtk::Grid *grid = Gtk::make_managed<Gtk::Grid> ();
       grid->set_halign (Gtk::Align::CENTER);
       this->unset_child ();
-      this->set_title (gettext ("Entrance"));
+      this->set_title (gettext ("Login"));
       this->set_child (*grid);
 
       Gtk::Label *username = Gtk::make_managed<Gtk::Label> ();
@@ -1657,15 +1659,15 @@ MainWindow::infoMessage (Gtk::Entry *usname, Gtk::Entry *passwd,
       Gtk::Label *label = new Gtk::Label;
       if (username == "")
 	{
-	  label->set_text (gettext ("Input user name!"));
+	  label->set_text (gettext ("Enter user name!"));
 	}
       if (password == "" && username != "")
 	{
-	  label->set_text (gettext ("Input password!"));
+	  label->set_text (gettext ("Enter password!"));
 	}
       if (password != reppassword && username != "" && password != "")
 	{
-	  label->set_text (gettext ("Passwords are not equal!"));
+	  label->set_text (gettext ("Passwords do not match!"));
 	}
       label->set_margin (5);
       label->set_halign (Gtk::Align::CENTER);
@@ -1777,7 +1779,7 @@ MainWindow::createProfile ()
   grid->attach (*rightgrid, 1, 0, 1, 1);
 
   Gtk::Entry *key = Gtk::make_managed<Gtk::Entry> ();
-  key->set_placeholder_text (gettext ("Generate the key (compulsory)"));
+  key->set_placeholder_text (gettext ("Generate key*"));
   key->set_margin (5);
   key->set_editable (false);
 
@@ -1798,19 +1800,19 @@ MainWindow::createProfile ()
   rightgrid->attach (*generate, 0, 1, 3, 1);
 
   Gtk::Entry *nickname = Gtk::make_managed<Gtk::Entry> ();
-  nickname->set_placeholder_text (gettext ("Nickname (compulsory)"));
+  nickname->set_placeholder_text (gettext ("Nickname*"));
   nickname->set_margin (5);
   rightgrid->attach (*nickname, 0, 2, 3, 1);
   profilevector.push_back (nickname);
 
   Gtk::Entry *name = Gtk::make_managed<Gtk::Entry> ();
-  name->set_placeholder_text (gettext ("Name (not compulsory)"));
+  name->set_placeholder_text (gettext ("Name"));
   name->set_margin (5);
   rightgrid->attach (*name, 0, 3, 3, 1);
   profilevector.push_back (name);
 
   Gtk::Entry *surname = Gtk::make_managed<Gtk::Entry> ();
-  surname->set_placeholder_text (gettext ("Surame (not compulsory)"));
+  surname->set_placeholder_text (gettext ("Surname"));
   surname->set_margin (5);
   rightgrid->attach (*surname, 0, 4, 3, 1);
   profilevector.push_back (surname);
@@ -1878,7 +1880,7 @@ MainWindow::createProfile ()
 
   Gtk::Button *addavatar = Gtk::make_managed<Gtk::Button> ();
   Gtk::Label *oblab = Gtk::make_managed<Gtk::Label> ();
-  oblab->set_text (gettext ("Open image"));
+  oblab->set_text (gettext ("Choose image"));
   oblab->set_justify (Gtk::Justification::CENTER);
   addavatar->set_child (*oblab);
   addavatar->set_margin (5);
@@ -1921,7 +1923,7 @@ void
 MainWindow::openImage ()
 {
   Gtk::FileChooserDialog *dialog;
-  dialog = new Gtk::FileChooserDialog (gettext ("Choose image file"),
+  dialog = new Gtk::FileChooserDialog (gettext ("Choose image"),
 				       Gtk::FileChooser::Action::OPEN);
   dialog->set_transient_for (*this);
   Gtk::Button *but;
@@ -2044,11 +2046,11 @@ MainWindow::saveProfile ()
 	  label->set_text ("");
 	  if (i == 0)
 	    {
-	      label->set_text (gettext ("Generate the key!"));
+	      label->set_text (gettext ("Generate key!"));
 	    }
 	  if (i == 1)
 	    {
-	      label->set_text (gettext ("Input nickname!"));
+	      label->set_text (gettext ("Enter nickname!"));
 	    }
 
 	  label->set_halign (Gtk::Align::CENTER);
@@ -4723,7 +4725,7 @@ MainWindow::creatReply (int numcl, double x, double y, Gtk::Frame *fr,
       Glib::RefPtr<Gio::Menu> menu = Gio::Menu::create ();
       menu->append (gettext ("Reply"), "popupmsg.reply");
       menu->append (gettext ("Forward"), "popupmsg.forward");
-      menu->append (gettext ("Remove (only own machine)"), "popupmsg.remove");
+      menu->append (gettext ("Remove (only this machine)"), "popupmsg.remove");
       Gtk::PopoverMenu *Menu = Gtk::make_managed<Gtk::PopoverMenu> ();
       Menu->set_parent (*fr);
       Menu->set_menu_model (menu);
@@ -5414,7 +5416,7 @@ MainWindow::removeMsg (std::string othkey, std::filesystem::path msgpath,
   Gtk::Label *lab = Gtk::make_managed<Gtk::Label> ();
   lab->set_halign (Gtk::Align::CENTER);
   lab->set_margin (5);
-  lab->set_text (gettext ("Are you shure?"));
+  lab->set_text (gettext ("Are you sure?"));
   grid->attach (*lab, 0, 0, 2, 1);
 
   Gtk::Button *confirm = Gtk::make_managed<Gtk::Button> ();
@@ -6319,7 +6321,7 @@ MainWindow::editProfile ()
     {
       name->set_text (Glib::ustring (profvect[1]));
     }
-  name->set_placeholder_text (gettext ("Name (not compalsory)"));
+  name->set_placeholder_text (gettext ("Name"));
   name->set_margin (5);
   rightgrid->attach (*name, 0, 1, 3, 1);
   profilevector.push_back (name);
@@ -6329,7 +6331,7 @@ MainWindow::editProfile ()
     {
       surname->set_text (profvect[2]);
     }
-  surname->set_placeholder_text (gettext ("Surname (not compalsory)"));
+  surname->set_placeholder_text (gettext ("Surname"));
   surname->set_margin (5);
   rightgrid->attach (*surname, 0, 2, 3, 1);
   profilevector.push_back (surname);
@@ -7904,11 +7906,13 @@ MainWindow::settingsWindow ()
   cmbthm->set_margin (5);
   std::filesystem::path thmp = std::filesystem::u8path (
       std::string (Sharepath + "/themes"));
+  try {
   for (auto &dirit : std::filesystem::directory_iterator (thmp))
     {
       std::filesystem::path p = dirit.path ();
       cmbthm->append (Glib::ustring (p.filename ().u8string ()));
     }
+  } catch(...){}
   prefvectmtx.lock ();
   auto itprv = std::find_if (prefvect.begin (), prefvect.end (), []
   (auto &el)
@@ -10059,7 +10063,7 @@ MainWindow::aboutProg ()
   std::filesystem::path filepath;
   Glib::RefPtr<Gtk::TextBuffer> txtab = Gtk::TextBuffer::create ();
   Glib::ustring abbuf = gettext (
-      "Communist is simple \"peer to peer\" messenger.\n"
+      "Communist is shitty \"peer to peer\" messenger. Use GNU Jami instead.\n"
       "Author Yury Bobylev.\n"
       "Program use next libraries:\n"
       "GTK https://www.gtk.org\n"
@@ -10140,7 +10144,7 @@ MainWindow::aboutProg ()
       scrlc->set_min_content_height (700);
     }
   scrlc->set_child (*tvlc);
-  noteb->append_page (*scrlc, gettext ("Licence"));
+  noteb->append_page (*scrlc, gettext ("License"));
 
   window->signal_close_request ().connect ( [window]
   {

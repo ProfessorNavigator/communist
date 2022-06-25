@@ -1,14 +1,14 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
+# This file is distributed under the same license as the communist package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: communist\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-06-04 22:00+0400\n"
+"POT-Creation-Date: 2022-06-25 15:57+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,42 +21,42 @@ msgstr ""
 msgid "Wait, application is closing..."
 msgstr ""
 
-#: MainWindow.cpp:456 MainWindow.cpp:1669
+#: MainWindow.cpp:483 MainWindow.cpp:1770
 msgid "Profile creation"
 msgstr ""
 
-#: MainWindow.cpp:460 MainWindow.cpp:545
+#: MainWindow.cpp:487 MainWindow.cpp:572
 msgid "User name:"
 msgstr ""
 
-#: MainWindow.cpp:470 MainWindow.cpp:555
+#: MainWindow.cpp:497 MainWindow.cpp:582
 msgid "Password:"
 msgstr ""
 
-#: MainWindow.cpp:485
+#: MainWindow.cpp:512
 msgid "Repeat password:"
 msgstr ""
 
-#: MainWindow.cpp:500 MainWindow.cpp:570 MainWindow.cpp:4789
+#: MainWindow.cpp:527 MainWindow.cpp:597 MainWindow.cpp:4904
 msgid "Confirm"
 msgstr ""
 
-#: MainWindow.cpp:514 MainWindow.cpp:584 MainWindow.cpp:1752
-#: MainWindow.cpp:1827 MainWindow.cpp:3284 MainWindow.cpp:5265
-#: MainWindow.cpp:6257 MainWindow.cpp:6301 MainWindow.cpp:6523
-#: MainWindow.cpp:6793 MainWindow.cpp:9210
+#: MainWindow.cpp:541 MainWindow.cpp:611 MainWindow.cpp:1853
+#: MainWindow.cpp:1928 MainWindow.cpp:3396 MainWindow.cpp:5380
+#: MainWindow.cpp:6371 MainWindow.cpp:6415 MainWindow.cpp:6637
+#: MainWindow.cpp:6912 MainWindow.cpp:9412
 msgid "Cancel"
 msgstr ""
 
-#: MainWindow.cpp:541
-msgid "Entrance"
+#: MainWindow.cpp:568
+msgid "Login"
 msgstr ""
 
-#: MainWindow.cpp:668
+#: MainWindow.cpp:728
 msgid "Communist"
 msgstr ""
 
-#: MainWindow.cpp:692
+#: MainWindow.cpp:770
 msgid ""
 "<interface><menu id='menubar'>    <submenu>\t\t<attribute name='label' "
 "translatable='yes'>Contacts</attribute>\t\t\t<section>\t\t\t\t<item>\t\t\t\t"
@@ -79,484 +79,480 @@ msgid ""
 "submenu></menu></interface>"
 msgstr ""
 
-#: MainWindow.cpp:829 MainWindow.cpp:3255
+#: MainWindow.cpp:910 MainWindow.cpp:3367
 msgid "Add contact"
 msgstr ""
 
-#: MainWindow.cpp:840 MainWindow.cpp:2786 MainWindow.cpp:7461
+#: MainWindow.cpp:921 MainWindow.cpp:2897 MainWindow.cpp:7580
 msgid "Remove contact"
 msgstr ""
 
-#: MainWindow.cpp:1224
-msgid "Attach file"
-msgstr ""
-
-#: MainWindow.cpp:1451
-msgid "Send message"
-msgstr ""
-
-#: MainWindow.cpp:1559
-msgid "Input user name!"
-msgstr ""
-
-#: MainWindow.cpp:1563
-msgid "Input password!"
-msgstr ""
-
-#: MainWindow.cpp:1567
-msgid "Passwords are not equal!"
-msgstr ""
-
-#: MainWindow.cpp:1574 MainWindow.cpp:1958 MainWindow.cpp:2118
-#: MainWindow.cpp:3670 MainWindow.cpp:5074 MainWindow.cpp:6391
-#: MainWindow.cpp:7255 MainWindow.cpp:7376 MainWindow.cpp:7638
-#: MainWindow.cpp:9179
-msgid "Close"
-msgstr ""
-
-#: MainWindow.cpp:1679
-msgid "Generate the key (compulsory)"
-msgstr ""
-
-#: MainWindow.cpp:1689
-msgid "Generate"
-msgstr ""
-
-#: MainWindow.cpp:1700
-msgid "Nickname (compulsory)"
-msgstr ""
-
-#: MainWindow.cpp:1706
-msgid "Name (not compulsory)"
-msgstr ""
-
-#: MainWindow.cpp:1712
-msgid "Surame (not compulsory)"
-msgstr ""
-
-#: MainWindow.cpp:1719
-msgid "Save"
-msgstr ""
-
-#: MainWindow.cpp:1733 MainWindow.cpp:6239
-msgid "Clear"
-msgstr ""
-
-#: MainWindow.cpp:1780
-msgid "Open image"
-msgstr ""
-
-#: MainWindow.cpp:1794
-msgid "Remove image"
-msgstr ""
-
-#: MainWindow.cpp:1823
-msgid "Choose image file"
-msgstr ""
-
-#: MainWindow.cpp:1829
-msgid "OK"
-msgstr ""
-
-#: MainWindow.cpp:1938 MainWindow.cpp:6379
-msgid "Error"
-msgstr ""
-
-#: MainWindow.cpp:1946
-msgid "Generate the key!"
-msgstr ""
-
-#: MainWindow.cpp:1950 MainWindow.cpp:6385
-msgid "Input nickname!"
-msgstr ""
-
-#: MainWindow.cpp:2087
-msgid "Key"
-msgstr ""
-
-#: MainWindow.cpp:2103
-msgid "Copy"
-msgstr ""
-
-#: MainWindow.cpp:2472
-msgid "Forwarded from: "
-msgstr ""
-
-#: MainWindow.cpp:2543
-msgid "Me:"
-msgstr ""
-
-#: MainWindow.cpp:2793
-msgid "Remove contact? This action will erase all messages forever."
-msgstr ""
-
-#: MainWindow.cpp:2802 MainWindow.cpp:5311 MainWindow.cpp:6766
-#: MainWindow.cpp:6850
-msgid "Yes"
-msgstr ""
-
-#: MainWindow.cpp:2815 MainWindow.cpp:5517 MainWindow.cpp:6984
-#: MainWindow.cpp:7161
-msgid "No"
-msgstr ""
-
-#: MainWindow.cpp:3260
-msgid "Public key:"
-msgstr ""
-
-#: MainWindow.cpp:3272
-msgid "Add"
-msgstr ""
-
-#: MainWindow.cpp:3506
-msgid "Friends request edit"
-msgstr ""
-
-#: MainWindow.cpp:3551 MainWindow.cpp:3719
-msgid "Remove from list"
-msgstr ""
-
-#: MainWindow.cpp:4612
-msgid "Reply"
-msgstr ""
-
-#: MainWindow.cpp:4613
-msgid "Forward"
-msgstr ""
-
-#: MainWindow.cpp:4614
-msgid "Remove (only own machine)"
-msgstr ""
-
-#: MainWindow.cpp:4749
-msgid "Select contact"
-msgstr ""
-
-#: MainWindow.cpp:5054
-msgid "Error!"
-msgstr ""
-
-#: MainWindow.cpp:5065
-msgid "File you want to send does not exists"
-msgstr ""
-
-#: MainWindow.cpp:5288
-msgid "Confirmation"
-msgstr ""
-
-#: MainWindow.cpp:5302
-msgid "Are you shure?"
-msgstr ""
-
-#: MainWindow.cpp:6188
-msgid "Edit profile"
-msgstr ""
-
-#: MainWindow.cpp:6208
-msgid "Name (not compalsory)"
-msgstr ""
-
-#: MainWindow.cpp:6218
-msgid "Surname (not compalsory)"
-msgstr ""
-
-#: MainWindow.cpp:6225
-msgid "Save profile"
-msgstr ""
-
-#: MainWindow.cpp:6286
-msgid "Open avatar"
-msgstr ""
-
-#: MainWindow.cpp:6298
-msgid "Avatar file choice"
-msgstr ""
-
-#: MainWindow.cpp:6304 MainWindow.cpp:9322 MainWindow.cpp:9398
-msgid "Choose"
-msgstr ""
-
-#: MainWindow.cpp:6330
-msgid "Remove avatar"
-msgstr ""
-
-#: MainWindow.cpp:6510
-msgid "File choose"
-msgstr ""
-
-#: MainWindow.cpp:6520 MainWindow.cpp:6789
-msgid "Open"
-msgstr ""
-
-#: MainWindow.cpp:6564
-msgid " File: "
-msgstr ""
-
-#: MainWindow.cpp:6691
-msgid "File request"
-msgstr ""
-
-#: MainWindow.cpp:6736
-msgid " is trying to send you a file."
-msgstr ""
-
-#: MainWindow.cpp:6754
-msgid "Size: "
-msgstr ""
-
-#: MainWindow.cpp:6762
-msgid "Accept?"
-msgstr ""
-
-#: MainWindow.cpp:6778
-msgid "Path selection"
-msgstr ""
-
-#: MainWindow.cpp:6831
-msgid "Warning!"
-msgstr ""
-
-#: MainWindow.cpp:6841
-msgid "File already exists, replace?"
-msgstr ""
-
-#: MainWindow.cpp:6880 MainWindow.cpp:7027
-msgid "Downloading "
-msgstr ""
-
-#: MainWindow.cpp:6959 MainWindow.cpp:7104 MainWindow.cpp:9581
-msgid "Downloading/sending file progress"
-msgstr ""
-
-#: MainWindow.cpp:7235
-msgid "File rejected"
-msgstr ""
-
-#: MainWindow.cpp:7248
-msgid " rejected to accept file!"
-msgstr ""
-
-#: MainWindow.cpp:7312
-msgid "File received"
-msgstr ""
-
-#: MainWindow.cpp:7327 MainWindow.cpp:7351
-msgid "File"
-msgstr ""
-
-#: MainWindow.cpp:7329 MainWindow.cpp:7341
-msgid "from"
-msgstr ""
-
-#: MainWindow.cpp:7331
-msgid "received"
-msgstr ""
-
-#: MainWindow.cpp:7339
-msgid "Error occurred while receiving file"
-msgstr ""
-
-#: MainWindow.cpp:7343
-msgid "- hash is not correct!"
-msgstr ""
-
-#: MainWindow.cpp:7353 MainWindow.cpp:7365
-msgid "for"
-msgstr ""
-
-#: MainWindow.cpp:7355
-msgid "was sent"
-msgstr ""
-
-#: MainWindow.cpp:7363
-msgid "Error on sending"
-msgstr ""
-
-#: MainWindow.cpp:7460
-msgid "Contact info"
-msgstr ""
-
-#: MainWindow.cpp:7462
-msgid "Block (until restart)/Unblock"
-msgstr ""
-
-#: MainWindow.cpp:7592
-msgid "Key: "
-msgstr ""
-
-#: MainWindow.cpp:7598
-msgid "Nickname: "
-msgstr ""
-
-#: MainWindow.cpp:7604
-msgid "Name: "
-msgstr ""
-
-#: MainWindow.cpp:7610
-msgid "Surname: "
-msgstr ""
-
-#: MainWindow.cpp:7700
+#: MainWindow.cpp:1287 MainWindow.cpp:7824
 msgid "Blocked"
 msgstr ""
 
-#: MainWindow.cpp:7746
+#: MainWindow.cpp:1324
+msgid "Attach file"
+msgstr ""
+
+#: MainWindow.cpp:1552
+msgid "Send message"
+msgstr ""
+
+#: MainWindow.cpp:1660
+msgid "Enter user name!"
+msgstr ""
+
+#: MainWindow.cpp:1664
+msgid "Enter password!"
+msgstr ""
+
+#: MainWindow.cpp:1668
+msgid "Passwords do not match!"
+msgstr ""
+
+#: MainWindow.cpp:1675 MainWindow.cpp:2059 MainWindow.cpp:2219
+#: MainWindow.cpp:3782 MainWindow.cpp:5189 MainWindow.cpp:6505
+#: MainWindow.cpp:7374 MainWindow.cpp:7495 MainWindow.cpp:7760
+#: MainWindow.cpp:9381
+msgid "Close"
+msgstr ""
+
+#: MainWindow.cpp:1780
+msgid "Generate key*"
+msgstr ""
+
+#: MainWindow.cpp:1790
+msgid "Generate"
+msgstr ""
+
+#: MainWindow.cpp:1801
+msgid "Nickname*"
+msgstr ""
+
+#: MainWindow.cpp:1807 MainWindow.cpp:6322
+msgid "Name"
+msgstr ""
+
+#: MainWindow.cpp:1813 MainWindow.cpp:6332
+msgid "Surname"
+msgstr ""
+
+#: MainWindow.cpp:1820
+msgid "Save"
+msgstr ""
+
+#: MainWindow.cpp:1834 MainWindow.cpp:6353
+msgid "Clear"
+msgstr ""
+
+#: MainWindow.cpp:1881 MainWindow.cpp:1924
+msgid "Choose image"
+msgstr ""
+
+#: MainWindow.cpp:1895
+msgid "Remove image"
+msgstr ""
+
+#: MainWindow.cpp:1930
+msgid "OK"
+msgstr ""
+
+#: MainWindow.cpp:2039 MainWindow.cpp:6493
+msgid "Error"
+msgstr ""
+
+#: MainWindow.cpp:2047
+msgid "Generate key!"
+msgstr ""
+
+#: MainWindow.cpp:2051
+msgid "Enter nickname!"
+msgstr ""
+
+#: MainWindow.cpp:2188
+msgid "Key"
+msgstr ""
+
+#: MainWindow.cpp:2204
+msgid "Copy"
+msgstr ""
+
+#: MainWindow.cpp:2580
+msgid "Forwarded from: "
+msgstr ""
+
+#: MainWindow.cpp:2651
+msgid "Me:"
+msgstr ""
+
+#: MainWindow.cpp:2904
+msgid "Remove contact? This action will erase all messages forever."
+msgstr ""
+
+#: MainWindow.cpp:2913 MainWindow.cpp:5426 MainWindow.cpp:6885
+#: MainWindow.cpp:6969
+msgid "Yes"
+msgstr ""
+
+#: MainWindow.cpp:2926 MainWindow.cpp:5632 MainWindow.cpp:7103
+#: MainWindow.cpp:7280
+msgid "No"
+msgstr ""
+
+#: MainWindow.cpp:3372
+msgid "Public key:"
+msgstr ""
+
+#: MainWindow.cpp:3384
+msgid "Add"
+msgstr ""
+
+#: MainWindow.cpp:3618
+msgid "Friends request edit"
+msgstr ""
+
+#: MainWindow.cpp:3663 MainWindow.cpp:3831
+msgid "Remove from list"
+msgstr ""
+
+#: MainWindow.cpp:4724
+msgid "Reply"
+msgstr ""
+
+#: MainWindow.cpp:4725
+msgid "Forward"
+msgstr ""
+
+#: MainWindow.cpp:4726
+msgid "Remove (only this machine)"
+msgstr ""
+
+#: MainWindow.cpp:4864
+msgid "Select contact"
+msgstr ""
+
+#: MainWindow.cpp:5169
+msgid "Error!"
+msgstr ""
+
+#: MainWindow.cpp:5180
+msgid "File you want to send does not exists"
+msgstr ""
+
+#: MainWindow.cpp:5403
+msgid "Confirmation"
+msgstr ""
+
+#: MainWindow.cpp:5417
+msgid "Are you sure?"
+msgstr ""
+
+#: MainWindow.cpp:6302
+msgid "Edit profile"
+msgstr ""
+
+#: MainWindow.cpp:6339
+msgid "Save profile"
+msgstr ""
+
+#: MainWindow.cpp:6400
+msgid "Open avatar"
+msgstr ""
+
+#: MainWindow.cpp:6412
+msgid "Avatar file choice"
+msgstr ""
+
+#: MainWindow.cpp:6418 MainWindow.cpp:9524 MainWindow.cpp:9600
+msgid "Choose"
+msgstr ""
+
+#: MainWindow.cpp:6444
+msgid "Remove avatar"
+msgstr ""
+
+#: MainWindow.cpp:6499
+msgid "Input nickname!"
+msgstr ""
+
+#: MainWindow.cpp:6624
+msgid "File choose"
+msgstr ""
+
+#: MainWindow.cpp:6634 MainWindow.cpp:6908
+msgid "Open"
+msgstr ""
+
+#: MainWindow.cpp:6678
+msgid " File: "
+msgstr ""
+
+#: MainWindow.cpp:6810
+msgid "File request"
+msgstr ""
+
+#: MainWindow.cpp:6855
+msgid " is trying to send you a file."
+msgstr ""
+
+#: MainWindow.cpp:6873
+msgid "Size: "
+msgstr ""
+
+#: MainWindow.cpp:6881
+msgid "Accept?"
+msgstr ""
+
+#: MainWindow.cpp:6897
+msgid "Path selection"
+msgstr ""
+
+#: MainWindow.cpp:6950
+msgid "Warning!"
+msgstr ""
+
+#: MainWindow.cpp:6960
+msgid "File already exists, replace?"
+msgstr ""
+
+#: MainWindow.cpp:6999 MainWindow.cpp:7146
+msgid "Downloading "
+msgstr ""
+
+#: MainWindow.cpp:7078 MainWindow.cpp:7223 MainWindow.cpp:9783
+msgid "Downloading/sending file progress"
+msgstr ""
+
+#: MainWindow.cpp:7354
+msgid "File rejected"
+msgstr ""
+
+#: MainWindow.cpp:7367
+msgid " rejected to accept file!"
+msgstr ""
+
+#: MainWindow.cpp:7431
+msgid "File received"
+msgstr ""
+
+#: MainWindow.cpp:7446 MainWindow.cpp:7470
+msgid "File"
+msgstr ""
+
+#: MainWindow.cpp:7448 MainWindow.cpp:7460
+msgid "from"
+msgstr ""
+
+#: MainWindow.cpp:7450
+msgid "received"
+msgstr ""
+
+#: MainWindow.cpp:7458
+msgid "Error occurred while receiving file"
+msgstr ""
+
+#: MainWindow.cpp:7462
+msgid "- hash is not correct!"
+msgstr ""
+
+#: MainWindow.cpp:7472 MainWindow.cpp:7484
+msgid "for"
+msgstr ""
+
+#: MainWindow.cpp:7474
+msgid "was sent"
+msgstr ""
+
+#: MainWindow.cpp:7482
+msgid "Error on sending"
+msgstr ""
+
+#: MainWindow.cpp:7579
+msgid "Contact info"
+msgstr ""
+
+#: MainWindow.cpp:7581
+msgid "Block (until restart)/Unblock"
+msgstr ""
+
+#: MainWindow.cpp:7714
+msgid "Key: "
+msgstr ""
+
+#: MainWindow.cpp:7720
+msgid "Nickname: "
+msgstr ""
+
+#: MainWindow.cpp:7726
+msgid "Name: "
+msgstr ""
+
+#: MainWindow.cpp:7732
+msgid "Surname: "
+msgstr ""
+
+#: MainWindow.cpp:7870
 msgid "Settings"
 msgstr ""
 
-#: MainWindow.cpp:7775
+#: MainWindow.cpp:7899
+msgid "Theme:"
+msgstr ""
+
+#: MainWindow.cpp:7966
 msgid "Enable spell checking"
 msgstr ""
 
-#: MainWindow.cpp:7816
+#: MainWindow.cpp:8007
 msgid "Language for spell checking:"
 msgstr ""
 
-#: MainWindow.cpp:7886
+#: MainWindow.cpp:8086
 msgid "Network mode:"
 msgstr ""
 
-#: MainWindow.cpp:7892
+#: MainWindow.cpp:8092
 msgid "Internet"
 msgstr ""
 
-#: MainWindow.cpp:7893
+#: MainWindow.cpp:8093
 msgid "Local"
 msgstr ""
 
-#: MainWindow.cpp:7957
+#: MainWindow.cpp:8158
 msgid "Local network group multicast ipv4 and port (ipv4:port)"
 msgstr ""
 
-#: MainWindow.cpp:7999
+#: MainWindow.cpp:8200
 msgid "Local network group multicast ipv6 and port ([ipv6]:port)"
 msgstr ""
 
-#: MainWindow.cpp:8040
+#: MainWindow.cpp:8241
 msgid "Messages auto remove after:"
 msgstr ""
 
-#: MainWindow.cpp:8047
+#: MainWindow.cpp:8248
 msgid "never"
 msgstr ""
 
-#: MainWindow.cpp:8048
+#: MainWindow.cpp:8249
 msgid "1 day"
 msgstr ""
 
-#: MainWindow.cpp:8049
+#: MainWindow.cpp:8250
 msgid "1 week"
 msgstr ""
 
-#: MainWindow.cpp:8050
+#: MainWindow.cpp:8251
 msgid "1 month"
 msgstr ""
 
-#: MainWindow.cpp:8051
+#: MainWindow.cpp:8252
 msgid "1 year"
 msgstr ""
 
-#: MainWindow.cpp:8114
+#: MainWindow.cpp:8316
 msgid "DHT listen interfaces (ipv4:port,[ipv6]:port):"
 msgstr ""
 
-#: MainWindow.cpp:8157
+#: MainWindow.cpp:8359
 msgid ""
 "Comma separated DHT bootstrap nodes (address:port or ipv4:port or [ipv6]:"
 "port):"
 msgstr ""
 
-#: MainWindow.cpp:8199
+#: MainWindow.cpp:8401
 msgid "Maximum permitted incomming messages size (in bytes):"
 msgstr ""
 
-#: MainWindow.cpp:8239
+#: MainWindow.cpp:8441
 msgid "Sending part size (in bytes):"
 msgstr ""
 
-#: MainWindow.cpp:8281
+#: MainWindow.cpp:8483
 msgid "Contact connection maintenance messages shutdown timeout in seconds:"
 msgstr ""
 
-#: MainWindow.cpp:8321
+#: MainWindow.cpp:8523
 msgid "Connection broken timeout in seconds:"
 msgstr ""
 
-#: MainWindow.cpp:8361
+#: MainWindow.cpp:8563
 msgid "Save window size before closing"
 msgstr ""
 
-#: MainWindow.cpp:8402
+#: MainWindow.cpp:8604
 msgid "Send message by"
 msgstr ""
 
-#: MainWindow.cpp:8451
+#: MainWindow.cpp:8653
 msgid "Enable message received sound"
 msgstr ""
 
-#: MainWindow.cpp:8492
+#: MainWindow.cpp:8694
 msgid "Message sound path:"
 msgstr ""
 
-#: MainWindow.cpp:8515 MainWindow.cpp:8520
+#: MainWindow.cpp:8717 MainWindow.cpp:8722
 msgid "default"
 msgstr ""
 
-#: MainWindow.cpp:8536
+#: MainWindow.cpp:8738
 msgid "Enable local STUN server"
 msgstr ""
 
-#: MainWindow.cpp:8577
+#: MainWindow.cpp:8779
 msgid "STUN port:"
 msgstr ""
 
-#: MainWindow.cpp:8623
+#: MainWindow.cpp:8825
 msgid "Direct connection to Internet"
 msgstr ""
 
-#: MainWindow.cpp:8662
+#: MainWindow.cpp:8864
 msgid "Apply"
 msgstr ""
 
-#: MainWindow.cpp:9156
+#: MainWindow.cpp:9358
 msgid "Info"
 msgstr ""
 
-#: MainWindow.cpp:9165
+#: MainWindow.cpp:9367
 msgid "Application will be closed now. Start it again to apply changes."
 msgstr ""
 
-#: MainWindow.cpp:9284
+#: MainWindow.cpp:9486
 msgid "Choose IPv6"
 msgstr ""
 
-#: MainWindow.cpp:9298
+#: MainWindow.cpp:9500
 msgid ""
 "Program cannot automatically identify machine's IPv6. Please choose "
 "manually. Available variants are: "
 msgstr ""
 
-#: MainWindow.cpp:9361
+#: MainWindow.cpp:9563
 msgid "Choose IPv4"
 msgstr ""
 
-#: MainWindow.cpp:9374
+#: MainWindow.cpp:9576
 msgid ""
 "Program cannot automatically identify machine's IPv4. Please choose "
 "manually. Available variants are: "
 msgstr ""
 
-#: MainWindow.cpp:9499
+#: MainWindow.cpp:9701
 msgid "Sending "
 msgstr ""
 
-#: MainWindow.cpp:9849 MainWindow.cpp:9895
+#: MainWindow.cpp:10051 MainWindow.cpp:10097
 msgid "About"
 msgstr ""
 
-#: MainWindow.cpp:9860
+#: MainWindow.cpp:10062
 msgid ""
-"Communist is simple \"peer to peer\" messenger.\n"
+"Communist is shitty \"peer to peer\" messenger. Use GNU Jami instead.\n"
 "Author Yury Bobylev.\n"
 "Program use next libraries:\n"
 "GTK https://www.gtk.org\n"
@@ -566,10 +562,10 @@ msgid ""
 "ICU https://icu.unicode.org"
 msgstr ""
 
-#: MainWindow.cpp:9941
-msgid "Licence"
+#: MainWindow.cpp:10143
+msgid "License"
 msgstr ""
 
-#: MainWindow.cpp:10033
+#: MainWindow.cpp:10235
 msgid "online"
 msgstr ""

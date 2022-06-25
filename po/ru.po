@@ -1,23 +1,19 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# This file is distributed under the same license as the communist package.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Communist\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-06-18 21:54+0400\n"
-"PO-Revision-Date: 2022-06-18 21:54+0400\n"
-"Last-Translator: \n"
-"Language-Team: Юрий Бобылев\n"
+"POT-Creation-Date: 2022-06-25 15:57+0300\n"
+"PO-Revision-Date: 2022-06-25 16:04+0300\n"
+"Last-Translator: emptiedsoul <emptiedsoul@hardclanz.org>\n"
 "Language: ru_RU\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
-"X-Generator: Poedit 3.0\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<"
+"=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+"X-Generator: Lokalize 21.12.3\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-SearchPath-0: AuxFunc.cpp\n"
@@ -28,7 +24,7 @@ msgstr ""
 
 #: MainWindow.cpp:169
 msgid "Wait, application is closing..."
-msgstr "Идёт завершение приложения..."
+msgstr "Завершение работы..."
 
 #: MainWindow.cpp:483 MainWindow.cpp:1770
 msgid "Profile creation"
@@ -58,7 +54,7 @@ msgid "Cancel"
 msgstr "Отмена"
 
 #: MainWindow.cpp:568
-msgid "Entrance"
+msgid "Login"
 msgstr "Вход"
 
 #: MainWindow.cpp:728
@@ -153,15 +149,15 @@ msgid "Send message"
 msgstr "Отправить"
 
 #: MainWindow.cpp:1660
-msgid "Input user name!"
+msgid "Enter user name!"
 msgstr "Введите имя пользователя!"
 
 #: MainWindow.cpp:1664
-msgid "Input password!"
+msgid "Enter password!"
 msgstr "Введите пароль!"
 
 #: MainWindow.cpp:1668
-msgid "Passwords are not equal!"
+msgid "Passwords do not match!"
 msgstr "Пароли не совпадают!"
 
 #: MainWindow.cpp:1675 MainWindow.cpp:2059 MainWindow.cpp:2219
@@ -172,24 +168,24 @@ msgid "Close"
 msgstr "Закрыть"
 
 #: MainWindow.cpp:1780
-msgid "Generate the key (compulsory)"
-msgstr "Сгенерируйте ключ (обязательно)"
+msgid "Generate key*"
+msgstr "Ключ*"
 
 #: MainWindow.cpp:1790
 msgid "Generate"
 msgstr "Сгенерировать"
 
 #: MainWindow.cpp:1801
-msgid "Nickname (compulsory)"
-msgstr "Псевдоним (обязательно)"
+msgid "Nickname*"
+msgstr "Псевдоним*: "
 
-#: MainWindow.cpp:1807
-msgid "Name (not compulsory)"
-msgstr "Имя (необязательно)"
+#: MainWindow.cpp:1807 MainWindow.cpp:6322
+msgid "Name"
+msgstr "Имя: "
 
-#: MainWindow.cpp:1813
-msgid "Surame (not compulsory)"
-msgstr "Фамилия (необязательно)"
+#: MainWindow.cpp:1813 MainWindow.cpp:6332
+msgid "Surname"
+msgstr "Фамилия: "
 
 #: MainWindow.cpp:1820
 msgid "Save"
@@ -199,17 +195,13 @@ msgstr "Сохранить"
 msgid "Clear"
 msgstr "Очистить"
 
-#: MainWindow.cpp:1881
-msgid "Open image"
-msgstr "Открыть изображение"
+#: MainWindow.cpp:1881 MainWindow.cpp:1924
+msgid "Choose image"
+msgstr "Выберите файл аватара"
 
 #: MainWindow.cpp:1895
 msgid "Remove image"
 msgstr "Удалить изображение"
-
-#: MainWindow.cpp:1924
-msgid "Choose image file"
-msgstr "Выберите файл аватара"
 
 #: MainWindow.cpp:1930
 msgid "OK"
@@ -220,11 +212,11 @@ msgid "Error"
 msgstr "Ошибка"
 
 #: MainWindow.cpp:2047
-msgid "Generate the key!"
+msgid "Generate key!"
 msgstr "Сгенерируйте ключ!"
 
-#: MainWindow.cpp:2051 MainWindow.cpp:6499
-msgid "Input nickname!"
+#: MainWindow.cpp:2051
+msgid "Enter nickname!"
 msgstr "Введите псевдоним!"
 
 #: MainWindow.cpp:2188
@@ -282,7 +274,7 @@ msgid "Forward"
 msgstr "Переслать"
 
 #: MainWindow.cpp:4726
-msgid "Remove (only own machine)"
+msgid "Remove (only this machine)"
 msgstr "Удалить (только у себя)"
 
 #: MainWindow.cpp:4864
@@ -302,20 +294,12 @@ msgid "Confirmation"
 msgstr "Подтверждение"
 
 #: MainWindow.cpp:5417
-msgid "Are you shure?"
+msgid "Are you sure?"
 msgstr "Вы уверены?"
 
 #: MainWindow.cpp:6302
 msgid "Edit profile"
 msgstr "Редактировать профиль"
-
-#: MainWindow.cpp:6322
-msgid "Name (not compalsory)"
-msgstr "Имя (необязательно)"
-
-#: MainWindow.cpp:6332
-msgid "Surname (not compalsory)"
-msgstr "Фамилия (необязательно)"
 
 #: MainWindow.cpp:6339
 msgid "Save profile"
@@ -336,6 +320,10 @@ msgstr "Выбрать"
 #: MainWindow.cpp:6444
 msgid "Remove avatar"
 msgstr "Удалить аватар"
+
+#: MainWindow.cpp:6499
+msgid "Input nickname!"
+msgstr "Введите псевдоним!"
 
 #: MainWindow.cpp:6624
 msgid "File choose"
@@ -415,7 +403,7 @@ msgstr "Во время получения файла возникла ошиб�
 
 #: MainWindow.cpp:7462
 msgid "- hash is not correct!"
-msgstr "- хэшсуммы не совпадают!"
+msgstr "- контрольные суммы не совпадают!"
 
 #: MainWindow.cpp:7472 MainWindow.cpp:7484
 msgid "for"
@@ -619,7 +607,7 @@ msgstr "О программе"
 
 #: MainWindow.cpp:10062
 msgid ""
-"Communist is simple \"peer to peer\" messenger.\n"
+"Communist is shitty \"peer to peer\" messenger. Use GNU Jami instead.\n"
 "Author Yury Bobylev.\n"
 "Program use next libraries:\n"
 "GTK https://www.gtk.org\n"
@@ -628,8 +616,8 @@ msgid ""
 "Libtorrent https://www.libtorrent.org\n"
 "ICU https://icu.unicode.org"
 msgstr ""
-"Коммунист - простая программа для отправки сообщений \"устройство-устройство"
-"\"\n"
+"Коммунист - херовая программа для обмена сообщениями с помощью"
+" децентрализованной сети . Попробуйте использовать GNU Jami.\n"
 "Автор Юрий Бобылев.\n"
 "В программе используются следующие библиотеки:\n"
 "GTK https://www.gtk.org\n"
@@ -639,9 +627,33 @@ msgstr ""
 "ICU https://icu.unicode.org"
 
 #: MainWindow.cpp:10143
-msgid "Licence"
+msgid "License"
 msgstr "Лицензия"
 
 #: MainWindow.cpp:10235
 msgid "online"
 msgstr "в сети"
+
+#~ msgid "Entrance"
+#~ msgstr "Вход"
+
+#~ msgid "Generate the key (compulsory)"
+#~ msgstr "Сгенерируйте ключ (обязательно)"
+
+#~ msgid "Nickname (compulsory)"
+#~ msgstr "Псевдоним (обязательно)"
+
+#~ msgid "Name (not compulsory)"
+#~ msgstr "Имя (необязательно)"
+
+#~ msgid "Surame (not compulsory)"
+#~ msgstr "Фамилия (необязательно)"
+
+#~ msgid "Open image"
+#~ msgstr "Открыть изображение"
+
+#~ msgid "Name (not compalsory)"
+#~ msgstr "Имя (необязательно)"
+
+#~ msgid "Surname (not compalsory)"
+#~ msgstr "Фамилия (необязательно)"
