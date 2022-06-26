@@ -1,14 +1,13 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Copyright 2022 (C) Yury Bobylev <bobilev_yury@mail.ru>
+# This file is distributed under the same license as the Communist package.
+# FIRST AUTHOR <bobilev_yury@mail.ru>, 2022.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Communist\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-06-18 21:54+0400\n"
-"PO-Revision-Date: 2022-06-18 21:54+0400\n"
+"POT-Creation-Date: 2022-06-26 13:29+0400\n"
+"PO-Revision-Date: 2022-06-26 13:31+0400\n"
 "Last-Translator: \n"
 "Language-Team: Юрий Бобылев\n"
 "Language: ru_RU\n"
@@ -58,7 +57,7 @@ msgid "Cancel"
 msgstr "Отмена"
 
 #: MainWindow.cpp:568
-msgid "Entrance"
+msgid "Login"
 msgstr "Вход"
 
 #: MainWindow.cpp:728
@@ -161,7 +160,7 @@ msgid "Input password!"
 msgstr "Введите пароль!"
 
 #: MainWindow.cpp:1668
-msgid "Passwords are not equal!"
+msgid "Passwords do not match!"
 msgstr "Пароли не совпадают!"
 
 #: MainWindow.cpp:1675 MainWindow.cpp:2059 MainWindow.cpp:2219
@@ -172,7 +171,7 @@ msgid "Close"
 msgstr "Закрыть"
 
 #: MainWindow.cpp:1780
-msgid "Generate the key (compulsory)"
+msgid "Generate key (compulsory)"
 msgstr "Сгенерируйте ключ (обязательно)"
 
 #: MainWindow.cpp:1790
@@ -200,8 +199,8 @@ msgid "Clear"
 msgstr "Очистить"
 
 #: MainWindow.cpp:1881
-msgid "Open image"
-msgstr "Открыть изображение"
+msgid "Choose image"
+msgstr "Выберите файл аватара"
 
 #: MainWindow.cpp:1895
 msgid "Remove image"
@@ -282,7 +281,7 @@ msgid "Forward"
 msgstr "Переслать"
 
 #: MainWindow.cpp:4726
-msgid "Remove (only own machine)"
+msgid "Remove (only this machine)"
 msgstr "Удалить (только у себя)"
 
 #: MainWindow.cpp:4864
@@ -302,7 +301,7 @@ msgid "Confirmation"
 msgstr "Подтверждение"
 
 #: MainWindow.cpp:5417
-msgid "Are you shure?"
+msgid "Are you sure?"
 msgstr "Вы уверены?"
 
 #: MainWindow.cpp:6302
@@ -639,9 +638,15 @@ msgstr ""
 "ICU https://icu.unicode.org"
 
 #: MainWindow.cpp:10143
-msgid "Licence"
+msgid "License"
 msgstr "Лицензия"
 
 #: MainWindow.cpp:10235
 msgid "online"
 msgstr "в сети"
+
+#~ msgid "Entrance"
+#~ msgstr "Вход"
+
+#~ msgid "Open image"
+#~ msgstr "Открыть изображение"

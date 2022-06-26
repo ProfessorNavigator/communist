@@ -565,7 +565,7 @@ MainWindow::userCheck ()
       Gtk::Grid *grid = Gtk::make_managed<Gtk::Grid> ();
       grid->set_halign (Gtk::Align::CENTER);
       this->unset_child ();
-      this->set_title (gettext ("Entrance"));
+      this->set_title (gettext ("Login"));
       this->set_child (*grid);
 
       Gtk::Label *username = Gtk::make_managed<Gtk::Label> ();
@@ -1665,7 +1665,7 @@ MainWindow::infoMessage (Gtk::Entry *usname, Gtk::Entry *passwd,
 	}
       if (password != reppassword && username != "" && password != "")
 	{
-	  label->set_text (gettext ("Passwords are not equal!"));
+	  label->set_text (gettext ("Passwords do not match!"));
 	}
       label->set_margin (5);
       label->set_halign (Gtk::Align::CENTER);
@@ -1777,7 +1777,7 @@ MainWindow::createProfile ()
   grid->attach (*rightgrid, 1, 0, 1, 1);
 
   Gtk::Entry *key = Gtk::make_managed<Gtk::Entry> ();
-  key->set_placeholder_text (gettext ("Generate the key (compulsory)"));
+  key->set_placeholder_text (gettext ("Generate key (compulsory)"));
   key->set_margin (5);
   key->set_editable (false);
 
@@ -1878,7 +1878,7 @@ MainWindow::createProfile ()
 
   Gtk::Button *addavatar = Gtk::make_managed<Gtk::Button> ();
   Gtk::Label *oblab = Gtk::make_managed<Gtk::Label> ();
-  oblab->set_text (gettext ("Open image"));
+  oblab->set_text (gettext ("Choose image"));
   oblab->set_justify (Gtk::Justification::CENTER);
   addavatar->set_child (*oblab);
   addavatar->set_margin (5);
@@ -4723,7 +4723,7 @@ MainWindow::creatReply (int numcl, double x, double y, Gtk::Frame *fr,
       Glib::RefPtr<Gio::Menu> menu = Gio::Menu::create ();
       menu->append (gettext ("Reply"), "popupmsg.reply");
       menu->append (gettext ("Forward"), "popupmsg.forward");
-      menu->append (gettext ("Remove (only own machine)"), "popupmsg.remove");
+      menu->append (gettext ("Remove (only this machine)"), "popupmsg.remove");
       Gtk::PopoverMenu *Menu = Gtk::make_managed<Gtk::PopoverMenu> ();
       Menu->set_parent (*fr);
       Menu->set_menu_model (menu);
@@ -5414,7 +5414,7 @@ MainWindow::removeMsg (std::string othkey, std::filesystem::path msgpath,
   Gtk::Label *lab = Gtk::make_managed<Gtk::Label> ();
   lab->set_halign (Gtk::Align::CENTER);
   lab->set_margin (5);
-  lab->set_text (gettext ("Are you shure?"));
+  lab->set_text (gettext ("Are you sure?"));
   grid->attach (*lab, 0, 0, 2, 1);
 
   Gtk::Button *confirm = Gtk::make_managed<Gtk::Button> ();
@@ -10112,7 +10112,7 @@ MainWindow::aboutProg ()
     }
   else
     {
-      std::cerr << "Licence file not found" << std::endl;
+      std::cerr << "License file not found" << std::endl;
     }
 
   Gtk::TextView *tvlc = Gtk::make_managed<Gtk::TextView> ();
@@ -10140,7 +10140,7 @@ MainWindow::aboutProg ()
       scrlc->set_min_content_height (700);
     }
   scrlc->set_child (*tvlc);
-  noteb->append_page (*scrlc, gettext ("Licence"));
+  noteb->append_page (*scrlc, gettext ("License"));
 
   window->signal_close_request ().connect ( [window]
   {
