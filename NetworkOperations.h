@@ -27,11 +27,6 @@
 #include <mutex>
 #include <tuple>
 #include <iostream>
-#include <libtorrent/settings_pack.hpp>
-#include <libtorrent/alert.hpp>
-#include <libtorrent/session.hpp>
-#include <libtorrent/session_handle.hpp>
-#include <libtorrent/session_params.hpp>
 #include <libtorrent/hex.hpp>
 #include <sigc++/sigc++.h>
 #include <cerrno>
@@ -39,6 +34,7 @@
 #include <fstream>
 #include <unistd.h>
 #include "AuxFunc.h"
+#include "DHTOperations.h"
 
 #ifdef __linux
 #include <sys/types.h>
@@ -56,9 +52,10 @@
 #include <iphlpapi.h>
 #include <ws2tcpip.h>
 #endif
-
+class DHTOperations;
 class NetworkOperations
 {
+  friend class DHTOperations;
 public:
   NetworkOperations (
       std::string username, std::string password,
@@ -158,26 +155,6 @@ private:
   int
   sendMsgGlob (int sock, std::string keytos, uint32_t ip, uint16_t port);
   void
-  processDHT ();
-  std::vector<std::string>
-  getFrVect ();
-  void
-  getFrResVect (std::string key, uint32_t ip, uint16_t port);
-  std::vector<std::tuple<std::string, uint32_t, uint16_t>>
-  putVect ();
-  std::string
-  getSes (std::string key, lt::session *ses);
-  std::string
-  getSes6 (std::string key, lt::session *ses);
-  std::string
-  putSes (std::string otherkey, uint32_t ip, uint16_t port, lt::session *ses);
-  std::string
-  putSes6 (std::string otherkey, lt::session *ses);
-  void
-  getvResult (std::string key, uint32_t ip, uint16_t port, int seq);
-  void
-  getvResult6 (std::string key, std::string ip, uint16_t port, int seq);
-  void
   commOps ();
   int
   msgMe (std::string key, uint64_t tm, uint64_t partnum);
@@ -270,6 +247,7 @@ private:
   std::array<char, 32> *seed = nullptr;
   std::vector<std::tuple<std::string, std::string>> prefvect;
 
+  DHTOperations *DOp = nullptr;
   int sockipv6;
   std::mutex sockipv6mtx;
   int ownnattype = 0;
