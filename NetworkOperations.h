@@ -35,6 +35,7 @@
 #include <unistd.h>
 #include "AuxFunc.h"
 #include "DHTOperations.h"
+#include "LocalNetworkOp.h"
 
 #ifdef __linux
 #include <sys/types.h>
@@ -52,10 +53,14 @@
 #include <iphlpapi.h>
 #include <ws2tcpip.h>
 #endif
+
 class DHTOperations;
+class LocalNetworkOp;
+
 class NetworkOperations
 {
   friend class DHTOperations;
+  friend class LocalNetworkOp;
 public:
   NetworkOperations (
       std::string username, std::string password,
@@ -165,8 +170,6 @@ private:
   int
   msgPE (std::string key, uint64_t tm);
   void
-  bootstrFunc ();
-  void
   stunSrv ();
 #ifdef _WIN32
   int
@@ -248,6 +251,7 @@ private:
   std::vector<std::tuple<std::string, std::string>> prefvect;
 
   DHTOperations *DOp = nullptr;
+  LocalNetworkOp *LNOp = nullptr;
   int sockipv6;
   std::mutex sockipv6mtx;
   int ownnattype = 0;
