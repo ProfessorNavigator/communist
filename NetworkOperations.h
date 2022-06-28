@@ -36,6 +36,7 @@
 #include "AuxFunc.h"
 #include "DHTOperations.h"
 #include "LocalNetworkOp.h"
+#include "FileReceiveOp.h"
 
 #ifdef __linux
 #include <sys/types.h>
@@ -61,6 +62,7 @@ class NetworkOperations
 {
   friend class DHTOperations;
   friend class LocalNetworkOp;
+  friend class FileReceiveOp;
 public:
   NetworkOperations (
       std::string username, std::string password,
