@@ -1,4 +1,3 @@
-
 /*
  Copyright 2022 Yury Bobylev <bobilev_yury@mail.ru>
 
@@ -287,24 +286,6 @@ NetworkOperations::mainFunc ()
       PIP_ADAPTER_ADDRESSES pAddresses = (IP_ADAPTER_ADDRESSES*) malloc (outBufLen);
       if (GetAdaptersAddresses (AF_UNSPEC, GAA_FLAG_INCLUDE_PREFIX,
 				NULL, pAddresses, &outBufLen) != NO_ERROR)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #endif
     {
       std::cerr << "Error on getting ipv6" << std::endl;
@@ -638,7 +619,7 @@ NetworkOperations::getOwnIps (int udpsock,
       int count = 0;
       while (count < 3)
 	{
-	  if (cancel > 0)
+	  if (cancel > 0 || cancelgetoips > 0)
 	    {
 	      result.first = 0;
 	      result.second = 0;
@@ -1065,7 +1046,6 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 	      << inet_ntop (AF_INET6, &from6.sin6_addr, tmpmsg.data (),
 			    tmpmsg.size ()) << " " << ntohs (from6.sin6_port)
 	      << " Type ";
-
 	}
 
       std::tuple<lt::dht::public_key, lt::dht::secret_key> ownkey;
@@ -1167,800 +1147,97 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 	    }
 	  if (buf.size () >= 50 && (msgtype == "MB" || msgtype == "PB"))
 	    {
-	      std::cout << msgtype << std::endl;
-	      uint64_t tm;
-	      std::memcpy (&tm, &buf[34], sizeof(tm));
-	      uint64_t msgsz;
-	      std::memcpy (&msgsz, &buf[42], sizeof(msgsz));
-	      int chprexists = 0;
-	      contmtx.lock ();
-	      auto contit = std::find_if (contacts.begin (), contacts.end (),
-					  [key]
-					  (auto &el)
-					    {
-					      return std::get<1>(el) == key;
-					    });
-	      if (contit != contacts.end ())
-		{
-		  std::string indstr;
-		  std::stringstream strm;
-		  std::locale loc ("C");
-		  strm.imbue (loc);
-		  strm << std::get<0> (*contit);
-		  indstr = strm.str ();
-		  std::string filename;
-		  std::filesystem::path filepath;
-		  af.homePath (&filename);
-		  if (msgtype == "PB")
-		    {
-		      filename = filename + "/.Communist/" + indstr
-			  + "/Profile";
-		    }
-		  else
-		    {
-		      filename = filename + "/.Communist/" + indstr;
-		      filepath = std::filesystem::u8path (filename);
-		      std::vector<int> indv;
-		      if (std::filesystem::exists (filepath))
-			{
-			  for (auto &dit : std::filesystem::directory_iterator (
-			      filepath))
-			    {
-			      std::filesystem::path tp = dit.path ();
-			      if (tp.filename ().u8string () != "Profile"
-				  && tp.filename ().u8string () != "Yes")
-				{
-				  int vint;
-				  strm.clear ();
-				  strm.str ("");
-				  strm.imbue (loc);
-				  std::string fnm = tp.filename ().u8string ();
-				  std::string::size_type n;
-				  n = fnm.find ("f");
-				  if (n != std::string::npos)
-				    {
-				      fnm = fnm.substr (0, n);
-				    }
-				  strm << fnm;
-				  strm >> vint;
-				  indv.push_back (vint);
-				}
-			    }
-			  std::sort (indv.begin (), indv.end ());
-			  if (indv.size () > 0)
-			    {
-			      strm.clear ();
-			      strm.str ("");
-			      strm.imbue (loc);
-			      strm << indv[indv.size () - 1];
-			      filename = filename + "/" + strm.str ();
-			    }
-			}
-		    }
-		  filepath = std::filesystem::u8path (filename);
-		  if (std::filesystem::exists (filepath)
-		      && !std::filesystem::is_directory (filepath))
-		    {
-		      std::vector<char> hash;
-		      std::copy (buf.begin () + 50, buf.end (),
-				 std::back_inserter (hash));
-		      std::vector<char> chhash = af.filehash (filepath);
-		      if (hash == chhash)
-			{
-			  chprexists = 1;
-			  std::vector<char> rpmsg;
-			  std::array<char, 32> keyarr;
-			  std::tuple<lt::dht::public_key, lt::dht::secret_key> okp;
-			  okp = lt::dht::ed25519_create_keypair (*seed);
-			  keyarr = std::get<0> (okp).bytes;
-			  std::copy (keyarr.begin (), keyarr.end (),
-				     std::back_inserter (rpmsg));
-			  std::string mt;
-			  if (msgtype == "MB")
-			    {
-			      mt = "MR";
-			    }
-			  if (msgtype == "PB")
-			    {
-			      mt = "PR";
-			    }
-			  std::copy (mt.begin (), mt.end (),
-				     std::back_inserter (rpmsg));
-			  rpmsg.resize (rpmsg.size () + sizeof(tm));
-			  std::memcpy (&rpmsg[34], &tm, sizeof(tm));
-			  lt::dht::public_key othpk;
-			  lt::aux::from_hex (key, othpk.bytes.data ());
-			  std::array<char, 32> scalar;
-			  scalar = lt::dht::ed25519_key_exchange (
-			      othpk, std::get<1> (okp));
-			  othpk = lt::dht::ed25519_add_scalar (othpk, scalar);
-			  std::string passwd = lt::aux::to_hex (othpk.bytes);
-			  rpmsg = af.cryptStrm (key, passwd, rpmsg);
-			  if (rcvip6 == 0)
-			    {
-			      sendMsg (sockipv4, from->sin_addr.s_addr,
-				       from->sin_port, rpmsg);
-			    }
-			  else
-			    {
-			      std::vector<char> ip6ad;
-			      ip6ad.resize (INET6_ADDRSTRLEN);
-			      std::string ip6 = inet_ntop (AF_INET6,
-							   &from6.sin6_addr,
-							   ip6ad.data (),
-							   ip6ad.size ());
-			      sockipv6mtx.lock ();
-			      sendMsg6 (sockipv6, ip6, from6.sin6_port, rpmsg);
-			      sockipv6mtx.unlock ();
-			    }
-			}
-		    }
-		}
-	      contmtx.unlock ();
-	      if (chprexists == 0)
-		{
-		  msghashmtx.lock ();
-		  auto itmh = std::find_if (
-		      msghash.begin (), msghash.end (), [&key, &tm]
-		      (auto &el)
-			{
-			  if (std::get<0>(el) == key && std::get<1>(el) == tm)
-			    {
-			      return true;
-			    }
-			  else
-			    {
-			      return false;
-			    }
-			});
-		  if (itmh == msghash.end () && msgsz <= uint64_t (Maxmsgsz))
-		    {
-		      std::tuple<std::string, uint64_t, uint64_t,
-			  std::vector<char>> ttup;
-		      std::get<0> (ttup) = key;
-		      std::get<1> (ttup) = tm;
-		      std::get<2> (ttup) = msgsz;
-		      std::vector<char> hash;
-		      std::copy (buf.begin () + 50, buf.end (),
-				 std::back_inserter (hash));
-		      std::get<3> (ttup) = hash;
-		      msghash.push_back (ttup);
-		    }
-		  msghashmtx.unlock ();
-
-		  msgparthashmtx.lock ();
-		  msgparthash.erase (
-		      std::remove_if (
-			  msgparthash.begin (),
-			  msgparthash.end (),
-			  [&key, &tm]
-			  (auto &el)
-			    {
-			      if (std::get<0>(el) == key && std::get<1>(el) == tm)
-				{
-				  return true;
-				}
-			      else
-				{
-				  return false;
-				}
-			    }),
-		      msgparthash.end ());
-		  msgparthashmtx.unlock ();
-
-		  msgpartrcvmtx.lock ();
-		  msgpartrcv.erase (
-		      std::remove_if (
-			  msgpartrcv.begin (),
-			  msgpartrcv.end (),
-			  [&key, &tm]
-			  (auto &el)
-			    {
-			      if (std::get<0>(el) == key && std::get<1>(el) == tm)
-				{
-				  return true;
-				}
-			      else
-				{
-				  return false;
-				}
-			    }),
-		      msgpartrcv.end ());
-		  msgpartrcvmtx.unlock ();
-
-		  msgrcvdpnummtx.lock ();
-		  msgrcvdpnum.erase (
-		      std::remove_if (
-			  msgrcvdpnum.begin (),
-			  msgrcvdpnum.end (),
-			  [key, tm]
-			  (auto &el)
-			    {
-			      if (std::get<0>(el) == key && std::get<1>(el) == tm)
-				{
-				  return true;
-				}
-			      else
-				{
-				  return false;
-				}
-			    }),
-		      msgrcvdpnum.end ());
-		  msgrcvdpnummtx.unlock ();
-
-		  std::vector<char> rpmsg;
-		  std::array<char, 32> keyarr;
-		  std::tuple<lt::dht::public_key, lt::dht::secret_key> okp;
-		  okp = lt::dht::ed25519_create_keypair (*seed);
-		  keyarr = std::get<0> (okp).bytes;
-		  std::copy (keyarr.begin (), keyarr.end (),
-			     std::back_inserter (rpmsg));
-		  std::string mt;
-		  if (msgtype == "MB")
-		    {
-		      mt = "MA";
-		    }
-		  if (msgtype == "PB")
-		    {
-		      mt = "PA";
-		    }
-
-		  std::copy (mt.begin (), mt.end (),
-			     std::back_inserter (rpmsg));
-		  rpmsg.resize (rpmsg.size () + sizeof(tm));
-		  std::memcpy (&rpmsg[34], &tm, sizeof(tm));
-		  lt::dht::public_key othpk;
-		  lt::aux::from_hex (key, othpk.bytes.data ());
-		  std::array<char, 32> scalar;
-		  scalar = lt::dht::ed25519_key_exchange (othpk,
-							  std::get<1> (okp));
-		  othpk = lt::dht::ed25519_add_scalar (othpk, scalar);
-		  std::string passwd = lt::aux::to_hex (othpk.bytes);
-		  rpmsg = af.cryptStrm (key, passwd, rpmsg);
-		  if (rcvip6 == 0)
-		    {
-		      sendMsg (sockipv4, from->sin_addr.s_addr, from->sin_port,
-			       rpmsg);
-		    }
-		  else
-		    {
-		      std::vector<char> ip6ad;
-		      ip6ad.resize (INET6_ADDRSTRLEN);
-		      std::string ip6 = inet_ntop (AF_INET6, &from6.sin6_addr,
-						   ip6ad.data (),
-						   ip6ad.size ());
-		      sockipv6mtx.lock ();
-		      sendMsg6 (sockipv6, ip6, from6.sin6_port, rpmsg);
-		      sockipv6mtx.unlock ();
-		    }
-		}
+	      MsgProfileReceive mpr (this);
+	      mpr.msgMBPB (msgtype, key, rcvip6, &from6, from, sockipv4, buf);
 	    }
 
 	  if (buf.size () >= 50 && (msgtype == "Mb" || msgtype == "Pb"))
 	    {
-	      std::cout << msgtype << std::endl;
-	      uint64_t tm;
-	      std::memcpy (&tm, &buf[34], sizeof(tm));
-	      uint64_t partnum;
-	      std::memcpy (&partnum, &buf[42], sizeof(partnum));
-	      msghashmtx.lock ();
-	      auto itmh = std::find_if (
-		  msghash.begin (), msghash.end (), [&key, &tm]
-		  (auto &el)
-		    {
-		      if (std::get<0>(el) == key && std::get<1>(el) == tm)
-			{
-			  return true;
-			}
-		      else
-			{
-			  return false;
-			}
-		    });
-	      if (itmh != msghash.end ())
-		{
-		  msgparthashmtx.lock ();
-		  auto itmph = std::find_if (
-		      msgparthash.begin (), msgparthash.end (), [&key, &tm]
-		      (auto &el)
-			{
-			  if (std::get<0>(el) == key && std::get<1>(el) == tm)
-			    {
-			      return true;
-			    }
-			  else
-			    {
-			      return false;
-			    }
-			});
-		  std::vector<char> hash;
-		  std::copy (buf.begin () + 50, buf.end (),
-			     std::back_inserter (hash));
-		  if (itmph == msgparthash.end ())
-		    {
-		      std::tuple<std::string, uint64_t, std::vector<char>> ttup;
-		      std::get<0> (ttup) = key;
-		      std::get<1> (ttup) = tm;
-		      std::get<2> (ttup) = hash;
-		      msgparthash.push_back (ttup);
-		    }
-		  else
-		    {
-		      std::get<2> (*itmph) = hash;
-		    }
-		  msgparthashmtx.unlock ();
-		}
-	      msghashmtx.unlock ();
+	      MsgProfileReceive mpr (this);
+	      mpr.msgMbPb (msgtype, key, buf);
 	    }
 
 	  if (buf.size () >= 50 && (msgtype == "Mp" || msgtype == "Pp"))
 	    {
-	      std::cout << msgtype << std::endl;
-	      uint64_t tm;
-	      std::memcpy (&tm, &buf[34], sizeof(tm));
-	      uint64_t partnum;
-	      std::memcpy (&partnum, &buf[42], sizeof(partnum));
-	      msgparthashmtx.lock ();
-	      auto itmph = std::find_if (
-		  msgparthash.begin (), msgparthash.end (), [&key, &tm]
-		  (auto &el)
-		    {
-		      if (std::get<0>(el) == key && std::get<1>(el) == tm)
-			{
-			  return true;
-			}
-		      else
-			{
-			  return false;
-			}
-		    });
-	      if (itmph != msgparthash.end ())
-		{
-		  msgpartrcvmtx.lock ();
-		  auto itmpr = std::find_if (msgpartrcv.begin (),
-					     msgpartrcv.end (),
-					     [&key, &tm, &partnum]
-					     (auto &el)
-					       {
-						 if (std::get<0>(el) == key &&
-						     std::get<1>(el) == tm &&
-						     std::get<2>(el) == partnum)
-						   {
-						     return true;
-						   }
-						 else
-						   {
-						     return false;
-						   }
-					       });
-		  if (itmpr == msgpartrcv.end ())
-		    {
-		      std::vector<char> part;
-		      std::copy (buf.begin () + 50, buf.end (),
-				 std::back_inserter (part));
-		      msgpartrcv.push_back (
-			  std::make_tuple (key, tm, partnum, part));
-		    }
-
-		  msgpartrcvmtx.unlock ();
-		}
-	      msgparthashmtx.unlock ();
+	      MsgProfileReceive mpr (this);
+	      mpr.msgMpPp (msgtype, key, buf);
 	    }
 
 	  if (buf.size () >= 50 && (msgtype == "Me" || msgtype == "Pe"))
 	    {
-	      std::cout << msgtype << std::endl;
-	      uint64_t tm;
-	      std::memcpy (&tm, &buf[34], sizeof(tm));
-	      uint64_t partnum;
-	      std::memcpy (&partnum, &buf[42], sizeof(partnum));
-
-	      int check = 0;
-	      if (msgtype == "Me")
-		{
-		  check = msgMe (key, tm, partnum);
-		}
-	      if (msgtype == "Pe")
-		{
-		  check = msgPe (key, tm, partnum);
-		}
-	      if (check == 1)
-		{
-		  std::vector<char> rpmsg;
-		  std::array<char, 32> keyarr;
-		  std::tuple<lt::dht::public_key, lt::dht::secret_key> okp;
-		  okp = lt::dht::ed25519_create_keypair (*seed);
-		  keyarr = std::get<0> (okp).bytes;
-		  std::copy (keyarr.begin (), keyarr.end (),
-			     std::back_inserter (rpmsg));
-		  std::string mt;
-		  if (msgtype == "Me")
-		    {
-		      mt = "Mr";
-		    }
-		  if (msgtype == "Pe")
-		    {
-		      mt = "Pr";
-		    }
-		  std::copy (mt.begin (), mt.end (),
-			     std::back_inserter (rpmsg));
-		  rpmsg.resize (rpmsg.size () + sizeof(tm));
-		  std::memcpy (&rpmsg[34], &tm, sizeof(tm));
-		  rpmsg.resize (rpmsg.size () + sizeof(partnum));
-		  std::memcpy (&rpmsg[42], &partnum, sizeof(partnum));
-		  lt::dht::public_key othpk;
-		  lt::aux::from_hex (key, othpk.bytes.data ());
-		  std::array<char, 32> scalar;
-		  scalar = lt::dht::ed25519_key_exchange (othpk,
-							  std::get<1> (okp));
-		  othpk = lt::dht::ed25519_add_scalar (othpk, scalar);
-		  std::string passwd = lt::aux::to_hex (othpk.bytes);
-		  rpmsg = af.cryptStrm (key, passwd, rpmsg);
-		  if (rcvip6 == 0)
-		    {
-		      sendMsg (sockipv4, from->sin_addr.s_addr, from->sin_port,
-			       rpmsg);
-		    }
-		  else
-		    {
-		      std::vector<char> ip6ad;
-		      ip6ad.resize (INET6_ADDRSTRLEN);
-		      std::string ip6 = inet_ntop (AF_INET6, &from6.sin6_addr,
-						   ip6ad.data (),
-						   ip6ad.size ());
-		      sockipv6mtx.lock ();
-		      sendMsg6 (sockipv6, ip6, from6.sin6_port, rpmsg);
-		      sockipv6mtx.unlock ();
-		    }
-		}
+	      MsgProfileReceive mpr (this);
+	      mpr.msgMePe (msgtype, key, rcvip6, &from6, from, sockipv4, buf);
 	    }
 
 	  if (buf.size () >= 42 && (msgtype == "ME" || msgtype == "PE"))
 	    {
-	      std::cout << msgtype << std::endl;
-	      uint64_t tm;
-	      std::memcpy (&tm, &buf[34], sizeof(tm));
-	      int checkms = 0;
-	      if (msgtype == "ME")
-		{
-		  checkms = msgME (key, tm);
-		}
-	      if (msgtype == "PE")
-		{
-		  checkms = msgPE (key, tm);
-		}
-	      if (checkms == 1)
-		{
-		  std::vector<char> rpmsg;
-		  std::array<char, 32> keyarr;
-		  std::tuple<lt::dht::public_key, lt::dht::secret_key> okp;
-		  okp = lt::dht::ed25519_create_keypair (*seed);
-		  keyarr = std::get<0> (okp).bytes;
-		  std::copy (keyarr.begin (), keyarr.end (),
-			     std::back_inserter (rpmsg));
-		  std::string mt;
-		  if (msgtype == "ME")
-		    {
-		      mt = "MR";
-		    }
-		  if (msgtype == "PE")
-		    {
-		      mt = "PR";
-		    }
-		  std::copy (mt.begin (), mt.end (),
-			     std::back_inserter (rpmsg));
-		  rpmsg.resize (rpmsg.size () + sizeof(tm));
-		  std::memcpy (&rpmsg[34], &tm, sizeof(tm));
-		  lt::dht::public_key othpk;
-		  lt::aux::from_hex (key, othpk.bytes.data ());
-		  std::array<char, 32> scalar;
-		  scalar = lt::dht::ed25519_key_exchange (othpk,
-							  std::get<1> (okp));
-		  othpk = lt::dht::ed25519_add_scalar (othpk, scalar);
-		  std::string passwd = lt::aux::to_hex (othpk.bytes);
-		  rpmsg = af.cryptStrm (key, passwd, rpmsg);
-		  if (rcvip6 == 0)
-		    {
-		      sendMsg (sockipv4, from->sin_addr.s_addr, from->sin_port,
-			       rpmsg);
-		    }
-		  else
-		    {
-		      std::vector<char> ip6ad;
-		      ip6ad.resize (INET6_ADDRSTRLEN);
-		      std::string ip6 = inet_ntop (AF_INET6, &from6.sin6_addr,
-						   ip6ad.data (),
-						   ip6ad.size ());
-		      sockipv6mtx.lock ();
-		      sendMsg6 (sockipv6, ip6, from6.sin6_port, rpmsg);
-		      sockipv6mtx.unlock ();
-		    }
-		}
-	      else
-		{
-		  std::vector<char> rpmsg;
-		  std::array<char, 32> keyarr;
-		  std::tuple<lt::dht::public_key, lt::dht::secret_key> okp;
-		  okp = lt::dht::ed25519_create_keypair (*seed);
-		  keyarr = std::get<0> (okp).bytes;
-		  std::copy (keyarr.begin (), keyarr.end (),
-			     std::back_inserter (rpmsg));
-		  std::string mt;
-		  if (msgtype == "ME")
-		    {
-		      mt = "MI";
-		    }
-		  if (msgtype == "PE")
-		    {
-		      mt = "PI";
-		    }
-		  std::copy (mt.begin (), mt.end (),
-			     std::back_inserter (rpmsg));
-		  rpmsg.resize (rpmsg.size () + sizeof(tm));
-		  std::memcpy (&rpmsg[34], &tm, sizeof(tm));
-		  lt::dht::public_key othpk;
-		  lt::aux::from_hex (key, othpk.bytes.data ());
-		  std::array<char, 32> scalar;
-		  scalar = lt::dht::ed25519_key_exchange (othpk,
-							  std::get<1> (okp));
-		  othpk = lt::dht::ed25519_add_scalar (othpk, scalar);
-		  std::string passwd = lt::aux::to_hex (othpk.bytes);
-		  rpmsg = af.cryptStrm (key, passwd, rpmsg);
-		  if (rcvip6 == 0)
-		    {
-		      sendMsg (sockipv4, from->sin_addr.s_addr, from->sin_port,
-			       rpmsg);
-		    }
-		  else
-		    {
-		      std::vector<char> ip6ad;
-		      ip6ad.resize (INET6_ADDRSTRLEN);
-		      std::string ip6 = inet_ntop (AF_INET6, &from6.sin6_addr,
-						   ip6ad.data (),
-						   ip6ad.size ());
-		      sockipv6mtx.lock ();
-		      sendMsg6 (sockipv6, ip6, from6.sin6_port, rpmsg);
-		      sockipv6mtx.unlock ();
-		    }
-		}
-	      msghashmtx.lock ();
-	      msghash.erase (
-		  std::remove_if (msghash.begin (), msghash.end (), [key, tm]
-		  (auto &el)
-		    {
-		      if (std::get<0>(el) == key && std::get<1>(el) == tm)
-			{
-			  return true;
-			}
-		      else
-			{
-			  return false;
-			}
-		    }),
-		  msghash.end ());
-	      msghashmtx.unlock ();
-
-	      msgparthashmtx.lock ();
-	      msgparthash.erase (
-		  std::remove_if (
-		      msgparthash.begin (), msgparthash.end (), [key, tm]
-		      (auto &el)
-			{
-			  if (std::get<0>(el) == key && std::get<1>(el) == tm)
-			    {
-			      return true;
-			    }
-			  else
-			    {
-			      return false;
-			    }
-			}),
-		  msgparthash.end ());
-	      msgparthashmtx.unlock ();
-
-	      msgpartrcvmtx.lock ();
-	      msgpartrcv.erase (
-		  std::remove_if (
-		      msgpartrcv.begin (), msgpartrcv.end (), [key, tm]
-		      (auto &el)
-			{
-			  if (std::get<0>(el) == key && std::get<1>(el) == tm)
-			    {
-			      return true;
-			    }
-			  else
-			    {
-			      return false;
-			    }
-			}),
-		  msgpartrcv.end ());
-	      msgpartrcvmtx.unlock ();
-
-	      msgrcvdpnummtx.lock ();
-	      msgrcvdpnum.erase (
-		  std::remove_if (
-		      msgrcvdpnum.begin (), msgrcvdpnum.end (), [key, tm]
-		      (auto &el)
-			{
-			  if (std::get<0>(el) == key && std::get<1>(el) == tm)
-			    {
-			      return true;
-			    }
-			  else
-			    {
-			      return false;
-			    }
-			}),
-		  msgrcvdpnum.end ());
-	      msgrcvdpnummtx.unlock ();
+	      MsgProfileReceive mpr (this);
+	      mpr.msgMEPE (msgtype, key, rcvip6, &from6, from, sockipv4, buf);
 	    }
 	  if (buf.size () >= 42 && (msgtype == "MA" || msgtype == "PA"))
 	    {
-	      std::cout << msgtype << std::endl;
-	      uint64_t tm;
-	      std::memcpy (&tm, &buf[34], sizeof(tm));
-	      msgpartbufmtx.lock ();
-	      auto itmpb = std::find_if (
-		  msgpartbuf.begin (), msgpartbuf.end (), [key, tm]
-		  (auto &el)
-		    {
-		      if (std::get<0>(el) == key && std::get<1>(el) == tm)
-			{
-			  return true;
-			}
-		      else
-			{
-			  return false;
-			}
-		    });
-	      if (itmpb != msgpartbuf.end ())
-		{
-		  if (std::get<2> (*itmpb) == -1)
-		    {
-		      std::get<2> (*itmpb) = 0;
-		    }
-		}
-	      msgpartbufmtx.unlock ();
+	      MsgProfileReceive mpr (this);
+	      mpr.msgMAPA (msgtype, key, buf);
 	    }
 	  if (buf.size () >= 50 && (msgtype == "Mr" || msgtype == "Pr"))
 	    {
-	      std::cout << msgtype << std::endl;
-	      uint64_t tm;
-	      std::memcpy (&tm, &buf[34], sizeof(tm));
-	      uint64_t partnum;
-	      std::memcpy (&partnum, &buf[42], sizeof(partnum));
-	      msgpartbufmtx.lock ();
-	      auto itmpb = std::find_if (msgpartbuf.begin (), msgpartbuf.end (),
-					 [key, tm, partnum]
-					 (auto &el)
-					   {
-					     if (std::get<0>(el) == key
-						 && std::get<1>(el) == tm
-						 && std::get<5>(el) == partnum)
-					       {
-						 return true;
-					       }
-					     else
-					       {
-						 return false;
-					       }
-					   });
-	      if (itmpb != msgpartbuf.end ())
-		{
-		  std::get<2> (*itmpb) = 2;
-		}
-	      msgpartbufmtx.unlock ();
+	      MsgProfileReceive mpr (this);
+	      mpr.msgMrPr (msgtype, key, buf);
 	    }
 	  if (buf.size () >= 42 && (msgtype == "MR" || msgtype == "PR"))
 	    {
-	      std::cout << msgtype << std::endl;
-	      uint64_t tm;
-	      std::memcpy (&tm, &buf[34], sizeof(tm));
-	      sendbufmtx.lock ();
-	      msgpartbufmtx.lock ();
-	      auto itmpb = std::find_if (
-		  msgpartbuf.begin (), msgpartbuf.end (), [key, tm]
-		  (auto &el)
-		    {
-		      if (std::get<0>(el) == key && std::get<1>(el) == tm)
-			{
-			  return true;
-			}
-		      else
-			{
-			  return false;
-			}
-		    });
-	      if (itmpb != msgpartbuf.end ())
-		{
-		  std::filesystem::path p = std::get<3> (*itmpb);
-		  if (std::filesystem::exists (p))
-		    {
-		      std::filesystem::remove (p);
-		    }
-		  int ind;
-		  std::string indstr = p.filename ().u8string ();
-		  std::stringstream strm;
-		  std::locale loc ("C");
-		  strm.imbue (loc);
-		  strm << indstr;
-		  strm >> ind;
-		  if (msgtype == "MR")
-		    {
-		      msgSent.emit (key, ind);
-		    }
-		  msgpartbuf.erase (itmpb);
-		}
-	      msgpartbufmtx.unlock ();
-	      sendbufmtx.unlock ();
+	      MsgProfileReceive mpr (this);
+	      mpr.msgMRPR (msgtype, key, buf);
 	    }
 	  if (msgtype == "MI" || msgtype == "PI")
 	    {
-	      std::cout << msgtype << std::endl;
-	      uint64_t tm;
-	      std::memcpy (&tm, &buf[34], sizeof(tm));
-	      msgpartbufmtx.lock ();
-	      msgpartbuf.erase (
-		  std::remove_if (
-		      msgpartbuf.begin (), msgpartbuf.end (), [key, tm]
-		      (auto &el)
-			{
-			  if (std::get<0>(el) == key && std::get<1>(el) == tm)
-			    {
-			      return true;
-			    }
-			  else
-			    {
-			      return false;
-			    }
-			}),
-		  msgpartbuf.end ());
-	      msgpartbufmtx.unlock ();
+	      MsgProfileReceive mpr (this);
+	      mpr.msgMIPI (msgtype, key, buf);
 	    }
 	  if (buf.size () >= 50 && msgtype == "FQ")
 	    {
 	      FileReceiveOp fop (this);
-	      fop.fileFQ (msgtype, key, &buf);
+	      fop.fileFQ (msgtype, key, buf);
 	    }
 	  if (buf.size () >= 42 && msgtype == "FJ")
 	    {
 	      FileReceiveOp fop (this);
-	      fop.fileFJ (msgtype, key, &buf);
+	      fop.fileFJ (msgtype, key, buf);
 	    }
 	  if (buf.size () >= 42 && msgtype == "FA")
 	    {
 	      FileReceiveOp fop (this);
-	      fop.fileFA (msgtype, key, &buf);
+	      fop.fileFA (msgtype, key, buf);
 	    }
 	  if (buf.size () >= 50 && msgtype == "Fr")
 	    {
 	      FileReceiveOp fop (this);
-	      fop.fileFr (msgtype, key, rcvip6, &from6, from, sockipv4, &buf);
+	      fop.fileFr (msgtype, key, rcvip6, &from6, from, sockipv4, buf);
 	    }
 	  if (buf.size () >= 42 && (msgtype == "FR" || msgtype == "FI"))
 	    {
 	      FileReceiveOp fop (this);
-	      fop.fileFRFI (msgtype, key, &buf);
+	      fop.fileFRFI (msgtype, key, buf);
 	    }
 	  if (buf.size () >= 42 && msgtype == "FB")
 	    {
 	      FileReceiveOp fop (this);
-	      fop.fileFB (msgtype, key, rcvip6, &from6, from, sockipv4, &buf);
+	      fop.fileFB (msgtype, key, rcvip6, &from6, from, sockipv4, buf);
 	    }
 	  if (buf.size () >= 42 && msgtype == "FH")
 	    {
 	      FileReceiveOp fop (this);
-	      fop.fileFH (msgtype, key, &buf);
+	      fop.fileFH (msgtype, key, buf);
 	    }
 	  if (buf.size () >= 50 && msgtype == "Fb")
 	    {
 	      FileReceiveOp fop (this);
-	      fop.fileFb (msgtype, key, rcvip6, &from6, from, sockipv4, &buf);
+	      fop.fileFb (msgtype, key, rcvip6, &from6, from, sockipv4, buf);
 	    }
 	  if (buf.size () >= 50 && msgtype == "Fp")
 	    {
 	      FileReceiveOp fop (this);
-	      fop.fileFp (msgtype, key, &buf);
+	      fop.fileFp (msgtype, key, buf);
 	      if (rcvip6 > 0)
 		{
 		  fop.fileProcessing (msgtype, chkey, rcvip6, sockipv6, from,
@@ -1975,7 +1252,7 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 	  if (buf.size () >= 42 && msgtype == "Fe")
 	    {
 	      FileReceiveOp fop (this);
-	      fop.fileFe (msgtype, key, &buf);
+	      fop.fileFe (msgtype, key, buf);
 	      if (rcvip6 > 0)
 		{
 		  fop.fileProcessing (msgtype, chkey, rcvip6, sockipv6, from,
@@ -1990,7 +1267,7 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 	  if (buf.size () >= 42 && msgtype == "FE")
 	    {
 	      FileReceiveOp fop (this);
-	      fop.fileFE (msgtype, key, &buf);
+	      fop.fileFE (msgtype, key, buf);
 	      if (rcvip6 > 0)
 		{
 		  fop.fileProcessing (msgtype, chkey, rcvip6, sockipv6, from,
@@ -2005,7 +1282,7 @@ NetworkOperations::receiveMsg (int sockipv4, sockaddr_in *from)
 	  if (buf.size () >= 42 && msgtype == "FF")
 	    {
 	      FileReceiveOp fop (this);
-	      fop.fileFF (msgtype, key, &buf);
+	      fop.fileFF (msgtype, key, buf);
 	    }
 	}
     }
@@ -3612,6 +2889,7 @@ void
 NetworkOperations::removeFriend (std::string key)
 {
   std::string keyloc = key;
+  cancelgetoips = 1;
   if (sockmtx.try_lock ())
     {
       auto itsock = std::find_if (sockets4.begin (), sockets4.end (), [&keyloc]
@@ -3670,6 +2948,7 @@ NetworkOperations::removeFriend (std::string key)
     }
   else
     {
+      friendDelPulse.emit ();
       std::mutex *thrmtx = new std::mutex;
       thrmtx->lock ();
       threadvectmtx.lock ();
@@ -3894,6 +3173,7 @@ NetworkOperations::removeFriend (std::string key)
     }
   contfullmtx.unlock ();
   friendDeleted.emit (keyloc);
+  cancelgetoips = 0;
 
   msgpartbufmtx.lock ();
   msgpartbuf.erase (
@@ -4657,6 +3937,13 @@ NetworkOperations::commOps ()
 		    this->sockmtx.lock ();
 		    for (size_t i = 0; i < this->sockets4.size (); i++)
 		      {
+			if (this->cancelgetoips > 0)
+			  {
+			    std::cout << "What a fuck&" << std::endl;
+			    this->sockmtx.unlock ();
+			    thrmtx->unlock ();
+			    return void ();
+			  }
 			std::string key = std::get<0> (this->sockets4[i]);
 			int chiplr = 0;
 			this->ipv6lrmtx.lock ();
@@ -4697,6 +3984,14 @@ NetworkOperations::commOps ()
 				for (size_t j = 0; j < this->stunips.size ();
 				    j++)
 				  {
+				    if (this->cancelgetoips > 0)
+				      {
+					this->sockmtx.unlock ();
+					this->stunipsmtx.unlock ();
+					thrmtx->unlock ();
+					ownipsmtx->unlock ();
+					return void ();
+				      }
 				    smtx->lock ();
 				    std::pair<uint32_t, uint16_t> p =
 					this->getOwnIps (sock,
@@ -4717,12 +4012,20 @@ NetworkOperations::commOps ()
 				  }
 				for (size_t j = 0; j < rplcstun.size (); j++)
 				  {
+				    if (this->cancelgetoips > 0)
+				      {
+					this->sockmtx.unlock ();
+					this->stunipsmtx.unlock ();
+					thrmtx->unlock ();
+					ownipsmtx->unlock ();
+					return void ();
+				      }
 				    std::pair<struct in_addr, uint16_t> replpair;
-	      replpair = this->stunips[rplcstun[j]];
-	      this->stunips.erase (
-		  this->stunips.begin () + rplcstun[j]);
-	      this->stunips.push_back (replpair);
-	    }
+				    replpair = this->stunips[rplcstun[j]];
+				    this->stunips.erase (
+					this->stunips.begin () + rplcstun[j]);
+				    this->stunips.push_back (replpair);
+				  }
 				this->stunipsmtx.unlock ();
 				for (size_t j = 0; j < ips.size (); j++)
 				  {
@@ -4762,6 +4065,14 @@ NetworkOperations::commOps ()
 				    for (size_t j = 0;
 					j < this->stunips.size (); j++)
 				      {
+					if (this->cancelgetoips > 0)
+					  {
+					    this->sockmtx.unlock ();
+					    this->stunipsmtx.unlock ();
+					    thrmtx->unlock ();
+					    ownipsmtx->unlock ();
+					    return void ();
+					  }
 					smtx->lock ();
 					std::pair<uint32_t, uint16_t> p =
 					    this->getOwnIps (sock,
@@ -4783,6 +4094,14 @@ NetworkOperations::commOps ()
 				    for (size_t j = 0; j < rplcstun.size ();
 					j++)
 				      {
+					if (this->cancelgetoips > 0)
+					  {
+					    this->sockmtx.unlock ();
+					    this->stunipsmtx.unlock ();
+					    thrmtx->unlock ();
+					    ownipsmtx->unlock ();
+					    return void ();
+					  }
 					std::pair<struct in_addr, uint16_t> replpair;
 					replpair = this->stunips[rplcstun[j]];
 					this->stunips.erase (
@@ -4831,6 +4150,14 @@ NetworkOperations::commOps ()
 				    for (size_t j = 0;
 					j < this->stunips.size (); j++)
 				      {
+					if (this->cancelgetoips > 0)
+					  {
+					    this->sockmtx.unlock ();
+					    this->stunipsmtx.unlock ();
+					    thrmtx->unlock ();
+					    ownipsmtx->unlock ();
+					    return void ();
+					  }
 					smtx->lock ();
 					std::pair<uint32_t, uint16_t> p =
 					    this->getOwnIps (sock,
@@ -4852,6 +4179,14 @@ NetworkOperations::commOps ()
 				    for (size_t j = 0; j < rplcstun.size ();
 					j++)
 				      {
+					if (this->cancelgetoips > 0)
+					  {
+					    this->sockmtx.unlock ();
+					    this->stunipsmtx.unlock ();
+					    thrmtx->unlock ();
+					    ownipsmtx->unlock ();
+					    return void ();
+					  }
 					std::pair<struct in_addr, uint16_t> replpair;
 					replpair = this->stunips[rplcstun[j]];
 					this->stunips.erase (
@@ -5467,7 +4802,7 @@ NetworkOperations::commOps ()
 						this->getfrres.end (),
 						[&key]
 						(auto &el)
-						  { return std::get<0>(el) == key;}                                                                                                                                  );
+						  { return std::get<0>(el) == key;}                                                                                                                                                                   );
 					if (itgfr != this->getfrres.end ())
 					  {
 					    std::get<1> (*itgfr) =
@@ -5832,772 +5167,10 @@ NetworkOperations::fileAccept (std::string key, time_t tm,
   filehashvectmtx.unlock ();
 }
 
-int
-NetworkOperations::msgMe (std::string key, uint64_t tm, uint64_t partnum)
-{
-  int result = 0;
-  contmtx.lock ();
-  auto itc = std::find_if (contacts.begin (), contacts.end (), [key]
-  (auto &el)
-    {
-      return std::get<1>(el) == key;
-    });
-  if (itc != contacts.end ())
-    {
-      int index = std::get<0> (*itc);
-      std::string indexstr;
-      std::stringstream strm;
-      std::locale loc ("C");
-      strm.imbue (loc);
-      strm << index;
-      indexstr = strm.str ();
-      std::string filename;
-      AuxFunc af;
-      af.homePath (&filename);
-      filename = filename + "/.Communist/Bufer/" + indexstr;
-      std::filesystem::path filepath = std::filesystem::u8path (filename);
-      rcvmtx.lock ();
-      if (!std::filesystem::exists (filepath))
-	{
-	  std::filesystem::create_directories (filepath);
-	}
-      msgrcvdpnummtx.lock ();
-      auto itmrpnm = std::find_if (msgrcvdpnum.begin (), msgrcvdpnum.end (),
-				   [key, tm]
-				   (auto &el)
-				     {
-				       if (std::get<0>(el) == key
-					   && std::get<1>(el) == tm)
-					 {
-					   return true;
-					 }
-				       else
-					 {
-					   return false;
-					 }
-				     });
-      if (itmrpnm != msgrcvdpnum.end ())
-	{
-	  uint64_t lpnm = std::get<2> (*itmrpnm);
-	  if (partnum - lpnm == 1)
-	    {
-	      msgparthashmtx.lock ();
-	      auto itmph = std::find_if (msgparthash.begin (),
-					 msgparthash.end (), [key, tm]
-					 (auto &el)
-					   {
-					     if (std::get<0>(el) == key &&
-						 std::get<1>(el) == tm)
-					       {
-						 return true;
-					       }
-					     else
-					       {
-						 return false;
-					       }
-					   });
-	      if (itmph != msgparthash.end ())
-		{
-		  uint64_t num = 0;
-		  std::vector<char> part;
-		  msgpartrcvmtx.lock ();
-		  for (;;)
-		    {
-		      auto itmpr = std::find_if (
-			  msgpartrcv.begin (), msgpartrcv.end (),
-			  [key, tm, &num]
-			  (auto &el)
-			    {
-			      if (std::get<0>(el) == key &&
-				  std::get<1>(el) == tm &&
-				  std::get<2>(el) == num)
-				{
-				  return true;
-				}
-			      else
-				{
-				  return false;
-				}
-			    });
-		      if (itmpr != msgpartrcv.end ())
-			{
-			  std::vector<char> pt = std::get<3> (*itmpr);
-			  std::copy (pt.begin (), pt.end (),
-				     std::back_inserter (part));
-			  msgpartrcv.erase (itmpr);
-			}
-		      else
-			{
-			  break;
-			}
-		      num = num + 1;
-		    }
-		  msgpartrcvmtx.unlock ();
-		  std::vector<char> hash = std::get<2> (*itmph);
-		  std::vector<char> chhash = af.strhash (part, 2);
-		  if (hash == chhash)
-		    {
-		      strm.clear ();
-		      strm.str ("");
-		      strm.imbue (loc);
-		      strm << tm;
-		      filename = filepath.u8string ();
-		      filename = filename + "/" + strm.str ();
-		      filepath = std::filesystem::u8path (filename);
-		      std::fstream f;
-		      if (std::filesystem::exists (filepath))
-			{
-			  f.open (
-			      filepath,
-			      std::ios_base::out | std::ios_base::app
-				  | std::ios_base::binary);
-			  f.write (&part[0], part.size ());
-			  f.close ();
-			}
-		      else
-			{
-			  f.open (filepath,
-				  std::ios_base::out | std::ios_base::binary);
-			  f.write (&part[0], part.size ());
-			  f.close ();
-			}
-		      std::get<2> (*itmrpnm) = partnum;
-		      result = 1;
-		    }
-		  else
-		    {
-		      std::cerr << "Part not correct" << std::endl;
-		    }
-		}
-	      else
-		{
-		  std::cerr << "Msg part hash not found" << std::endl;
-		}
-	      msgparthashmtx.unlock ();
-	    }
-	  else
-	    {
-	      if (partnum - lpnm == 0)
-		{
-		  result = 1;
-		}
-	      std::cerr << "Msg part number not correct" << std::endl;
-	    }
-	}
-      else
-	{
-	  if (partnum == 0)
-	    {
-	      msgparthashmtx.lock ();
-	      auto itmph = std::find_if (msgparthash.begin (),
-					 msgparthash.end (), [key, tm]
-					 (auto &el)
-					   {
-					     if (std::get<0>(el) == key &&
-						 std::get<1>(el) == tm)
-					       {
-						 return true;
-					       }
-					     else
-					       {
-						 return false;
-					       }
-					   });
-	      if (itmph != msgparthash.end ())
-		{
-		  uint64_t num = 0;
-		  std::vector<char> part;
-		  msgpartrcvmtx.lock ();
-		  for (;;)
-		    {
-		      auto itmpr = std::find_if (
-			  msgpartrcv.begin (), msgpartrcv.end (),
-			  [key, tm, &num]
-			  (auto &el)
-			    {
-			      if (std::get<0>(el) == key &&
-				  std::get<1>(el) == tm &&
-				  std::get<2>(el) == num)
-				{
-				  return true;
-				}
-			      else
-				{
-				  return false;
-				}
-			    });
-		      if (itmpr != msgpartrcv.end ())
-			{
-			  std::vector<char> pt = std::get<3> (*itmpr);
-			  std::copy (pt.begin (), pt.end (),
-				     std::back_inserter (part));
-			  msgpartrcv.erase (itmpr);
-			}
-		      else
-			{
-			  break;
-			}
-		      num = num + 1;
-		    }
-		  msgpartrcvmtx.unlock ();
-		  std::vector<char> hash = std::get<2> (*itmph);
-		  std::vector<char> chhash = af.strhash (part, 2);
-		  if (hash == chhash)
-		    {
-		      strm.clear ();
-		      strm.str ("");
-		      strm.imbue (loc);
-		      strm << tm;
-		      filename = filepath.u8string ();
-		      filename = filename + "/" + strm.str ();
-		      filepath = std::filesystem::u8path (filename);
-		      std::fstream f;
-		      if (std::filesystem::exists (filepath))
-			{
-			  f.open (
-			      filepath,
-			      std::ios_base::out | std::ios_base::app
-				  | std::ios_base::binary);
-			  f.write (&part[0], part.size ());
-			  f.close ();
-			}
-		      else
-			{
-			  f.open (filepath,
-				  std::ios_base::out | std::ios_base::binary);
-			  f.write (&part[0], part.size ());
-			  f.close ();
-			}
-		      msgrcvdpnum.push_back (
-			  std::make_tuple (key, tm, partnum));
-		      result = 1;
-		    }
-		  else
-		    {
-		      std::cerr << "Part not correct" << std::endl;
-		    }
-		}
-	      else
-		{
-		  std::cerr << "Msg part hash not found" << std::endl;
-		}
-	      msgparthashmtx.unlock ();
-	    }
-	}
-      msgrcvdpnummtx.unlock ();
-
-      rcvmtx.unlock ();
-    }
-  contmtx.unlock ();
-  return result;
-}
-
-int
-NetworkOperations::msgPe (std::string key, uint64_t tm, uint64_t partnum)
-{
-  int result = 0;
-  contmtx.lock ();
-  auto itc = std::find_if (contacts.begin (), contacts.end (), [key]
-  (auto &el)
-    {
-      return std::get<1>(el) == key;
-    });
-  if (itc != contacts.end ())
-    {
-      int index = std::get<0> (*itc);
-      std::string indexstr;
-      std::stringstream strm;
-      std::locale loc ("C");
-      strm.imbue (loc);
-      strm << index;
-      indexstr = strm.str ();
-      std::string filename;
-      AuxFunc af;
-      af.homePath (&filename);
-      filename = filename + "/.Communist/Bufer/" + indexstr;
-      std::filesystem::path filepath = std::filesystem::u8path (filename);
-      rcvmtx.lock ();
-      if (!std::filesystem::exists (filepath))
-	{
-	  std::filesystem::create_directories (filepath);
-	}
-      msgrcvdpnummtx.lock ();
-      auto itmrpnm = std::find_if (msgrcvdpnum.begin (), msgrcvdpnum.end (),
-				   [key, tm]
-				   (auto &el)
-				     {
-				       if (std::get<0>(el) == key
-					   && std::get<1>(el) == tm)
-					 {
-					   return true;
-					 }
-				       else
-					 {
-					   return false;
-					 }
-				     });
-      if (itmrpnm != msgrcvdpnum.end ())
-	{
-	  uint64_t lpnm = std::get<2> (*itmrpnm);
-	  if (partnum - lpnm == 1)
-	    {
-	      msgparthashmtx.lock ();
-	      auto itmph = std::find_if (msgparthash.begin (),
-					 msgparthash.end (), [key, tm]
-					 (auto &el)
-					   {
-					     if (std::get<0>(el) == key &&
-						 std::get<1>(el) == tm)
-					       {
-						 return true;
-					       }
-					     else
-					       {
-						 return false;
-					       }
-					   });
-	      if (itmph != msgparthash.end ())
-		{
-		  uint64_t num = 0;
-		  std::vector<char> part;
-		  msgpartrcvmtx.lock ();
-		  for (;;)
-		    {
-		      auto itmpr = std::find_if (
-			  msgpartrcv.begin (), msgpartrcv.end (),
-			  [key, tm, &num]
-			  (auto &el)
-			    {
-			      if (std::get<0>(el) == key &&
-				  std::get<1>(el) == tm &&
-				  std::get<2>(el) == num)
-				{
-				  return true;
-				}
-			      else
-				{
-				  return false;
-				}
-			    });
-		      if (itmpr != msgpartrcv.end ())
-			{
-			  std::vector<char> pt = std::get<3> (*itmpr);
-			  std::copy (pt.begin (), pt.end (),
-				     std::back_inserter (part));
-			  msgpartrcv.erase (itmpr);
-			}
-		      else
-			{
-			  break;
-			}
-		      num = num + 1;
-		    }
-		  msgpartrcvmtx.unlock ();
-		  std::vector<char> hash = std::get<2> (*itmph);
-		  std::vector<char> chhash = af.strhash (part, 2);
-		  if (hash == chhash)
-		    {
-		      filename = filepath.u8string ();
-		      filename = filename + "/Profile";
-		      filepath = std::filesystem::u8path (filename);
-		      std::fstream f;
-		      if (std::filesystem::exists (filepath))
-			{
-			  f.open (
-			      filepath,
-			      std::ios_base::out | std::ios_base::app
-				  | std::ios_base::binary);
-			  f.write (&part[0], part.size ());
-			  f.close ();
-			}
-		      else
-			{
-			  f.open (filepath,
-				  std::ios_base::out | std::ios_base::binary);
-			  f.write (&part[0], part.size ());
-			  f.close ();
-			}
-		      std::get<2> (*itmrpnm) = partnum;
-		      result = 1;
-		    }
-		  else
-		    {
-		      std::cerr << "Profile part not correct" << std::endl;
-		    }
-		}
-	      else
-		{
-		  std::cerr << "Profile part hash not found" << std::endl;
-		}
-	      msgparthashmtx.unlock ();
-	    }
-	  else
-	    {
-	      if (partnum - lpnm == 0)
-		{
-		  result = 1;
-		}
-	      std::cerr << "Profile part number incorrect" << std::endl;
-	    }
-	}
-      else
-	{
-	  if (partnum == 0)
-	    {
-	      msgparthashmtx.lock ();
-	      auto itmph = std::find_if (msgparthash.begin (),
-					 msgparthash.end (), [key, tm]
-					 (auto &el)
-					   {
-					     if (std::get<0>(el) == key &&
-						 std::get<1>(el) == tm)
-					       {
-						 return true;
-					       }
-					     else
-					       {
-						 return false;
-					       }
-					   });
-	      if (itmph != msgparthash.end ())
-		{
-		  uint64_t num = 0;
-		  std::vector<char> part;
-		  msgpartrcvmtx.lock ();
-		  for (;;)
-		    {
-		      auto itmpr = std::find_if (
-			  msgpartrcv.begin (), msgpartrcv.end (),
-			  [key, tm, &num]
-			  (auto &el)
-			    {
-			      if (std::get<0>(el) == key &&
-				  std::get<1>(el) == tm &&
-				  std::get<2>(el) == num)
-				{
-				  return true;
-				}
-			      else
-				{
-				  return false;
-				}
-			    });
-		      if (itmpr != msgpartrcv.end ())
-			{
-			  std::vector<char> pt = std::get<3> (*itmpr);
-			  std::copy (pt.begin (), pt.end (),
-				     std::back_inserter (part));
-			  msgpartrcv.erase (itmpr);
-			}
-		      else
-			{
-			  break;
-			}
-		      num = num + 1;
-		    }
-		  msgpartrcvmtx.unlock ();
-		  std::vector<char> hash = std::get<2> (*itmph);
-		  std::vector<char> chhash = af.strhash (part, 2);
-		  if (hash == chhash)
-		    {
-		      filename = filepath.u8string ();
-		      filename = filename + "/Profile";
-		      filepath = std::filesystem::u8path (filename);
-		      std::fstream f;
-		      if (std::filesystem::exists (filepath))
-			{
-			  f.open (
-			      filepath,
-			      std::ios_base::out | std::ios_base::app
-				  | std::ios_base::binary);
-			  f.write (&part[0], part.size ());
-			  f.close ();
-			}
-		      else
-			{
-			  f.open (filepath,
-				  std::ios_base::out | std::ios_base::binary);
-			  f.write (&part[0], part.size ());
-			  f.close ();
-			}
-		      msgrcvdpnum.push_back (
-			  std::make_tuple (key, tm, partnum));
-		      result = 1;
-		    }
-		  else
-		    {
-		      std::cerr << "Profile part not correct" << std::endl;
-		    }
-		}
-	      else
-		{
-		  std::cerr << "Profile part hash not found" << std::endl;
-		}
-	      msgparthashmtx.unlock ();
-	    }
-	}
-      msgrcvdpnummtx.unlock ();
-
-      rcvmtx.unlock ();
-    }
-  contmtx.unlock ();
-  return result;
-}
-
-int
-NetworkOperations::msgME (std::string key, uint64_t tm)
-{
-  int result = 0;
-  contmtx.lock ();
-  auto itc = std::find_if (contacts.begin (), contacts.end (), [key]
-  (auto &el)
-    {
-      return std::get<1>(el) == key;
-    });
-  if (itc != contacts.end ())
-    {
-      int index = std::get<0> (*itc);
-      std::locale loc ("C");
-      std::stringstream strm;
-      strm.imbue (loc);
-      strm << index;
-      std::string indexstr = strm.str ();
-      strm.clear ();
-      strm.str ("");
-      strm.imbue (loc);
-      strm << tm;
-      std::string tmstr = strm.str ();
-      std::string filename;
-      AuxFunc af;
-      af.homePath (&filename);
-      filename = filename + "/.Communist/Bufer/" + indexstr + "/" + tmstr;
-      std::filesystem::path filepath = std::filesystem::u8path (filename);
-      rcvmtx.lock ();
-      if (std::filesystem::exists (filepath))
-	{
-	  msghashmtx.lock ();
-	  auto itmh = std::find_if (msghash.begin (), msghash.end (), [key, tm]
-	  (auto &el)
-	    {
-	      if (std::get<0>(el) == key && std::get<1>(el) == tm)
-		{
-		  return true;
-		}
-	      else
-		{
-		  return false;
-		}
-	    });
-	  if (itmh != msghash.end ())
-	    {
-	      std::vector<char> hash = std::get<3> (*itmh);
-	      std::vector<char> chhash = af.filehash (filepath);
-	      uint64_t msgsz = std::get<2> (*itmh);
-	      if (hash == chhash
-		  && msgsz == uint64_t (std::filesystem::file_size (filepath)))
-		{
-		  af.homePath (&filename);
-		  filename = filename + "/.Communist/" + indexstr;
-		  std::filesystem::path outpath = std::filesystem::u8path (
-		      filename);
-		  if (std::filesystem::exists (outpath))
-		    {
-		      std::vector<int> findv;
-		      for (auto &ditp : std::filesystem::directory_iterator (
-			  outpath))
-			{
-			  std::filesystem::path p = ditp.path ();
-			  if (p.filename ().u8string () != "Profile"
-			      && p.filename ().u8string () != "Yes")
-			    {
-			      filename = p.filename ().u8string ();
-			      std::string::size_type n;
-			      n = filename.find ("f");
-			      if (n != std::string::npos)
-				{
-				  filename.erase (
-				      n, n + std::string ("f").size ());
-				}
-			      strm.clear ();
-			      strm.str ("");
-			      strm.imbue (loc);
-			      strm << filename;
-			      int tint;
-			      strm >> tint;
-			      findv.push_back (tint);
-			    }
-			}
-		      int msgind = 0;
-		      if (findv.size () > 0)
-			{
-			  std::sort (findv.begin (), findv.end ());
-			  msgind = findv[findv.size () - 1] + 1;
-			}
-		      strm.clear ();
-		      strm.str ("");
-		      strm.imbue (loc);
-		      strm << msgind;
-		      filename = outpath.u8string ();
-		      filename = filename + "/" + strm.str ();
-		      outpath = std::filesystem::u8path (filename);
-		      std::filesystem::copy (filepath, outpath);
-		      messageReceived.emit (key, outpath);
-		      result = 1;
-		    }
-		}
-	    }
-	  msghashmtx.unlock ();
-	  std::filesystem::remove (filepath);
-	}
-      rcvmtx.unlock ();
-    }
-  contmtx.unlock ();
-  return result;
-}
-
-int
-NetworkOperations::msgPE (std::string key, uint64_t tm)
-{
-  int result = 0;
-  contmtx.lock ();
-  auto itc = std::find_if (contacts.begin (), contacts.end (), [key]
-  (auto &el)
-    {
-      return std::get<1>(el) == key;
-    });
-  if (itc != contacts.end ())
-    {
-      int index = std::get<0> (*itc);
-      std::locale loc ("C");
-      std::stringstream strm;
-      strm.imbue (loc);
-      strm << index;
-      std::string indexstr = strm.str ();
-      strm.clear ();
-      strm.str ("");
-      strm.imbue (loc);
-      strm << tm;
-      std::string tmstr = strm.str ();
-      std::string filename;
-      AuxFunc af;
-      af.homePath (&filename);
-      filename = filename + "/.Communist/Bufer/" + indexstr + "/Profile";
-      std::filesystem::path filepath = std::filesystem::u8path (filename);
-      rcvmtx.lock ();
-      if (std::filesystem::exists (filepath))
-	{
-	  msghashmtx.lock ();
-	  auto itmh = std::find_if (msghash.begin (), msghash.end (), [key, tm]
-	  (auto &el)
-	    {
-	      if (std::get<0>(el) == key && std::get<1>(el) == tm)
-		{
-		  return true;
-		}
-	      else
-		{
-		  return false;
-		}
-	    });
-	  if (itmh != msghash.end ())
-	    {
-	      std::vector<char> hash = std::get<3> (*itmh);
-	      std::vector<char> chhash = af.filehash (filepath);
-	      uint64_t msgsz = std::get<2> (*itmh);
-	      if (hash == chhash
-		  && msgsz == uint64_t (std::filesystem::file_size (filepath)))
-		{
-		  af.homePath (&filename);
-		  filename = filename + "/.Communist/" + indexstr + "/Profile";
-		  std::filesystem::path outpath = std::filesystem::u8path (
-		      filename);
-		  if (!std::filesystem::exists (outpath.parent_path ()))
-		    {
-		      std::filesystem::create_directories (
-			  outpath.parent_path ());
-		    }
-		  if (std::filesystem::exists (outpath))
-		    {
-		      std::filesystem::remove (outpath);
-		    }
-		  std::filesystem::copy (filepath, outpath);
-		  int indint;
-		  strm.clear ();
-		  strm.str ("");
-		  strm.imbue (loc);
-		  strm << indexstr;
-		  strm >> indint;
-		  profReceived.emit (key, indint);
-		  result = 1;
-		}
-	      else
-		{
-		  if (hash != chhash)
-		    {
-		      std::cerr << "Prof hash incorrect" << std::endl;
-		    }
-		  if (msgsz != uint64_t (std::filesystem::file_size (filepath)))
-		    {
-		      std::cerr << "Prof size incorrect" << std::endl;
-		    }
-		}
-	    }
-	  else
-	    {
-	      std::cerr << "Profile hash not found" << std::endl;
-	    }
-	  msghashmtx.unlock ();
-	  std::filesystem::remove (filepath);
-	}
-      else
-	{
-	  msghashmtx.lock ();
-	  auto itmh = std::find_if (msghash.begin (), msghash.end (), [key, tm]
-	  (auto &el)
-	    {
-	      if (std::get<0>(el) == key && std::get<1>(el) == tm)
-		{
-		  return true;
-		}
-	      else
-		{
-		  return false;
-		}
-	    });
-	  if (itmh != msghash.end ())
-	    {
-	      af.homePath (&filename);
-	      filename = filename + "/.Communist/" + indexstr + "/Profile";
-	      filepath = std::filesystem::u8path (filename);
-	      if (std::filesystem::exists (filepath))
-		{
-		  std::vector<char> hash = std::get<3> (*itmh);
-		  std::vector<char> chhash = af.filehash (filepath);
-		  if (hash == chhash)
-		    {
-		      result = 1;
-		    }
-		}
-	      else
-		{
-		  std::cerr << "Profile not found" << std::endl;
-		}
-	    }
-	  else
-	    {
-	      std::cerr << "Profile hash not found" << std::endl;
-	    }
-	  msghashmtx.unlock ();
-	}
-      rcvmtx.unlock ();
-    }
-  contmtx.unlock ();
-  return result;
-}
-
 void
 NetworkOperations::blockFriend (std::string key)
 {
+  cancelgetoips = 1;
   std::string keyloc = key;
   if (sockmtx.try_lock ())
     {
@@ -6648,6 +5221,7 @@ NetworkOperations::blockFriend (std::string key)
     }
   else
     {
+      friendDelPulse.emit ();
       std::thread *thr = new std::thread ( [keyloc, this]
       {
 	usleep (100000);
@@ -6657,7 +5231,8 @@ NetworkOperations::blockFriend (std::string key)
       delete thr;
       return void ();
     }
-
+  cancelgetoips = 0;
+  friendBlockedSig.emit ();
   addfrmtx.lock ();
   Addfriends.erase (
       std::remove (Addfriends.begin (), Addfriends.end (), keyloc),
@@ -6909,77 +5484,93 @@ NetworkOperations::blockFriend (std::string key)
 void
 NetworkOperations::startFriend (std::string key, int ind)
 {
-  contmtx.lock ();
-  auto itcont = std::find_if (contacts.begin (), contacts.end (), [key]
+  std::mutex *thrmtxgl = new std::mutex;
+  thrmtxgl->lock ();
+  threadvectmtx.lock ();
+  threadvect.push_back (std::make_tuple (thrmtxgl, "startFriend"));
+  threadvectmtx.unlock ();
+  std::thread *thr = new std::thread ( [this, thrmtxgl, key, ind]
+  {
+    this->contmtx.lock ();
+    auto itcont = std::find_if (this->contacts.begin (), this->contacts.end (),[ key]
   (auto &el)
-    { return std::get<1>(el) == key;});
-  if (itcont == contacts.end ())
     {
-      std::pair<int, std::string> p;
-      std::get<0> (p) = ind;
-      std::get<1> (p) = key;
-      contacts.push_back (p);
-    }
-  contmtx.unlock ();
+      return std::get<1>(el) == key;
+    });
+    if (itcont == this->contacts.end ())
+      {
+	std::pair<int, std::string> p;
+	std::get<0> (p) = ind;
+	std::get<1> (p) = key;
+	this->contacts.push_back (p);
+      }
+    this->contmtx.unlock ();
 
-  getfrmtx.lock ();
-  auto gfrit = std::find (getfr.begin (), getfr.end (), key);
-  if (gfrit == getfr.end ())
-    {
-      getfr.push_back (key);
-    }
-  getfrmtx.unlock ();
-  sockmtx.lock ();
-  int ss = 0;
-  auto itsock = std::find_if (sockets4.begin (), sockets4.end (), [key]
-  (auto &el)
-    { return std::get<0>(el) == key;});
-  if (itsock == sockets4.end ())
-    {
+    this->getfrmtx.lock ();
+    auto gfrit = std::find (this->getfr.begin (), this->getfr.end (), key);
+    if (gfrit == this->getfr.end ())
+      {
+	this->getfr.push_back (key);
+      }
+    this->getfrmtx.unlock ();
+    this->sockmtx.lock ();
+    int ss = 0;
+    auto itsock = std::find_if (this->sockets4.begin (), this->sockets4.end (),
+				[key]
+				(auto &el)
+				  {
+				    return std::get<0>(el) == key;
+				  });
+    if (itsock == this->sockets4.end ())
+      {
 #ifdef __linux
-      int sock = socket (AF_INET, SOCK_DGRAM | O_NONBLOCK, IPPROTO_UDP);
+	int sock = socket (AF_INET, SOCK_DGRAM | O_NONBLOCK, IPPROTO_UDP);
 #endif
 #ifdef _WIN32
-      int sock = socket (AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-      u_long nonblocking_enabled = TRUE;
-      ioctlsocket (sock, FIONBIO, &nonblocking_enabled);
-#endif
-      sockaddr_in addripv4 =
-	{ };
-      addripv4.sin_family = AF_INET;
-      addripv4.sin_addr.s_addr = INADDR_ANY;
-      addripv4.sin_port = 0;
-      int addrlen1 = sizeof(addripv4);
-      bind (sock, (const sockaddr*) &addripv4, addrlen1);
-      std::mutex *mtx = new std::mutex;
-      std::mutex *mtxgip = new std::mutex;
-      time_t tm = time (NULL);
-      sockets4.push_back (std::make_tuple (key, sock, mtx, tm, mtxgip));
-    }
-  if (sockets4.size () == 1)
-    {
-      ss = 1;
-    }
-  sockmtx.unlock ();
-  if (ss == 1)
-    {
-      std::mutex *thrmtx = new std::mutex;
-      thrmtx->lock ();
-      threadvectmtx.lock ();
-      threadvect.push_back (std::make_tuple (thrmtx, "Start friend"));
-      threadvectmtx.unlock ();
-      std::thread *thr = new std::thread ( [this, thrmtx]
+          int sock = socket (AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+          u_long nonblocking_enabled = TRUE;
+          ioctlsocket (sock, FIONBIO, &nonblocking_enabled);
+    #endif
+	sockaddr_in addripv4 =
+	  { };
+	addripv4.sin_family = AF_INET;
+	addripv4.sin_addr.s_addr = INADDR_ANY;
+	addripv4.sin_port = 0;
+	int addrlen1 = sizeof(addripv4);
+	bind (sock, (const sockaddr*) &addripv4, addrlen1);
+	std::mutex *mtx = new std::mutex;
+	std::mutex *mtxgip = new std::mutex;
+	time_t tm = time (NULL);
+	this->sockets4.push_back (std::make_tuple (key, sock, mtx, tm, mtxgip));
+      }
+    if (this->sockets4.size () == 1)
       {
-	if (this->copsrun.try_lock ())
-	  {
-	    this->commOps ();
-	    this->copsrun.unlock ();
-	  }
-	thrmtx->unlock ();
-      });
-      thr->detach ();
-      delete thr;
-    }
+	ss = 1;
+      }
+    this->sockmtx.unlock ();
+    if (ss == 1)
+      {
+	std::mutex *thrmtx = new std::mutex;
+	thrmtx->lock ();
+	this->threadvectmtx.lock ();
+	this->threadvect.push_back (std::make_tuple (thrmtx, "Start friend"));
+	this->threadvectmtx.unlock ();
+	std::thread *thr = new std::thread ( [this, thrmtx]
+	{
+	  if (this->copsrun.try_lock ())
+	    {
+	      this->commOps ();
+	      this->copsrun.unlock ();
+	    }
+	  thrmtx->unlock ();
+	});
+	thr->detach ();
+	delete thr;
+      }
+    thrmtxgl->unlock ();
+  });
+  thr->detach ();
+  delete thr;
 }
 
 void

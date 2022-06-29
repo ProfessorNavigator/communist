@@ -182,7 +182,7 @@ private:
   std::mutex contmtx;
   std::vector<
       std::tuple<Gtk::Button*, Gtk::Grid*, Gtk::Label*, Gtk::Label*,
-	  Gtk::Label*, Gtk::Label*, Gtk::Label*>> friendvect; //0-contact button, 1-buttongrid, 2-key label, 3-rcvd msg quantity label, 4-nick label, 5-name label, 6-blocked label
+	  Gtk::Label*, Gtk::Label*, Gtk::Label*, Gtk::PopoverMenu*>> friendvect; //0-contact button, 1-buttongrid, 2-key label, 3-rcvd msg quantity label, 4-nick label, 5-name label, 6-blocked label, 7-contact menu
   std::mutex frvectmtx;
   std::vector<std::string> Addfriends;
   std::mutex addfrmtx;
@@ -212,7 +212,7 @@ private:
   std::mutex yesmtx; //Contacts log mutex
   std::mutex proffopmtx; //Profile mutex
   Gtk::PopoverMenu *rightmenfordel = nullptr;
-  Gtk::PopoverMenu *contmenupop = nullptr;
+  //Gtk::PopoverMenu *contmenupop = nullptr;
   Glib::Dispatcher msgwinadjdsp;
   double usermsgadj = -1;
   Gtk::Overlay *msgovl = nullptr;
@@ -259,6 +259,7 @@ private:
   Glib::RefPtr<Gtk::MediaFile> mf;
   Hunspell *spch = nullptr;
   std::string Theme;
+  Gtk::Window *Contdelwin = nullptr;
 };
 
 #endif /* MAINWINDOW_H_ */

@@ -730,20 +730,25 @@ MainWindow::mainWindow ()
   this->set_child (*mw_ovl);
   Gtk::Grid *grid = Gtk::make_managed<Gtk::Grid> ();
   Gtk::DrawingArea *bckgrnd = Gtk::make_managed<Gtk::DrawingArea> ();
-  bckgrnd->set_draw_func (
-      [this]
-      (const Cairo::RefPtr<Cairo::Context> &cr,
-       int width,
-       int height)
-	 {
-	   Glib::ustring file = Glib::ustring (this->Sharepath + "/themes/" +
-	       this->Theme + "/background.jpeg");
-	   Glib::RefPtr<Gdk::Pixbuf> imageloc = Gdk::Pixbuf::create_from_file (file);
-	   imageloc = imageloc->scale_simple (width, height, Gdk::InterpType::BILINEAR);
-	   Gdk::Cairo::set_source_pixbuf (cr, imageloc, 0, 0);
-	   cr->rectangle (0, 0, width, height);
-	   cr->fill ();
-	 });
+  std::filesystem::path backgrpath = std::filesystem::u8path (
+      std::string (Sharepath + "/themes/" + Theme + "/background.jpeg"));
+  if (std::filesystem::exists (backgrpath))
+    {
+      bckgrnd->set_draw_func (
+	  [this]
+	  (const Cairo::RefPtr<Cairo::Context> &cr,
+	   int width,
+	   int height)
+	     {
+	       Glib::ustring file = Glib::ustring (this->Sharepath + "/themes/" +
+		   this->Theme + "/background.jpeg");
+	       Glib::RefPtr<Gdk::Pixbuf> imageloc = Gdk::Pixbuf::create_from_file (file);
+	       imageloc = imageloc->scale_simple (width, height, Gdk::InterpType::BILINEAR);
+	       Gdk::Cairo::set_source_pixbuf (cr, imageloc, 0, 0);
+	       cr->rectangle (0, 0, width, height);
+	       cr->fill ();
+	     });
+    }
   mw_ovl->set_child (*bckgrnd);
   mw_ovl->add_overlay (*grid);
   Glib::RefPtr<Gio::SimpleActionGroup> pref = Gio::SimpleActionGroup::create ();
@@ -1157,7 +1162,7 @@ MainWindow::mainWindow ()
 	      filename = filename + "/Communist";
 	      af.unpacking (outfile, filename);
 	      std::tuple<Gtk::Button*, Gtk::Grid*, Gtk::Label*, Gtk::Label*,
-		  Gtk::Label*, Gtk::Label*, Gtk::Label*> frtup;
+		  Gtk::Label*, Gtk::Label*, Gtk::Label*, Gtk::PopoverMenu*> frtup;
 	      Gtk::Button *buttontr = Gtk::make_managed<Gtk::Button> ();
 	      std::get<0> (frtup) = buttontr;
 	      buttontr->get_style_context ()->add_provider (
@@ -1295,6 +1300,7 @@ MainWindow::mainWindow ()
 		}
 
 	      std::get<3> (frtup) = nullptr;
+	      std::get<7> (frtup) = nullptr;
 
 	      frvectmtx.lock ();
 	      friendvect.push_back (frtup);
@@ -1595,7 +1601,7 @@ MainWindow::mainWindow ()
 	{
 	  if (this->rightmenfordel != nullptr)
 	    {
-	      this->rightmenfordel->hide ();
+	      delete this->rightmenfordel;
 	      this->rightmenfordel = nullptr;
 	    }
 	}
@@ -2882,11 +2888,6 @@ MainWindow::formMsgWinGrid (std::vector<std::filesystem::path> &msg,
 void
 MainWindow::deleteContact ()
 {
-  if (contmenupop != nullptr)
-    {
-      contmenupop->unparent ();
-      contmenupop = nullptr;
-    }
   if (fordelkey != "")
     {
       Gtk::Window *window = new Gtk::Window;
@@ -3025,11 +3026,58 @@ MainWindow::deleteContactFunc ()
 	      fileprogrvectmtx.unlock ();
 	      if (oper != nullptr)
 		{
+		  Contdelwin = new Gtk::Window;
+		  Contdelwin->set_application (this->get_application ());
+		  Contdelwin->set_title (gettext ("Contact removing"));
+		  Contdelwin->set_modal (true);
+		  Contdelwin->set_transient_for (*this);
+		  Contdelwin->set_name ("settingsWindow");
+		  Contdelwin->get_style_context ()->add_provider (
+		      this->css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+		  Gtk::Grid *rmwimgr = Gtk::make_managed<Gtk::Grid> ();
+		  Contdelwin->set_child (*rmwimgr);
+		  rmwimgr->set_halign (Gtk::Align::CENTER);
+		  Gtk::ProgressBar *bar =
+		      Gtk::make_managed<Gtk::ProgressBar> ();
+		  bar->set_name ("clBar");
+		  bar->get_style_context ()->add_provider (
+		      this->css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+		  bar->set_halign (Gtk::Align::CENTER);
+		  bar->set_valign (Gtk::Align::CENTER);
+		  bar->set_text (gettext ("Contact is being removed"));
+		  bar->set_show_text (true);
+		  bar->set_margin (5);
+		  rmwimgr->attach (*bar, 0, 0, 1, 1);
+
+		  Glib::Dispatcher *disp = new Glib::Dispatcher;
+		  disp->connect ( [bar]
+		  {
+		    bar->pulse ();
+		  });
+
+		  sigc::connection *con = new sigc::connection;
+		  *con = oper->friendDelPulse.connect ( [disp]
+		  {
+		    disp->emit ();
+		  });
+
+		  Contdelwin->signal_close_request ().connect (
+		      [this, disp, con]
+		      {
+			con->disconnect ();
+			delete con;
+			delete disp;
+			this->Contdelwin->hide ();
+			delete this->Contdelwin;
+			this->Contdelwin = nullptr;
+			return true;
+		      },
+		      false);
+		  Contdelwin->show ();
 		  oper->removeFriend (fordelkey);
 		}
 	      selectedc = nullptr;
 	      fordelkey = "";
-	      Winright = nullptr;
 	    }
 	}
     }
@@ -4205,7 +4253,7 @@ MainWindow::addFriendSlot (std::string *keyt, int *conind, std::mutex *disp1mtx)
       friendvect.insert (
 	  friendvect.begin (),
 	  std::make_tuple (buttontr, gridtr, keylab, nullptr, nicklab, namelab,
-			   nullptr));
+			   nullptr, nullptr));
       frvectmtx.unlock ();
 #ifdef __linux
       filename = std::filesystem::temp_directory_path ().u8string ();
@@ -4724,7 +4772,7 @@ MainWindow::creatReply (int numcl, double x, double y, Gtk::Frame *fr,
       menu->append (gettext ("Reply"), "popupmsg.reply");
       menu->append (gettext ("Forward"), "popupmsg.forward");
       menu->append (gettext ("Remove (only this machine)"), "popupmsg.remove");
-      Gtk::PopoverMenu *Menu = Gtk::make_managed<Gtk::PopoverMenu> ();
+      Gtk::PopoverMenu *Menu = new Gtk::PopoverMenu;
       Menu->set_parent (*fr);
       Menu->set_menu_model (menu);
       Menu->set_has_arrow (false);
@@ -4735,6 +4783,12 @@ MainWindow::creatReply (int numcl, double x, double y, Gtk::Frame *fr,
 	if (this->repllabe != nullptr)
 	  {
 	    this->Rightgrid->remove (*(this->replgrid));
+	    Glib::RefPtr<Glib::MainContext> mk =
+		Glib::MainContext::get_default ();
+	    while (mk->pending ())
+	      {
+		mk->iteration (true);
+	      }
 	    this->replgrid = nullptr;
 	    this->replcancel = nullptr;
 	    this->repllabe = nullptr;
@@ -4759,6 +4813,12 @@ MainWindow::creatReply (int numcl, double x, double y, Gtk::Frame *fr,
 	this->replcancel->signal_clicked ().connect ( [this]
 	{
 	  this->Rightgrid->remove (*(this->replgrid));
+	  Glib::RefPtr<Glib::MainContext> mk =
+	      Glib::MainContext::get_default ();
+	  while (mk->pending ())
+	    {
+	      mk->iteration (true);
+	    }
 	  this->replgrid = nullptr;
 	  this->replcancel = nullptr;
 	  this->repllabe = nullptr;
@@ -4771,7 +4831,7 @@ MainWindow::creatReply (int numcl, double x, double y, Gtk::Frame *fr,
 	this->replgrid->attach (*(this->replcancel), 1, 0, 1, 1);
 	this->Rightgrid->attach_next_to (*(this->replgrid), *(this->msgovl),
 					 Gtk::PositionType::BOTTOM, 2, 1);
-	this->rightmenfordel->unparent ();
+	delete this->rightmenfordel;
 	this->rightmenfordel = nullptr;
       });
       acgroup->add_action ("forward", [this, message, fr]
@@ -4803,7 +4863,7 @@ MainWindow::creatReply (int numcl, double x, double y, Gtk::Frame *fr,
 	    this->msg_grid_vectmtx.unlock ();
 	  }
 	this->frvectmtx.unlock ();
-	this->rightmenfordel->unparent ();
+	delete this->rightmenfordel;
 	this->rightmenfordel = nullptr;
       });
       acgroup->add_action ("remove", [this, message, fr]
@@ -4836,7 +4896,7 @@ MainWindow::creatReply (int numcl, double x, double y, Gtk::Frame *fr,
 	    this->msg_grid_vectmtx.unlock ();
 	  }
 	this->frvectmtx.unlock ();
-	this->rightmenfordel->unparent ();
+	delete this->rightmenfordel;
 	this->rightmenfordel = nullptr;
       });
 
@@ -4846,7 +4906,7 @@ MainWindow::creatReply (int numcl, double x, double y, Gtk::Frame *fr,
       Menu->set_pointing_to (rect);
       if (rightmenfordel != nullptr)
 	{
-	  rightmenfordel->unparent ();
+	  delete rightmenfordel;
 	  rightmenfordel = nullptr;
 	}
       Menu->set_autohide (false);
@@ -7556,6 +7616,7 @@ MainWindow::contMenu (int numcl, double x, double y,
 {
   Gtk::Label *keylab = nullptr;
   Gtk::Label *nicklab = nullptr;
+  Gtk::PopoverMenu *Menu = nullptr;
   frvectmtx.lock ();
   auto itfrv = std::find_if (friendvect.begin (), friendvect.end (),
 			     [contbutton]
@@ -7567,6 +7628,22 @@ MainWindow::contMenu (int numcl, double x, double y,
     {
       keylab = std::get<2> (*itfrv);
       nicklab = std::get<4> (*itfrv);
+      Menu = std::get<7> (*itfrv);
+      if (Menu == nullptr)
+	{
+	  Glib::RefPtr<Gio::Menu> menu = Gio::Menu::create ();
+	  menu->append (gettext ("Contact info"), "popupcont.info");
+	  menu->append (gettext ("Remove contact"), "popupcont.delete");
+	  menu->append (gettext ("Block (until restart)/Unblock"),
+			"popupcont.block");
+	  Menu = Gtk::make_managed<Gtk::PopoverMenu> ();
+	  Menu->set_parent (*contbutton);
+	  Menu->set_menu_model (menu);
+	  Menu->set_has_arrow (false);
+	  const Gdk::Rectangle rect (x, y, 1, 1);
+	  Menu->set_pointing_to (rect);
+	  std::get<7> (*itfrv) = Menu;
+	}
     }
   frvectmtx.unlock ();
   if (keylab != nullptr && nicklab != nullptr)
@@ -7574,34 +7651,12 @@ MainWindow::contMenu (int numcl, double x, double y,
       selectContact (Winright, std::string (keylab->get_text ()),
 		     std::string (nicklab->get_text ()));
     }
-
-  Glib::RefPtr<Gio::Menu> menu = Gio::Menu::create ();
-  menu->append (gettext ("Contact info"), "popupcont.info");
-  menu->append (gettext ("Remove contact"), "popupcont.delete");
-  menu->append (gettext ("Block (until restart)/Unblock"), "popupcont.block");
-  Gtk::PopoverMenu *Menu = Gtk::make_managed<Gtk::PopoverMenu> ();
-  Menu->set_parent (*contbutton);
-  Menu->set_menu_model (menu);
-  Menu->set_has_arrow (false);
-  const Gdk::Rectangle rect (x, y, 1, 1);
-  Menu->set_pointing_to (rect);
-  if (contmenupop != nullptr)
-    {
-      contmenupop->unparent ();
-      contmenupop = nullptr;
-    }
   Menu->popup ();
-  contmenupop = Menu;
 }
 
 void
 MainWindow::friendDetails (Gtk::Button *button)
 {
-  if (contmenupop != nullptr)
-    {
-      contmenupop->unparent ();
-      contmenupop = nullptr;
-    }
   frvectmtx.lock ();
   auto itfr = std::find_if (friendvect.begin (), friendvect.end (), [button]
   (auto &el)
@@ -7799,11 +7854,6 @@ MainWindow::on_draw_frpd (const Cairo::RefPtr<Cairo::Context> &cr, int width,
 void
 MainWindow::tempBlockCont ()
 {
-  if (contmenupop != nullptr)
-    {
-      contmenupop->unparent ();
-      contmenupop = nullptr;
-    }
   Gtk::Button *but = selectedc;
   frvectmtx.lock ();
   auto itfrv = std::find_if (friendvect.begin (), friendvect.end (), [but]
@@ -7827,6 +7877,66 @@ MainWindow::tempBlockCont ()
 	  std::get<6> (*itfrv) = lab;
 	  if (oper != nullptr)
 	    {
+	      Contdelwin = new Gtk::Window;
+	      Contdelwin->set_application (this->get_application ());
+	      Contdelwin->set_title (gettext ("Contact removing"));
+	      Contdelwin->set_modal (true);
+	      Contdelwin->set_transient_for (*this);
+	      Contdelwin->set_name ("settingsWindow");
+	      Contdelwin->get_style_context ()->add_provider (
+		  this->css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+	      Gtk::Grid *rmwimgr = Gtk::make_managed<Gtk::Grid> ();
+	      Contdelwin->set_child (*rmwimgr);
+	      rmwimgr->set_halign (Gtk::Align::CENTER);
+	      Gtk::ProgressBar *bar = Gtk::make_managed<Gtk::ProgressBar> ();
+	      bar->set_name ("clBar");
+	      bar->get_style_context ()->add_provider (
+		  this->css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+	      bar->set_halign (Gtk::Align::CENTER);
+	      bar->set_valign (Gtk::Align::CENTER);
+	      bar->set_text (gettext ("Blocking..."));
+	      bar->set_show_text (true);
+	      bar->set_margin (5);
+	      rmwimgr->attach (*bar, 0, 0, 1, 1);
+
+	      Glib::Dispatcher *disp = new Glib::Dispatcher;
+	      disp->connect ( [bar]
+	      {
+		bar->pulse ();
+	      });
+
+	      sigc::connection *con = new sigc::connection;
+	      *con = oper->friendDelPulse.connect ( [disp]
+	      {
+		disp->emit ();
+	      });
+
+	      Glib::Dispatcher *disp2 = new Glib::Dispatcher;
+	      disp2->connect ( [this]
+	      {
+		this->Contdelwin->close ();
+	      });
+	      sigc::connection *con2 = new sigc::connection;
+	      *con2 = oper->friendBlockedSig.connect ( [disp2]
+	      {
+		disp2->emit ();
+	      });
+	      Contdelwin->signal_close_request ().connect (
+		  [this, disp, disp2, con, con2]
+		  {
+		    con->disconnect ();
+		    con2->disconnect ();
+		    delete con;
+		    delete con2;
+		    delete disp;
+		    delete disp2;
+		    this->Contdelwin->hide ();
+		    delete this->Contdelwin;
+		    this->Contdelwin = nullptr;
+		    return true;
+		  },
+		  false);
+	      Contdelwin->show ();
 	      std::string key (std::get<2> (*itfrv)->get_text ());
 	      oper->blockFriend (key);
 	    }
@@ -10355,5 +10465,6 @@ MainWindow::friendRemoved (std::string *key, std::mutex *mtx)
 	}
     }
   contmtx.unlock ();
+  Contdelwin->close ();
   mainWindow ();
 }

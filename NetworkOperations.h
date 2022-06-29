@@ -37,6 +37,7 @@
 #include "DHTOperations.h"
 #include "LocalNetworkOp.h"
 #include "FileReceiveOp.h"
+#include "MsgProfileReceive.h"
 
 #ifdef __linux
 #include <sys/types.h>
@@ -57,12 +58,14 @@
 
 class DHTOperations;
 class LocalNetworkOp;
+class MsgProfileReceive;
 
 class NetworkOperations
 {
   friend class DHTOperations;
   friend class LocalNetworkOp;
   friend class FileReceiveOp;
+  friend class MsgProfileReceive;
 public:
   NetworkOperations (
       std::string username, std::string password,
@@ -108,6 +111,10 @@ public:
   (std::string, uint64_t)> smthrcvdsig;
   sigc::signal<void
   (std::string)> friendDeleted;
+  sigc::signal<void
+  ()> friendDelPulse;
+  sigc::signal<void
+  ()> friendBlockedSig;
   void
   mainFunc ();
   void
@@ -163,14 +170,6 @@ private:
   sendMsgGlob (int sock, std::string keytos, uint32_t ip, uint16_t port);
   void
   commOps ();
-  int
-  msgMe (std::string key, uint64_t tm, uint64_t partnum);
-  int
-  msgME (std::string key, uint64_t tm);
-  int
-  msgPe (std::string key, uint64_t tm, uint64_t partnum);
-  int
-  msgPE (std::string key, uint64_t tm);
   void
   stunSrv ();
 #ifdef _WIN32
@@ -249,6 +248,7 @@ private:
   int cancel = 0;
   std::mutex sendbufmtx;
   std::mutex rcvmtx;
+  int cancelgetoips = 0;
   std::array<char, 32> *seed = nullptr;
   std::vector<std::tuple<std::string, std::string>> prefvect;
 

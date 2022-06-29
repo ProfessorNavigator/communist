@@ -785,9 +785,8 @@ FileReceiveOp::fileProcessing (std::string msgtype, std::string key,
 
 void
 FileReceiveOp::fileFQ (std::string msgtype, std::string key,
-		       std::vector<char> *bufa)
+		       std::vector<char> &buf)
 {
-  std::vector<char> buf = *bufa;
   AuxFunc af;
   std::cout << msgtype << std::endl;
   uint64_t time;
@@ -829,9 +828,8 @@ FileReceiveOp::fileFQ (std::string msgtype, std::string key,
 
 void
 FileReceiveOp::fileFJ (std::string msgtype, std::string key,
-		       std::vector<char> *bufa)
+		       std::vector<char> &buf)
 {
-  std::vector<char> buf = *bufa;
   std::cout << msgtype << std::endl;
   uint64_t tint;
   std::memcpy (&tint, &buf[34], sizeof(tint));
@@ -876,9 +874,8 @@ FileReceiveOp::fileFJ (std::string msgtype, std::string key,
 
 void
 FileReceiveOp::fileFA (std::string msgtype, std::string key,
-		       std::vector<char> *bufa)
+		       std::vector<char> &buf)
 {
-  std::vector<char> buf = *bufa;
   std::cout << msgtype << std::endl;
   uint64_t tint;
   std::memcpy (&tint, &buf[34], sizeof(tint));
@@ -929,9 +926,8 @@ FileReceiveOp::fileFA (std::string msgtype, std::string key,
 void
 FileReceiveOp::fileFr (std::string msgtype, std::string key, int rcvip6,
 		       sockaddr_in6 *from6, sockaddr_in *from, int sockipv4,
-		       std::vector<char> *bufa)
+		       std::vector<char> &buf)
 {
-  std::vector<char> buf = *bufa;
   AuxFunc af;
   std::tuple<lt::dht::public_key, lt::dht::secret_key> ownkey;
   ownkey = lt::dht::ed25519_create_keypair (*(no->seed));
@@ -1012,9 +1008,8 @@ FileReceiveOp::fileFr (std::string msgtype, std::string key, int rcvip6,
 }
 void
 FileReceiveOp::fileFRFI (std::string msgtype, std::string key,
-			 std::vector<char> *bufa)
+			 std::vector<char> &buf)
 {
-  std::vector<char> buf = *bufa;
   std::cout << msgtype << std::endl;
   uint64_t tint;
   std::memcpy (&tint, &buf[34], sizeof(tint));
@@ -1120,9 +1115,8 @@ FileReceiveOp::fileFRFI (std::string msgtype, std::string key,
 void
 FileReceiveOp::fileFB (std::string msgtype, std::string key, int rcvip6,
 		       sockaddr_in6 *from6, sockaddr_in *from, int sockipv4,
-		       std::vector<char> *bufa)
+		       std::vector<char> &buf)
 {
-  std::vector<char> buf = *bufa;
   AuxFunc af;
   std::cout << msgtype << std::endl;
   uint64_t tint;
@@ -1187,9 +1181,8 @@ FileReceiveOp::fileFB (std::string msgtype, std::string key, int rcvip6,
 
 void
 FileReceiveOp::fileFH (std::string msgtype, std::string key,
-		       std::vector<char> *bufa)
+		       std::vector<char> &buf)
 {
-  std::vector<char> buf = *bufa;
   std::cout << msgtype << std::endl;
   uint64_t tint;
   std::memcpy (&tint, &buf[34], sizeof(tint));
@@ -1236,9 +1229,8 @@ FileReceiveOp::fileFH (std::string msgtype, std::string key,
 void
 FileReceiveOp::fileFb (std::string msgtype, std::string key, int rcvip6,
 		       sockaddr_in6 *from6, sockaddr_in *from, int sockipv4,
-		       std::vector<char> *bufa)
+		       std::vector<char> &buf)
 {
-  std::vector<char> buf = *bufa;
   AuxFunc af;
   std::cout << msgtype << std::endl;
   uint64_t tint;
@@ -1418,9 +1410,8 @@ FileReceiveOp::fileFb (std::string msgtype, std::string key, int rcvip6,
 
 void
 FileReceiveOp::fileFp (std::string msgtype, std::string key,
-		       std::vector<char> *bufa)
+		       std::vector<char> &buf)
 {
-  std::vector<char> buf = *bufa;
   std::cout << msgtype << std::endl;
   uint64_t tint;
   std::memcpy (&tint, &buf[34], sizeof(tint));
@@ -1460,9 +1451,8 @@ FileReceiveOp::fileFp (std::string msgtype, std::string key,
 
 void
 FileReceiveOp::fileFe (std::string msgtype, std::string key,
-		       std::vector<char> *bufa)
+		       std::vector<char> &buf)
 {
-  std::vector<char> buf = *bufa;
   std::cout << msgtype << std::endl;
   uint64_t tint;
   std::memcpy (&tint, &buf[34], sizeof(tint));
@@ -1498,9 +1488,8 @@ FileReceiveOp::fileFe (std::string msgtype, std::string key,
 
 void
 FileReceiveOp::fileFE (std::string msgtype, std::string key,
-		       std::vector<char> *bufa)
+		       std::vector<char> &buf)
 {
-  std::vector<char> buf = *bufa;
   std::cout << msgtype << std::endl;
   uint64_t tint;
   std::memcpy (&tint, &buf[34], sizeof(tint));
@@ -1527,9 +1516,8 @@ FileReceiveOp::fileFE (std::string msgtype, std::string key,
 
 void
 FileReceiveOp::fileFF (std::string msgtype, std::string key,
-		       std::vector<char> *bufa)
+		       std::vector<char> &buf)
 {
-  std::vector<char> buf = *bufa;
   std::cout << msgtype << std::endl;
   uint64_t tint;
   std::memcpy (&tint, &buf[34], sizeof(tint));
