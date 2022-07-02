@@ -1,5 +1,5 @@
 project ('Communist', 'cpp', default_options : ['cpp_std=c++17'])
-src = ['AuxFunc.cpp', 'CommunistApp.cpp', 'Communist.cpp', 'DHTOperations.cpp', 'FileReceiveOp.cpp', 'LocalNetworkOp.cpp', 'MsgProfileReceive.cpp', 'NetworkOperations.cpp', 'MainWindow.cpp']
+src = ['AuxFunc.cpp', 'CommunistApp.cpp', 'Communist.cpp', 'DHTOperations.cpp', 'FileReceiveOp.cpp', 'FileSending.cpp', 'LocalNetworkOp.cpp', 'MsgProfileReceive.cpp', 'MsgSending.cpp', 'NetworkOperations.cpp', 'MainWindow.cpp']
 gtkmm = dependency ('gtkmm-4.0', method : 'pkg-config')
 icu = dependency ('icu-i18n', method : 'pkg-config')
 zip = dependency ('libzip', method : 'pkg-config')

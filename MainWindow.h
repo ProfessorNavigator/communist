@@ -23,6 +23,7 @@
 #include <vector>
 #include <sstream>
 #include <mutex>
+#include <functional>
 #include <sigc++/sigc++.h>
 #include <libtorrent/kademlia/ed25519.hpp>
 #include <libtorrent/hex.hpp>
@@ -34,9 +35,13 @@
 #include <libintl.h>
 #include "AuxFunc.h"
 #include "NetworkOperations.h"
+#include "SettingsWindow.h"
+
+class SettingsWindow;
 
 class MainWindow : public Gtk::ApplicationWindow
 {
+  friend class SettingsWindow;
 public:
   MainWindow ();
   virtual
@@ -168,6 +173,10 @@ private:
   checkIfConnected (std::string *key, uint64_t *tm, std::mutex *mtx);
   void
   friendRemoved (std::string *key, std::mutex *mtx);
+  void
+  deleteNOp ();
+  void
+  deleteSettingsWindow (int apply);
   std::string Username;
   std::string Password;
   std::array<char, 32> seed;
@@ -197,7 +206,7 @@ private:
   Gtk::ScrolledWindow *Winleft = nullptr;
   Gtk::Paned *Mwpaned = nullptr;
   Gtk::Grid *msg_win_gr = nullptr;
-  std::vector<std::tuple<Gtk::Widget*, std::filesystem::path>> msg_grid_vect;
+  std::vector<std::tuple<Gtk::Widget*, std::filesystem::path, Gtk::PopoverMenu*>> msg_grid_vect;
   std::mutex msg_grid_vectmtx;
   NetworkOperations *oper = nullptr;
   Gtk::Label *repllabe = nullptr;
@@ -212,7 +221,6 @@ private:
   std::mutex yesmtx; //Contacts log mutex
   std::mutex proffopmtx; //Profile mutex
   Gtk::PopoverMenu *rightmenfordel = nullptr;
-  //Gtk::PopoverMenu *contmenupop = nullptr;
   Glib::Dispatcher msgwinadjdsp;
   double usermsgadj = -1;
   Gtk::Overlay *msgovl = nullptr;
@@ -260,6 +268,7 @@ private:
   Hunspell *spch = nullptr;
   std::string Theme;
   Gtk::Window *Contdelwin = nullptr;
+  SettingsWindow *Set_Win = nullptr;
 };
 
 #endif /* MAINWINDOW_H_ */

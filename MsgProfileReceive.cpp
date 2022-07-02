@@ -729,9 +729,9 @@ MsgProfileReceive::msgMRPR (std::string msgtype, std::string key,
       strm.imbue (loc);
       strm << indstr;
       strm >> ind;
-      if (msgtype == "MR")
+      if (msgtype == "MR" && no->msgSent)
 	{
-	  no->msgSent.emit (key, ind);
+	  no->msgSent (key, ind);
 	}
       no->msgpartbuf.erase (itmpb);
     }
@@ -1374,7 +1374,10 @@ MsgProfileReceive::msgME (std::string key, uint64_t tm)
 		      filename = filename + "/" + strm.str ();
 		      outpath = std::filesystem::u8path (filename);
 		      std::filesystem::copy (filepath, outpath);
-		      no->messageReceived.emit (key, outpath);
+		      if (no->messageReceived)
+			{
+			  no->messageReceived (key, outpath);
+			}
 		      result = 1;
 		    }
 		}
@@ -1461,7 +1464,10 @@ MsgProfileReceive::msgPE (std::string key, uint64_t tm)
 		  strm.imbue (loc);
 		  strm << indexstr;
 		  strm >> indint;
-		  no->profReceived.emit (key, indint);
+		  if (no->profReceived)
+		    {
+		      no->profReceived (key, indint);
+		    }
 		  result = 1;
 		}
 	      else

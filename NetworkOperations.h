@@ -27,8 +27,9 @@
 #include <mutex>
 #include <tuple>
 #include <iostream>
+#include <functional>
 #include <libtorrent/hex.hpp>
-#include <sigc++/sigc++.h>
+//#include <sigc++/sigc++.h>
 #include <cerrno>
 #include <filesystem>
 #include <fstream>
@@ -38,6 +39,8 @@
 #include "LocalNetworkOp.h"
 #include "FileReceiveOp.h"
 #include "MsgProfileReceive.h"
+#include "MsgSending.h"
+#include "FileSending.h"
 
 #ifdef __linux
 #include <sys/types.h>
@@ -59,6 +62,7 @@
 class DHTOperations;
 class LocalNetworkOp;
 class MsgProfileReceive;
+class FileSending;
 
 class NetworkOperations
 {
@@ -66,6 +70,8 @@ class NetworkOperations
   friend class LocalNetworkOp;
   friend class FileReceiveOp;
   friend class MsgProfileReceive;
+  friend class MsgSending;
+  friend class FileSending;
 public:
   NetworkOperations (
       std::string username, std::string password,
@@ -75,45 +81,45 @@ public:
       std::string sharepath);
   virtual
   ~NetworkOperations ();
-  sigc::signal<void
+  std::function<void
   ()> canceled;
-  sigc::signal<void
+  std::function<void
   (std::string, std::filesystem::path)> messageReceived;
-  sigc::signal<void
+  std::function<void
   (std::string, int)> profReceived;
-  sigc::signal<void
+  std::function<void
   (std::string, int)> msgSent;
-  sigc::signal<void
+  std::function<void
   (std::string, uint64_t, uint64_t, std::string)> filerequest;
-  sigc::signal<void
+  std::function<void
   (std::string)> fileRejected;
-  sigc::signal<void
+  std::function<void
   (std::string, std::string)> filehasherr;
-  sigc::signal<void
+  std::function<void
   (std::string, std::string)> filercvd;
-  sigc::signal<void
+  std::function<void
   (std::string, std::string)> filesentsig;
-  sigc::signal<void
+  std::function<void
   (std::string, std::string)> filesenterror;
-  sigc::signal<void
+  std::function<void
   (std::string)> ipv6signal;
-  sigc::signal<void
+  std::function<void
   (std::string)> ipv4signal;
-  sigc::signal<void
+  std::function<void
   ()> ipv6signalfinished;
-  sigc::signal<void
+  std::function<void
   ()> ipv4signalfinished;
-  sigc::signal<void
+  std::function<void
   (std::string, std::filesystem::path, uint64_t)> filepartrcvdsig; //key, path to file, file current size
-  sigc::signal<void
+  std::function<void
   (std::string, std::filesystem::path, uint64_t)> filepartsendsig; //key, path to file, sent byte quantity
-  sigc::signal<void
+  std::function<void
   (std::string, uint64_t)> smthrcvdsig;
-  sigc::signal<void
+  std::function<void
   (std::string)> friendDeleted;
-  sigc::signal<void
+  std::function<void
   ()> friendDelPulse;
-  sigc::signal<void
+  std::function<void
   ()> friendBlockedSig;
   void
   mainFunc ();
@@ -148,7 +154,7 @@ public:
   void
   cancelReceivF (std::string key, std::filesystem::path filepath);
 private:
-  sigc::signal<void
+  std::function<void
   ()> dnsfinished;
   void
   dnsFunc ();

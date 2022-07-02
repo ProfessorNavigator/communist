@@ -253,7 +253,10 @@ FileReceiveOp::fileProcessing (std::string msgtype, std::string key,
 				      f.close ();
 				      uint64_t fcsz =
 					  std::filesystem::file_size (p);
-				      no->filepartrcvdsig.emit (key, p, fcsz);
+				      if (no->filepartrcvdsig)
+					{
+					  no->filepartrcvdsig (key, p, fcsz);
+					}
 				      std::get<4> (*itfhv) = std::get<4> (
 					  *itfhv) + 1;
 				    }
@@ -474,7 +477,10 @@ FileReceiveOp::fileProcessing (std::string msgtype, std::string key,
 					    msg);
 			      no->sockipv6mtx.unlock ();
 			    }
-			  no->filercvd.emit (key, p.filename ().u8string ());
+			  if (no->filercvd)
+			    {
+			      no->filercvd (key, p.filename ().u8string ());
+			    }
 			  std::string filename;
 			  time_t curtime = time (NULL);
 			  strm.clear ();
@@ -601,7 +607,10 @@ FileReceiveOp::fileProcessing (std::string msgtype, std::string key,
 				    }),
 			      no->fqrcvd.end ());
 			  no->fqrcvdmtx.unlock ();
-			  no->messageReceived.emit (key, outpath);
+			  if (no->messageReceived)
+			    {
+			      no->messageReceived (key, outpath);
+			    }
 			}
 		      else
 			{
@@ -647,7 +656,10 @@ FileReceiveOp::fileProcessing (std::string msgtype, std::string key,
 					    msg);
 			      no->sockipv6mtx.unlock ();
 			    }
-			  no->filehasherr.emit (key, p.filename ().u8string ());
+			  if (no->filehasherr)
+			    {
+			      no->filehasherr (key, p.filename ().u8string ());
+			    }
 			}
 		      no->filehashvect.erase (itfhv);
 
@@ -821,7 +833,10 @@ FileReceiveOp::fileFQ (std::string msgtype, std::string key,
       std::cout << key << " " << time << " " << fsize << " " << fnm
 	  << std::endl;
       no->fqrcvd.push_back (fqtup);
-      no->filerequest.emit (key, time, fsize, fnm);
+      if (no->filerequest)
+	{
+	  no->filerequest (key, time, fsize, fnm);
+	}
     }
   no->fqrcvdmtx.unlock ();
 }
@@ -864,9 +879,16 @@ FileReceiveOp::fileFJ (std::string msgtype, std::string key,
       strm.imbue (loc);
       strm << pstr;
       strm >> msgind;
-      no->msgSent.emit (key, msgind);
-      no->fileRejected.emit (key);
+      if (no->msgSent)
+	{
+	  no->msgSent (key, msgind);
+	}
+      if (no->fileRejected)
+	{
+	  no->fileRejected (key);
+	}
       no->filesendreq.erase (itfsr);
+
     }
   no->filesendreqmtx.unlock ();
   no->sendbufmtx.unlock ();
@@ -1000,8 +1022,11 @@ FileReceiveOp::fileFr (std::string msgtype, std::string key, int rcvip6,
 	}
       else
 	{
-	  no->filepartsendsig.emit (key, std::get<2> (*itfpb),
-				    uint64_t (std::get<3> (*itfpb)));
+	  if (no->filepartsendsig)
+	    {
+	      no->filepartsendsig (key, std::get<2> (*itfpb),
+				   uint64_t (std::get<3> (*itfpb)));
+	    }
 	}
     }
   no->filepartbufmtx.unlock ();
@@ -1041,7 +1066,10 @@ FileReceiveOp::fileFRFI (std::string msgtype, std::string key,
       strm << pstr;
       strm >> msgind;
       std::filesystem::remove (p);
-      no->msgSent.emit (key, msgind);
+      if (no->msgSent)
+	{
+	  no->msgSent (key, msgind);
+	}
       no->filesendreq.erase (itfsr);
     }
   no->filesendreqmtx.unlock ();
@@ -1082,8 +1110,11 @@ FileReceiveOp::fileFRFI (std::string msgtype, std::string key,
 		    }),
 	      no->filecanceled.end ());
 	  no->filecanceledmtx.unlock ();
-	  no->filesentsig.emit (key,
-				std::get<2> (*itfpb).filename ().u8string ());
+	  if (no->filesentsig)
+	    {
+	      no->filesentsig (key,
+			       std::get<2> (*itfpb).filename ().u8string ());
+	    }
 	}
       if (msgtype == "FI")
 	{
@@ -1105,7 +1136,10 @@ FileReceiveOp::fileFRFI (std::string msgtype, std::string key,
 	      no->filecanceled.end ());
 	  no->filecanceledmtx.unlock ();
 	  std::string toemit = std::get<2> (*itfpb).filename ().u8string ();
-	  no->filesenterror.emit (key, toemit);
+	  if (no->filesenterror)
+	    {
+	      no->filesenterror (key, toemit);
+	    }
 	}
       no->filepartbuf.erase (itfpb);
     }
