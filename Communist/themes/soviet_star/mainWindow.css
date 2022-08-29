@@ -1,8 +1,7 @@
 /*Main window stylesheet. Background and font size.*/
 #mainWindow {
 	background-color: rgba(207, 161, 178, 1);	
-	background-size: cover;	
-	font-size: 20px;
+	background-size: cover;
 }
 
 /*Main window menu stylesheet. Font color.*/
@@ -20,14 +19,12 @@
 #settingsWindow {
 	background-color: rgb(207, 161, 178);
 	color: black;
-	font-size: 20px; 
 }
 
 /*Settings windows' blocks background color, font color, font size*/
 #settingsLB {
 	background-color: rgb(207, 161, 178);
 	color: black;
-	font-size: 20px;
 }
 
 /*Inactive contacts tabs stylesheet.*/
@@ -195,6 +192,11 @@
 /*Main windows' closing progress bar stylesheet.*/
 #clBar {
 	color: black;
+}
+
+/*Relay choose header labels stylesheet*/
+#headerLab {
+	color: red;
 }
 
 /*File send and receive progress bar stylesheet*/

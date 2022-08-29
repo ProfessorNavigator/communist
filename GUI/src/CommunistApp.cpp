@@ -61,6 +61,11 @@ CommunistApp::create_appwindow ()
 void
 CommunistApp::on_activate ()
 {
-  auto appwin = create_appwindow ();
-  appwin->present ();
+  std::vector<Gtk::Window*> chv;
+  chv = this->get_windows ();
+  if (chv.size () == 0)
+    {
+      auto appwin = create_appwindow ();
+      appwin->present ();
+    }
 }

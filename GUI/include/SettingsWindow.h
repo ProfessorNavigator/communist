@@ -23,6 +23,7 @@
 #include <vector>
 #include <filesystem>
 #include <tuple>
+#include <filesystem>
 #include <sigc++/sigc++.h>
 #include "MainWindow.h"
 #include "AuxFunc.h"
@@ -39,16 +40,19 @@ public:
   settingsWindow ();
 private:
   void
-  saveSettings (Gtk::Window *window, Gtk::Entry *lifcsval,
-		Gtk::Entry *locip6val, Gtk::Entry *locip4val,
-		Gtk::Entry *bootstre, Gtk::Entry *msgsze, Gtk::Entry *partsze,
-		Gtk::CheckButton *winszch, Gtk::ComboBoxText *sendkeycmb,
-		Gtk::CheckButton *soundch, Gtk::Entry *soundpe,
-		Gtk::Entry *shutmte, Gtk::Entry *tmtteare,
-		Gtk::CheckButton *langchenbch, Gtk::CheckButton *enstunch,
-		Gtk::Entry *stunpe, Gtk::CheckButton *directinetch);
+  saveSettings (Gtk::Window *window, Gtk::Entry *themepathval,
+		Gtk::Entry *lifcsval, Gtk::Entry *locip6val,
+		Gtk::Entry *locip4val, Gtk::Entry *bootstre, Gtk::Entry *msgsze,
+		Gtk::Entry *partsze, Gtk::CheckButton *winszch,
+		Gtk::Entry *msgwchre, Gtk::ComboBoxText *sendkeycmb,
+		Gtk::CheckButton *soundch, Gtk::CheckButton *grnotificch,
+		Gtk::Entry *soundpe, Gtk::Entry *shutmte, Gtk::Entry *tmtteare,
+		Gtk::CheckButton *langchenbch, Gtk::CheckButton *hole_punchch,
+		Gtk::CheckButton *enstunch, Gtk::Entry *stunpe,
+		Gtk::CheckButton *enrelch, Gtk::Entry *relaype,
+		Gtk::Entry *relaypathe, Gtk::CheckButton *directinetch,
+		MainWindow *mwl);
   MainWindow *mw = nullptr;
-  int apply = 0;
 };
 
 #endif /* SRC_SETTINGSWINDOW_H_ */

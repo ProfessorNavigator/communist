@@ -15,28 +15,40 @@
  see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef SRC_LOCALNETWORKOP_H_
-#define SRC_LOCALNETWORKOP_H_
+#ifndef SRC_CONTACTOPERATIONS_H_
+#define SRC_CONTACTOPERATIONS_H_
 
-#include <iostream>
+#include <gtkmm.h>
+#include <string>
 #include <vector>
 #include <tuple>
-#include <string>
 #include <mutex>
-#include "NetworkOperations.h"
+#include "MainWindow.h"
+#include "MWMsgOperations.h"
 
-class NetworkOperations;
+class MainWindow;
 
-class LocalNetworkOp
+class ContactOperations
 {
 public:
-  LocalNetworkOp (NetworkOperations *No);
+  ContactOperations (MainWindow *Mw);
   virtual
-  ~LocalNetworkOp ();
-private:
+  ~ContactOperations ();
   void
-  bootstrFunc ();
-  NetworkOperations *no = nullptr;
+  selectContact (Gtk::ScrolledWindow *scr, std::string selkey,
+		 std::string selnick);
+  void
+  formMsgWinGrid (std::vector<std::filesystem::path> &msg, size_t begin,
+		  size_t end, Gtk::Grid *grid, std::string key,
+		  std::string nick, int index, int varform);
+  void
+  deleteContact ();
+  void
+  friendRemoved (std::string *key, std::mutex *mtx);
+private:
+  MainWindow *mw = nullptr;
+  void
+  deleteContactFunc (MainWindow *mwl);
 };
 
-#endif /* SRC_LOCALNETWORKOP_H_ */
+#endif /* SRC_CONTACTOPERATIONS_H_ */

@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Communist\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-06-30 02:15+0400\n"
-"PO-Revision-Date: 2022-06-30 02:16+0400\n"
+"POT-Creation-Date: 2022-08-29 17:18+0400\n"
+"PO-Revision-Date: 2022-08-29 17:18+0400\n"
 "Last-Translator: \n"
 "Language-Team: Юрий Бобылев\n"
 "Language: ru_RU\n"
@@ -18,67 +18,368 @@ msgstr ""
 "%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
 "X-Generator: Poedit 3.0\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Poedit-Basepath: ..\n"
+"X-Poedit-Basepath: ../GUI/src\n"
 "X-Poedit-SearchPath-0: AuxFunc.cpp\n"
-"X-Poedit-SearchPath-1: Communist.cpp\n"
+"X-Poedit-SearchPath-1: AuxWindows.cpp\n"
 "X-Poedit-SearchPath-2: CommunistApp.cpp\n"
-"X-Poedit-SearchPath-3: MainWindow.cpp\n"
-"X-Poedit-SearchPath-4: NetworkOperations.cpp\n"
-"X-Poedit-SearchPath-5: DHTOperations.cpp\n"
+"X-Poedit-SearchPath-3: ContactOperations.cpp\n"
+"X-Poedit-SearchPath-4: MainWindow.cpp\n"
+"X-Poedit-SearchPath-5: MWFileOperations.cpp\n"
+"X-Poedit-SearchPath-6: MWMsgOperations.cpp\n"
+"X-Poedit-SearchPath-7: SettingsWindow.cpp\n"
 
-#: MainWindow.cpp:169
-msgid "Wait, application is closing..."
-msgstr "Идёт завершение приложения..."
+#: AuxWindows.cpp:39 AuxWindows.cpp:1118
+msgid "Key"
+msgstr "Ключ"
 
-#: MainWindow.cpp:483 MainWindow.cpp:1776
-msgid "Profile creation"
-msgstr "Создание профиля"
+#: AuxWindows.cpp:53
+msgid "Copy"
+msgstr "Копировать"
 
-#: MainWindow.cpp:487 MainWindow.cpp:572
-msgid "User name:"
-msgstr "Имя пользователя:"
+#: AuxWindows.cpp:69 AuxWindows.cpp:268 AuxWindows.cpp:677 AuxWindows.cpp:1039
+#: AuxWindows.cpp:1251 AuxWindows.cpp:1325 MWFileOperations.cpp:316
+#: MWFileOperations.cpp:424 MainWindow.cpp:1851 MainWindow.cpp:2950
+#: SettingsWindow.cpp:2088
+msgid "Close"
+msgstr "Закрыть"
 
-#: MainWindow.cpp:497 MainWindow.cpp:582
-msgid "Password:"
-msgstr "Пароль:"
+#: AuxWindows.cpp:171
+msgid "Key: "
+msgstr "Ключ: "
 
-#: MainWindow.cpp:512
-msgid "Repeat password:"
-msgstr "Повторите пароль:"
+#: AuxWindows.cpp:177
+msgid "Nickname: "
+msgstr "Псевдоним: "
 
-#: MainWindow.cpp:527 MainWindow.cpp:597 MainWindow.cpp:4964
-msgid "Confirm"
-msgstr "Подтвердить"
+#: AuxWindows.cpp:183
+msgid "Name: "
+msgstr "Имя: "
 
-#: MainWindow.cpp:541 MainWindow.cpp:611 MainWindow.cpp:1859
-#: MainWindow.cpp:1934 MainWindow.cpp:3444 MainWindow.cpp:5440
-#: MainWindow.cpp:6431 MainWindow.cpp:6475 MainWindow.cpp:6697
-#: MainWindow.cpp:6972 MainWindow.cpp:9522
+#: AuxWindows.cpp:189
+msgid "Surname: "
+msgstr "Фамилия: "
+
+#: AuxWindows.cpp:300
+msgid "File choose"
+msgstr "Выбор файла"
+
+#: AuxWindows.cpp:310 MWFileOperations.cpp:674
+msgid "Open"
+msgstr "Открыть"
+
+#: AuxWindows.cpp:313 AuxWindows.cpp:800 AuxWindows.cpp:912
+#: MWFileOperations.cpp:677 MainWindow.cpp:477 MainWindow.cpp:548
+#: MainWindow.cpp:1630 MainWindow.cpp:1702 MainWindow.cpp:2805
+#: MainWindow.cpp:2862 SettingsWindow.cpp:1340
 msgid "Cancel"
 msgstr "Отмена"
 
-#: MainWindow.cpp:568
+#: AuxWindows.cpp:358
+msgid " File: "
+msgstr " Файл: "
+
+#: AuxWindows.cpp:421
+msgid "Choose IPv6"
+msgstr "Выбор IPv6"
+
+#: AuxWindows.cpp:435
+msgid ""
+"Program cannot automatically identify machine's IPv6. Please choose "
+"manually. Available variants are: "
+msgstr "Программа не может автоматически выбрать IPv6. Возможные варианты: "
+
+#: AuxWindows.cpp:459 AuxWindows.cpp:537 MainWindow.cpp:2865
+msgid "Choose"
+msgstr "Выбрать"
+
+#: AuxWindows.cpp:500
+msgid "Choose IPv4"
+msgstr "Выбор IPv4"
+
+#: AuxWindows.cpp:513
+msgid ""
+"Program cannot automatically identify machine's IPv4. Please choose "
+"manually. Available variants are: "
+msgstr "Программа не может автоматически выбрать IPv4. Возможные варианты: "
+
+#: AuxWindows.cpp:583
+msgid "Friends request edit"
+msgstr "Редактирования списка отправленных заявок"
+
+#: AuxWindows.cpp:632 AuxWindows.cpp:726
+msgid "Remove from list"
+msgstr "Удалить из списка"
+
+#: AuxWindows.cpp:771 MainWindow.cpp:846
+msgid "Add contact"
+msgstr "Добавить контакт"
+
+#: AuxWindows.cpp:776
+msgid "Public key:"
+msgstr "Публичный ключ:"
+
+#: AuxWindows.cpp:788
+msgid "Add"
+msgstr "Добавить"
+
+#: AuxWindows.cpp:856
+msgid "Select contact"
+msgstr "Выбор контакта"
+
+#: AuxWindows.cpp:896 MainWindow.cpp:463 MainWindow.cpp:534
+msgid "Confirm"
+msgstr "Подтвердить"
+
+#: AuxWindows.cpp:1017
+msgid "Error!"
+msgstr "Ошибка!"
+
+#: AuxWindows.cpp:1029
+msgid "File you want to send does not exists"
+msgstr "Файл, который вы пытаетесь отправить, не существует"
+
+#: AuxWindows.cpp:1074
+msgid "Contacts to send by relay"
+msgstr "Контакты для отправки сообщений через ретранслятор"
+
+#: AuxWindows.cpp:1109
+msgid "Nick"
+msgstr "Псевдоним"
+
+#: AuxWindows.cpp:1127
+msgid "Use relay"
+msgstr "Использовать ретранслятор"
+
+#: AuxWindows.cpp:1239 SettingsWindow.cpp:1323
+msgid "Apply"
+msgstr "Применить"
+
+#: AuxWindows.cpp:1310
+msgid "Input user name!"
+msgstr "Введите имя пользователя!"
+
+#: AuxWindows.cpp:1314
+msgid "Input password!"
+msgstr "Введите пароль!"
+
+#: AuxWindows.cpp:1318
+msgid "Passwords do not match!"
+msgstr "Пароли не совпадают!"
+
+#: ContactOperations.cpp:366
+msgid "Forwarded from: "
+msgstr "Переслано из: "
+
+#: ContactOperations.cpp:406
+msgid "Me:"
+msgstr "Я:"
+
+#: ContactOperations.cpp:584 MWMsgOperations.cpp:187 MWMsgOperations.cpp:792
+msgid "Message attached to file "
+msgstr "Сообщение к файлу "
+
+#: ContactOperations.cpp:674 MainWindow.cpp:857 MainWindow.cpp:3123
+msgid "Remove contact"
+msgstr "Удалить контакт"
+
+#: ContactOperations.cpp:681
+msgid "Remove contact? This action will erase all messages forever."
+msgstr "Удалить контакт? Это действие безвозвратно удалит всю переписку."
+
+#: ContactOperations.cpp:690 MWFileOperations.cpp:607 MWFileOperations.cpp:777
+#: MWFileOperations.cpp:1095 MWMsgOperations.cpp:1119
+msgid "Yes"
+msgstr "Да"
+
+#: ContactOperations.cpp:706 MWFileOperations.cpp:622 MWFileOperations.cpp:790
+#: MWFileOperations.cpp:1109 MWMsgOperations.cpp:1131
+msgid "No"
+msgstr "Нет"
+
+#: ContactOperations.cpp:812
+msgid "Contact removing"
+msgstr "Удаление контакта"
+
+#: ContactOperations.cpp:828
+msgid "Contact is being removed"
+msgstr "Контакт удаляется"
+
+#: MWFileOperations.cpp:103
+msgid "Sending "
+msgstr "Отправка "
+
+#: MWFileOperations.cpp:156 MWFileOperations.cpp:888 MWFileOperations.cpp:1020
+msgid "Downloading/sending file progress"
+msgstr "Прогресс загрузки/отправки файла"
+
+#: MWFileOperations.cpp:240
+msgid "File received"
+msgstr "Файл получен"
+
+#: MWFileOperations.cpp:255 MWFileOperations.cpp:279
+msgid "File"
+msgstr "Файл"
+
+#: MWFileOperations.cpp:257 MWFileOperations.cpp:269
+msgid "from"
+msgstr "от"
+
+#: MWFileOperations.cpp:259
+msgid "received"
+msgstr "получен"
+
+#: MWFileOperations.cpp:267
+msgid "Error occurred while receiving file"
+msgstr "Возникла ошибка во время получения файла"
+
+#: MWFileOperations.cpp:271
+msgid "- hash is not correct!"
+msgstr "- хэшсуммы не совпадают!"
+
+#: MWFileOperations.cpp:281 MWFileOperations.cpp:293
+msgid "for"
+msgstr "для"
+
+#: MWFileOperations.cpp:283
+msgid "was sent"
+msgstr "отправлен"
+
+#: MWFileOperations.cpp:291
+msgid "Error on sending"
+msgstr "Ошибка во время отправки"
+
+#: MWFileOperations.cpp:311
+msgid "Remove received data"
+msgstr "Удалить полученные данные"
+
+#: MWFileOperations.cpp:403
+msgid "File rejected"
+msgstr "Файл отклонён"
+
+#: MWFileOperations.cpp:416
+msgid " rejected to accept "
+msgstr " отказался принять файл "
+
+#: MWFileOperations.cpp:417
+msgid " file!"
+msgstr "!"
+
+#: MWFileOperations.cpp:532
+msgid "File request"
+msgstr "Запрос на передачу файла"
+
+#: MWFileOperations.cpp:577
+msgid " is trying to send you a file."
+msgstr " пытается передать вам файл."
+
+#: MWFileOperations.cpp:595
+msgid "Size: "
+msgstr "Размер: "
+
+#: MWFileOperations.cpp:603
+msgid "Accept?"
+msgstr "Принять?"
+
+#: MWFileOperations.cpp:664
+msgid "Path selection"
+msgstr "Выбор пути"
+
+#: MWFileOperations.cpp:758
+msgid "Warning!"
+msgstr "Предупреждение!"
+
+#: MWFileOperations.cpp:768
+msgid "File already exists, replace?"
+msgstr "Файл уже существует, заменить?"
+
+#: MWFileOperations.cpp:830 MWFileOperations.cpp:964
+msgid "Downloading "
+msgstr "Загрузка "
+
+#: MWFileOperations.cpp:1075
+msgid "Remove data"
+msgstr "Удалить данные"
+
+#: MWFileOperations.cpp:1089
+msgid "Remove received data?"
+msgstr "Удалить полученные данные?"
+
+#: MWMsgOperations.cpp:411
+msgid "New message"
+msgstr "Новое сообщение"
+
+#: MWMsgOperations.cpp:413
+msgid "Message from "
+msgstr "Сообщение от "
+
+#: MWMsgOperations.cpp:633
+msgid "Resend from: "
+msgstr "Переслано из: "
+
+#: MWMsgOperations.cpp:937
+msgid "Reply"
+msgstr "Ответить"
+
+#: MWMsgOperations.cpp:938
+msgid "Forward"
+msgstr "Переслать"
+
+#: MWMsgOperations.cpp:939
+msgid "Remove (only this machine)"
+msgstr "Удалить (только у себя)"
+
+#: MWMsgOperations.cpp:1096
+msgid "Confirmation"
+msgstr "Подтверждение"
+
+#: MWMsgOperations.cpp:1110
+msgid "Are you sure?"
+msgstr "Вы уверены?"
+
+#: MainWindow.cpp:358
+msgid "Wait, application is closing..."
+msgstr "Идёт завершение приложения..."
+
+#: MainWindow.cpp:419 MainWindow.cpp:1547
+msgid "Profile creation"
+msgstr "Создание профиля"
+
+#: MainWindow.cpp:423 MainWindow.cpp:509
+msgid "User name:"
+msgstr "Имя пользователя:"
+
+#: MainWindow.cpp:433 MainWindow.cpp:519
+msgid "Password:"
+msgstr "Пароль:"
+
+#: MainWindow.cpp:448
+msgid "Repeat password:"
+msgstr "Повторите пароль:"
+
+#: MainWindow.cpp:505
 msgid "Login"
 msgstr "Вход"
 
-#: MainWindow.cpp:728
+#: MainWindow.cpp:666
 msgid "Communist"
 msgstr "Коммунист"
 
-#: MainWindow.cpp:775
+#: MainWindow.cpp:707
 msgid ""
-"<interface><menu id='menubar'>    <submenu>\t\t<attribute name='label' "
+"<interface><menu id='menubar'>\t<submenu>\t\t<attribute name='label' "
 "translatable='yes'>Contacts</attribute>\t\t\t<section>\t\t\t\t<item>\t\t\t\t"
 "\t<attribute name='label' translatable='yes'>Edit sent request table</"
 "attribute>\t\t\t\t\t<attribute name='action'>prefgr.editReqList</attribute>\t"
-"\t\t\t</item>\t\t\t</section>\t</submenu>\t<submenu>\t\t<attribute "
-"name='label' translatable='yes'>Instruments</attribute>\t\t\t<section>\t\t\t"
-"\t<item>\t\t\t\t\t<attribute name='label' translatable='yes'>Edit profile</"
-"attribute>\t\t\t\t\t<attribute name='action'>prefgr.editpr</attribute>\t\t\t"
-"\t</item>\t\t\t\t<item>\t\t\t\t\t<attribute name='label' "
-"translatable='yes'>Own key</attribute>\t\t\t\t\t<attribute "
-"name='action'>prefgr.ownkey</attribute>\t\t\t\t</"
-"item>                         <item>\t\t\t\t\t<attribute name='label' "
+"\t\t\t</item>\t\t\t\t<item>\t\t\t\t\t<attribute name='label' "
+"translatable='yes'>Edit contacts to send by relay</attribute>\t\t\t\t"
+"\t<attribute name='action'>prefgr.relayList</attribute>\t\t\t\t</item>\t\t"
+"\t</section>\t</submenu>\t<submenu>\t\t<attribute name='label' "
+"translatable='yes'>Instruments</attribute>\t\t\t<section>\t\t\t\t<item>\t\t\t"
+"\t\t<attribute name='label' translatable='yes'>Edit profile</attribute>\t\t\t"
+"\t\t<attribute name='action'>prefgr.editpr</attribute>\t\t\t\t</item>\t\t\t"
+"\t<item>\t\t\t\t\t<attribute name='label' translatable='yes'>Own key</"
+"attribute>\t\t\t\t\t<attribute name='action'>prefgr.ownkey</attribute>\t\t\t"
+"\t</item>                         <item>\t\t\t\t\t<attribute name='label' "
 "translatable='yes'>Settings</attribute>\t\t\t\t\t<attribute "
 "name='action'>prefgr.editSettings</attribute>\t\t\t\t</item>\t\t\t</section>"
 "\t</submenu>\t<submenu>\t\t<attribute name='label' translatable='yes'>About</"
@@ -87,449 +388,246 @@ msgid ""
 "name='action'>prefgr.aboutProg</attribute>\t\t\t\t</item>\t\t\t</section>\t</"
 "submenu></menu></interface>"
 msgstr ""
-"<interface>\n"
-"\t<menu id='menubar'>\n"
-"\t    <submenu>\n"
-"\t\t\t<attribute name='label' translatable='yes'>Контакты</attribute>\n"
-"\t\t\t\t<section>\n"
-"\t\t\t\t\t<item>\n"
-"\t\t\t\t\t\t<attribute name='label' translatable='yes'>Редактировать список "
-"отправленных заявок</attribute>\n"
-"\t\t\t\t\t\t<attribute name='action'>prefgr.editReqList</attribute>\n"
-"\t\t\t\t\t</item>\t\t\t\t\t\t\t\t\t\n"
-"\t\t\t\t</section>\n"
-"\t\t</submenu>\n"
-"\t\t<submenu>\n"
-"\t\t\t<attribute name='label' translatable='yes'>Инструменты</attribute>\n"
-"\t\t\t\t<section>\n"
-"\t\t\t\t\t<item>\n"
-"\t\t\t\t\t\t<attribute name='label' translatable='yes'>Редактировать "
-"профиль</attribute>\n"
-"\t\t\t\t\t\t<attribute name='action'>prefgr.editpr</attribute>\n"
-"\t\t\t\t\t</item>\n"
-"\t\t\t\t\t<item>\n"
-"\t\t\t\t\t\t<attribute name='label' translatable='yes'>Узнать свой ключ</"
-"attribute>\n"
-"\t\t\t\t\t\t<attribute name='action'>prefgr.ownkey</attribute>\n"
-"\t\t\t\t\t</item>\n"
-"                    <item>\n"
-"\t\t\t\t\t\t<attribute name='label' translatable='yes'>Общие настройки</"
-"attribute>\n"
-"\t\t\t\t\t\t<attribute name='action'>prefgr.editSettings</attribute>\n"
-"\t\t\t\t\t</item>\t\t\t\t\t\n"
-"\t\t\t\t</section>\n"
-"\t\t</submenu>\n"
-"\t\t<submenu>\n"
-"\t\t\t<attribute name='label' translatable='yes'>Справка</attribute>\n"
-"\t\t\t\t<section>\n"
-"\t\t\t\t\t<item>\n"
-"\t\t\t\t\t\t<attribute name='label' translatable='yes'>О программе</"
-"attribute>\n"
-"\t\t\t\t\t\t<attribute name='action'>prefgr.aboutProg</attribute>\n"
-"\t\t\t\t\t</item>\n"
-"\t\t\t\t</section>\n"
-"\t\t</submenu>\n"
-"\t</menu>\n"
-"</interface>"
+"<interface><menu id='menubar'>\t<submenu>\t\t<attribute name='label' "
+"translatable='yes'>Контакты</attribute>\t\t\t<section>\t\t\t\t<item>\t\t\t\t"
+"\t<attribute name='label' translatable='yes'>Редактировать список "
+"отправленных заявок</attribute>\t\t\t\t\t<attribute name='action'>prefgr."
+"editReqList</attribute>\t\t\t\t</item>\t\t\t\t<item>\t\t\t\t\t<attribute "
+"name='label' translatable='yes'>Редактировать список контактов для пересылки "
+"сообщений через ретранслятор</attribute>\t\t\t\t\t<attribute "
+"name='action'>prefgr.relayList</attribute>\t\t\t\t</item>\t\t\t</section>\t</"
+"submenu>\t<submenu>\t\t<attribute name='label' "
+"translatable='yes'>Инструменты</attribute>\t\t\t<section>\t\t\t\t<item>\t\t\t"
+"\t\t<attribute name='label' translatable='yes'>Редактировать профиль</"
+"attribute>\t\t\t\t\t<attribute name='action'>prefgr.editpr</attribute>\t\t\t"
+"\t</item>\t\t\t\t<item>\t\t\t\t\t<attribute name='label' "
+"translatable='yes'>Узнать свой ключ</attribute>\t\t\t\t\t<attribute "
+"name='action'>prefgr.ownkey</attribute>\t\t\t\t</"
+"item>                         <item>\t\t\t\t\t<attribute name='label' "
+"translatable='yes'>Общие настройки</attribute>\t\t\t\t\t<attribute "
+"name='action'>prefgr.editSettings</attribute>\t\t\t\t</item>\t\t\t</section>"
+"\t</submenu>\t<submenu>\t\t<attribute name='label' translatable='yes'>О "
+"программе</attribute>\t\t\t<section>\t\t\t\t<item>\t\t\t\t\t<attribute "
+"name='label' translatable='yes'>О Коммунисте</attribute>\t\t\t\t\t<attribute "
+"name='action'>prefgr.aboutProg</attribute>\t\t\t\t</item>\t\t\t</section>\t</"
+"submenu></menu></interface>"
 
-#: MainWindow.cpp:915 MainWindow.cpp:3415
-msgid "Add contact"
-msgstr "Добавить контакт"
-
-#: MainWindow.cpp:926 MainWindow.cpp:2898 MainWindow.cpp:7636
-msgid "Remove contact"
-msgstr "Удалить контакт"
-
-#: MainWindow.cpp:1292 MainWindow.cpp:7874
+#: MainWindow.cpp:1156 MainWindow.cpp:3210
 msgid "Blocked"
 msgstr "Заблокирован"
 
-#: MainWindow.cpp:1330
+#: MainWindow.cpp:1196
 msgid "Attach file"
 msgstr "Прикрепить файл"
 
-#: MainWindow.cpp:1558
+#: MainWindow.cpp:1252
 msgid "Send message"
 msgstr "Отправить"
 
-#: MainWindow.cpp:1666
-msgid "Input user name!"
-msgstr "Введите имя пользователя!"
-
-#: MainWindow.cpp:1670
-msgid "Input password!"
-msgstr "Введите пароль!"
-
-#: MainWindow.cpp:1674
-msgid "Passwords do not match!"
-msgstr "Пароли не совпадают!"
-
-#: MainWindow.cpp:1681 MainWindow.cpp:2065 MainWindow.cpp:2225
-#: MainWindow.cpp:3830 MainWindow.cpp:5249 MainWindow.cpp:6565
-#: MainWindow.cpp:7434 MainWindow.cpp:7555 MainWindow.cpp:7815
-#: MainWindow.cpp:9491
-msgid "Close"
-msgstr "Закрыть"
-
-#: MainWindow.cpp:1786
+#: MainWindow.cpp:1557
 msgid "Generate key (compulsory)"
 msgstr "Сгенерируйте ключ (обязательно)"
 
-#: MainWindow.cpp:1796
+#: MainWindow.cpp:1567
 msgid "Generate"
 msgstr "Сгенерировать"
 
-#: MainWindow.cpp:1807
+#: MainWindow.cpp:1578
 msgid "Nickname (compulsory)"
 msgstr "Псевдоним (обязательно)"
 
-#: MainWindow.cpp:1813
+#: MainWindow.cpp:1584
 msgid "Name (not compulsory)"
 msgstr "Имя (необязательно)"
 
-#: MainWindow.cpp:1819
+#: MainWindow.cpp:1590
 msgid "Surame (not compulsory)"
 msgstr "Фамилия (необязательно)"
 
-#: MainWindow.cpp:1826
+#: MainWindow.cpp:1597
 msgid "Save"
 msgstr "Сохранить"
 
-#: MainWindow.cpp:1840 MainWindow.cpp:6413
+#: MainWindow.cpp:1611 MainWindow.cpp:2787
 msgid "Clear"
 msgstr "Очистить"
 
-#: MainWindow.cpp:1887
+#: MainWindow.cpp:1658
 msgid "Choose image"
 msgstr "Выберите файл аватара"
 
-#: MainWindow.cpp:1901
+#: MainWindow.cpp:1672
 msgid "Remove image"
 msgstr "Удалить изображение"
 
-#: MainWindow.cpp:1930
+#: MainWindow.cpp:1698
 msgid "Choose image file"
 msgstr "Выберите файл аватара"
 
-#: MainWindow.cpp:1936
+#: MainWindow.cpp:1704
 msgid "OK"
 msgstr "Подтвердить"
 
-#: MainWindow.cpp:2045 MainWindow.cpp:6553
+#: MainWindow.cpp:1831 MainWindow.cpp:2938
 msgid "Error"
 msgstr "Ошибка"
 
-#: MainWindow.cpp:2053
+#: MainWindow.cpp:1839
 msgid "Generate the key!"
 msgstr "Сгенерируйте ключ!"
 
-#: MainWindow.cpp:2057 MainWindow.cpp:6559
+#: MainWindow.cpp:1843 MainWindow.cpp:2944
 msgid "Input nickname!"
 msgstr "Введите псевдоним!"
 
-#: MainWindow.cpp:2194
-msgid "Key"
-msgstr "Ключ"
-
-#: MainWindow.cpp:2210
-msgid "Copy"
-msgstr "Копировать"
-
-#: MainWindow.cpp:2586
-msgid "Forwarded from: "
-msgstr "Переслано из: "
-
-#: MainWindow.cpp:2657
-msgid "Me:"
-msgstr "Я:"
-
-#: MainWindow.cpp:2905
-msgid "Remove contact? This action will erase all messages forever."
-msgstr "Удалить контакт? Это действие безвозвратно удалит всю переписку."
-
-#: MainWindow.cpp:2914 MainWindow.cpp:5486 MainWindow.cpp:6945
-#: MainWindow.cpp:7029
-msgid "Yes"
-msgstr "Да"
-
-#: MainWindow.cpp:2927 MainWindow.cpp:5692 MainWindow.cpp:7163
-#: MainWindow.cpp:7340
-msgid "No"
-msgstr "Нет"
-
-#: MainWindow.cpp:3031 MainWindow.cpp:7882
-msgid "Contact removing"
-msgstr "Удаление контакта"
-
-#: MainWindow.cpp:3047
-msgid "Contact is being removed"
-msgstr "Контакт удаляется"
-
-#: MainWindow.cpp:3420
-msgid "Public key:"
-msgstr "Публичный ключ:"
-
-#: MainWindow.cpp:3432
-msgid "Add"
-msgstr "Добавить"
-
-#: MainWindow.cpp:3666
-msgid "Friends request edit"
-msgstr "Редактирования списка отправленных заявок"
-
-#: MainWindow.cpp:3711 MainWindow.cpp:3879
-msgid "Remove from list"
-msgstr "Удалить из списка"
-
-#: MainWindow.cpp:4772
-msgid "Reply"
-msgstr "Ответить"
-
-#: MainWindow.cpp:4773
-msgid "Forward"
-msgstr "Переслать"
-
-#: MainWindow.cpp:4774
-msgid "Remove (only this machine)"
-msgstr "Удалить (только у себя)"
-
-#: MainWindow.cpp:4924
-msgid "Select contact"
-msgstr "Выбор контакта"
-
-#: MainWindow.cpp:5229
-msgid "Error!"
-msgstr "Ошибка!"
-
-#: MainWindow.cpp:5240
-msgid "File you want to send does not exists"
-msgstr "Файл, который вы пытаетесь отправить, не существует"
-
-#: MainWindow.cpp:5463
-msgid "Confirmation"
-msgstr "Подтверждение"
-
-#: MainWindow.cpp:5477
-msgid "Are you sure?"
-msgstr "Вы уверены?"
-
-#: MainWindow.cpp:6362
+#: MainWindow.cpp:2708
 msgid "Edit profile"
 msgstr "Редактировать профиль"
 
-#: MainWindow.cpp:6382
+#: MainWindow.cpp:2747
 msgid "Name (not compalsory)"
 msgstr "Имя (необязательно)"
 
-#: MainWindow.cpp:6392
+#: MainWindow.cpp:2765
 msgid "Surname (not compalsory)"
 msgstr "Фамилия (необязательно)"
 
-#: MainWindow.cpp:6399
+#: MainWindow.cpp:2772
 msgid "Save profile"
 msgstr "Сохранить профиль"
 
-#: MainWindow.cpp:6460
+#: MainWindow.cpp:2847
 msgid "Open avatar"
 msgstr "Открыть файл аватара"
 
-#: MainWindow.cpp:6472
+#: MainWindow.cpp:2859
 msgid "Avatar file choice"
 msgstr "Выбор аватара"
 
-#: MainWindow.cpp:6478 MainWindow.cpp:9634 MainWindow.cpp:9710
-msgid "Choose"
-msgstr "Выбрать"
-
-#: MainWindow.cpp:6504
+#: MainWindow.cpp:2892
 msgid "Remove avatar"
 msgstr "Удалить аватар"
 
-#: MainWindow.cpp:6684
-msgid "File choose"
-msgstr "Выбор файла"
-
-#: MainWindow.cpp:6694 MainWindow.cpp:6968
-msgid "Open"
-msgstr "Открыть"
-
-#: MainWindow.cpp:6738
-msgid " File: "
-msgstr " Файл: "
-
-#: MainWindow.cpp:6870
-msgid "File request"
-msgstr "Запрос на передачу файла"
-
-#: MainWindow.cpp:6915
-msgid " is trying to send you a file."
-msgstr " пытается передать вам файл."
-
-#: MainWindow.cpp:6933
-msgid "Size: "
-msgstr "Размер: "
-
-#: MainWindow.cpp:6941
-msgid "Accept?"
-msgstr "Принять?"
-
-#: MainWindow.cpp:6957
-msgid "Path selection"
-msgstr "Выбор пути"
-
-#: MainWindow.cpp:7010
-msgid "Warning!"
-msgstr "Предупреждение!"
-
-#: MainWindow.cpp:7020
-msgid "File already exists, replace?"
-msgstr "Файл уже существует, заменить?"
-
-#: MainWindow.cpp:7059 MainWindow.cpp:7206
-msgid "Downloading "
-msgstr "Загрузка "
-
-#: MainWindow.cpp:7138 MainWindow.cpp:7283 MainWindow.cpp:9893
-msgid "Downloading/sending file progress"
-msgstr "Прогресс загрузки/отправки файла"
-
-#: MainWindow.cpp:7414
-msgid "File rejected"
-msgstr "Файл отклонён"
-
-#: MainWindow.cpp:7427
-msgid " rejected to accept file!"
-msgstr " отказался принять файл!"
-
-#: MainWindow.cpp:7491
-msgid "File received"
-msgstr "Файл получен"
-
-#: MainWindow.cpp:7506 MainWindow.cpp:7530
-msgid "File"
-msgstr "Файл"
-
-#: MainWindow.cpp:7508 MainWindow.cpp:7520
-msgid "from"
-msgstr "от"
-
-#: MainWindow.cpp:7510
-msgid "received"
-msgstr "получен"
-
-#: MainWindow.cpp:7518
-msgid "Error occurred while receiving file"
-msgstr "Во время получения файла возникла ошибка"
-
-#: MainWindow.cpp:7522
-msgid "- hash is not correct!"
-msgstr "- хэшсуммы не совпадают!"
-
-#: MainWindow.cpp:7532 MainWindow.cpp:7544
-msgid "for"
-msgstr "для"
-
-#: MainWindow.cpp:7534
-msgid "was sent"
-msgstr "отправлен"
-
-#: MainWindow.cpp:7542
-msgid "Error on sending"
-msgstr "Ошибка во время отправки"
-
-#: MainWindow.cpp:7635
+#: MainWindow.cpp:3122
 msgid "Contact info"
 msgstr "Информация о контакте"
 
-#: MainWindow.cpp:7637
+#: MainWindow.cpp:3124
 msgid "Block (until restart)/Unblock"
 msgstr "Заблокировать (до перезапуска)/Разблокировать"
 
-#: MainWindow.cpp:7769
-msgid "Key: "
-msgstr "Ключ: "
+#: MainWindow.cpp:3218
+msgid "Blocking contact"
+msgstr "Блокировка контакта"
 
-#: MainWindow.cpp:7775
-msgid "Nickname: "
-msgstr "Псевдоним: "
-
-#: MainWindow.cpp:7781
-msgid "Name: "
-msgstr "Имя: "
-
-#: MainWindow.cpp:7787
-msgid "Surname: "
-msgstr "Фамилия: "
-
-#: MainWindow.cpp:7897
+#: MainWindow.cpp:3233
 msgid "Blocking..."
 msgstr "Блокирую..."
 
-#: MainWindow.cpp:7980
+#: MainWindow.cpp:3362 MainWindow.cpp:3409
+msgid "About"
+msgstr "О программе"
+
+#: MainWindow.cpp:3374
+msgid ""
+"Communist is simple \"peer to peer\" messenger.\n"
+"Author Yury Bobylev.\n"
+"Program use next libraries:\n"
+"GTK https://www.gtk.org\n"
+"ICU https://icu.unicode.org\n"
+"Hunspell http://hunspell.github.io/\n"
+"libcommunist https://github.com/ProfessorNavigator/libcommunist\n"
+"                        https://gitflic.ru/project/professornavigator/"
+"libcommunist"
+msgstr ""
+"Коммунист - простая программа для отправки сообщений \"устройство-устройство"
+"\"\n"
+"Автор Юрий Бобылев.\n"
+"В программе используются следующие библиотеки:\n"
+"GTK https://www.gtk.org\n"
+"ICU https://icu.unicode.org\n"
+"Hunspell http://hunspell.github.io/\n"
+"libcommunist https://github.com/ProfessorNavigator/libcommunist\n"
+"                        https://gitflic.ru/project/professornavigator/"
+"libcommunist"
+
+#: MainWindow.cpp:3455
+msgid "License"
+msgstr "Лицензия"
+
+#: MainWindow.cpp:3547
+msgid "online"
+msgstr "в сети"
+
+#: SettingsWindow.cpp:41
 msgid "Settings"
 msgstr "Настройки"
 
-#: MainWindow.cpp:8009
+#: SettingsWindow.cpp:70
+msgid "Theme directory path: "
+msgstr "Путь до папки с темами оформления: "
+
+#: SettingsWindow.cpp:97
 msgid "Theme:"
 msgstr "Тема:"
 
-#: MainWindow.cpp:8076
+#: SettingsWindow.cpp:166
 msgid "Enable spell checking"
 msgstr "Включить проверку орфографии"
 
-#: MainWindow.cpp:8117
+#: SettingsWindow.cpp:207
 msgid "Language for spell checking:"
 msgstr "Язык для проверки орфографии:"
 
-#: MainWindow.cpp:8196
+#: SettingsWindow.cpp:286
 msgid "Network mode:"
 msgstr "Режим сети:"
 
-#: MainWindow.cpp:8202
+#: SettingsWindow.cpp:292
 msgid "Internet"
 msgstr "Интернет"
 
-#: MainWindow.cpp:8203
+#: SettingsWindow.cpp:293
 msgid "Local"
 msgstr "Локальная"
 
-#: MainWindow.cpp:8268
+#: SettingsWindow.cpp:363
 msgid "Local network group multicast ipv4 and port (ipv4:port)"
 msgstr "IPv4 и порт для групповых сообщений в локальной сети (ipv4:port)"
 
-#: MainWindow.cpp:8310
+#: SettingsWindow.cpp:405
 msgid "Local network group multicast ipv6 and port ([ipv6]:port)"
 msgstr "IPv6 и порт для групповых сообщений в локальной сети ([ipv6]:port)"
 
-#: MainWindow.cpp:8351
+#: SettingsWindow.cpp:446
 msgid "Messages auto remove after:"
 msgstr "Автоматически удалять сообщения через:"
 
-#: MainWindow.cpp:8358
+#: SettingsWindow.cpp:453
 msgid "never"
 msgstr "никогда"
 
-#: MainWindow.cpp:8359
+#: SettingsWindow.cpp:454
 msgid "1 day"
 msgstr "1 день"
 
-#: MainWindow.cpp:8360
+#: SettingsWindow.cpp:455
 msgid "1 week"
 msgstr "1 неделю"
 
-#: MainWindow.cpp:8361
+#: SettingsWindow.cpp:456
 msgid "1 month"
 msgstr "1 месяц"
 
-#: MainWindow.cpp:8362
+#: SettingsWindow.cpp:457
 msgid "1 year"
 msgstr "1 год"
 
-#: MainWindow.cpp:8426
+#: SettingsWindow.cpp:521
 msgid "DHT listen interfaces (ipv4:port,[ipv6]:port):"
 msgstr "Адрес для привязки DHT сокета (ipv4:port,[ipv6]:port):"
 
-#: MainWindow.cpp:8469
+#: SettingsWindow.cpp:564
 msgid ""
 "Comma separated DHT bootstrap nodes (address:port or ipv4:port or [ipv6]:"
 "port):"
@@ -537,129 +635,87 @@ msgstr ""
 "Разделённые запятыми адреса для подключения к сети DHT (address:port or ipv4:"
 "port or [ipv6]:port):"
 
-#: MainWindow.cpp:8511
+#: SettingsWindow.cpp:606
 msgid "Maximum permitted incomming messages size (in bytes):"
 msgstr "Максимальный допустимый размер входящих сообщений (в байтах):"
 
-#: MainWindow.cpp:8551
+#: SettingsWindow.cpp:646
 msgid "Sending part size (in bytes):"
 msgstr "Размер отправляемой части (в байтах):"
 
-#: MainWindow.cpp:8593
+#: SettingsWindow.cpp:688
 msgid "Contact connection maintenance messages shutdown timeout in seconds:"
 msgstr "Таймаут остановки попыток установить соединение в секундах:"
 
-#: MainWindow.cpp:8633
+#: SettingsWindow.cpp:728
 msgid "Connection broken timeout in seconds:"
 msgstr ""
 "Время в секундах, после которого соединение с контактом считается "
 "разорванным:"
 
-#: MainWindow.cpp:8673
+#: SettingsWindow.cpp:768
 msgid "Save window size before closing"
 msgstr "Сохранять размеры главного окна перед закрытием"
 
-#: MainWindow.cpp:8714
+#: SettingsWindow.cpp:809
+msgid "Message max width in chars:"
+msgstr "Ширина сообщения в символах:"
+
+#: SettingsWindow.cpp:849
 msgid "Send message by"
 msgstr "Отправка сообщений по нажатию"
 
-#: MainWindow.cpp:8763
+#: SettingsWindow.cpp:898
+msgid "Enable notification on message receiving"
+msgstr "Включить уведомления о входящих сообщениях"
+
+#: SettingsWindow.cpp:939
 msgid "Enable message received sound"
 msgstr "Включить звук уведомления о входящих сообщениях"
 
-#: MainWindow.cpp:8804
+#: SettingsWindow.cpp:980
 msgid "Message sound path:"
 msgstr "Путь к файлу звукового сигнала:"
 
-#: MainWindow.cpp:8827 MainWindow.cpp:8832
+#: SettingsWindow.cpp:1003 SettingsWindow.cpp:1008 SettingsWindow.cpp:1263
+#: SettingsWindow.cpp:1268
 msgid "default"
 msgstr "по умолчанию"
 
-#: MainWindow.cpp:8848
+#: SettingsWindow.cpp:1025
+msgid "Enable hole punch mechanism for symmetric NAT"
+msgstr "Включить механизм пробития симметричного NAT"
+
+#: SettingsWindow.cpp:1066
 msgid "Enable local STUN server"
 msgstr "Включить STUN сервер"
 
-#: MainWindow.cpp:8889
+#: SettingsWindow.cpp:1107
 msgid "STUN port:"
 msgstr "Порт для STUN:"
 
-#: MainWindow.cpp:8935
+#: SettingsWindow.cpp:1153
+msgid "Enable relay server"
+msgstr "Включить сервер-ретранслятор"
+
+#: SettingsWindow.cpp:1194
+msgid "Relay port:"
+msgstr "Порт для операций с ретрансляторами:"
+
+#: SettingsWindow.cpp:1240
+msgid "Relay list path:"
+msgstr "Путь до файла со списком ретрансляторов:"
+
+#: SettingsWindow.cpp:1284
 msgid "Direct connection to Internet"
 msgstr "Прямое соединение с Интернетом"
 
-#: MainWindow.cpp:8974
-msgid "Apply"
-msgstr "Применить"
-
-#: MainWindow.cpp:9468
+#: SettingsWindow.cpp:2065
 msgid "Info"
 msgstr "Информация"
 
-#: MainWindow.cpp:9477
+#: SettingsWindow.cpp:2074
 msgid "Application will be closed now. Start it again to apply changes."
 msgstr ""
 "Приложение будет закрыто. Для того, чтобы настройки вступили в силу, "
 "запустите его вновь."
-
-#: MainWindow.cpp:9596
-msgid "Choose IPv6"
-msgstr "Выбор IPv6"
-
-#: MainWindow.cpp:9610
-msgid ""
-"Program cannot automatically identify machine's IPv6. Please choose "
-"manually. Available variants are: "
-msgstr "Программа не может автоматически выбрать IPv6. Возможные варианты: "
-
-#: MainWindow.cpp:9673
-msgid "Choose IPv4"
-msgstr "Выбор IPv4"
-
-#: MainWindow.cpp:9686
-msgid ""
-"Program cannot automatically identify machine's IPv4. Please choose "
-"manually. Available variants are: "
-msgstr "Программа не может автоматически выбрать IPv4. Возможные варианты: "
-
-#: MainWindow.cpp:9811
-msgid "Sending "
-msgstr "Отправка "
-
-#: MainWindow.cpp:10161 MainWindow.cpp:10207
-msgid "About"
-msgstr "О программе"
-
-#: MainWindow.cpp:10172
-msgid ""
-"Communist is simple \"peer to peer\" messenger.\n"
-"Author Yury Bobylev.\n"
-"Program use next libraries:\n"
-"GTK https://www.gtk.org\n"
-"Libgcrypt https://www.gnupg.org/software/libgcrypt/index.html\n"
-"Libzip https://libzip.org\n"
-"Libtorrent https://www.libtorrent.org\n"
-"ICU https://icu.unicode.org"
-msgstr ""
-"Коммунист - простая программа для отправки сообщений \"устройство-устройство"
-"\"\n"
-"Автор Юрий Бобылев.\n"
-"В программе используются следующие библиотеки:\n"
-"GTK https://www.gtk.org\n"
-"Libgcrypt https://www.gnupg.org/software/libgcrypt/index.html\n"
-"Libzip https://libzip.org\n"
-"Libtorrent https://www.libtorrent.org\n"
-"ICU https://icu.unicode.org"
-
-#: MainWindow.cpp:10253
-msgid "License"
-msgstr "Лицензия"
-
-#: MainWindow.cpp:10345
-msgid "online"
-msgstr "в сети"
-
-#~ msgid "Entrance"
-#~ msgstr "Вход"
-
-#~ msgid "Open image"
-#~ msgstr "Открыть изображение"

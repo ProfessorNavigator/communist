@@ -25,23 +25,32 @@
 #include <mutex>
 #include <functional>
 #include <sigc++/sigc++.h>
-#include <libtorrent/kademlia/ed25519.hpp>
-#include <libtorrent/hex.hpp>
 #include <ctime>
+#include <unistd.h>
 #include <thread>
 #include <iostream>
 #include <tuple>
 #include <hunspell.hxx>
 #include <libintl.h>
-#include "AuxFunc.h"
-#include "NetworkOperations.h"
+#include <LibCommunist.h>
 #include "SettingsWindow.h"
+#include "ContactOperations.h"
+#include "AuxWindows.h"
+#include "MWMsgOperations.h"
+#include "MWFileOperations.h"
 
 class SettingsWindow;
+class ContactOperations;
+class AuxWindows;
+class MWMsgOperations;
 
 class MainWindow : public Gtk::ApplicationWindow
 {
   friend class SettingsWindow;
+  friend class ContactOperations;
+  friend class AuxWindows;
+  friend class MWMsgOperations;
+  friend class MWFileOperations;
 public:
   MainWindow ();
   virtual
@@ -68,7 +77,7 @@ private:
 	   Glib::ustring file);
   void
   on_draw_ep (const Cairo::RefPtr<Cairo::Context> &cr, int width, int height,
-	      Glib::ustring file);
+	      std::vector<char> *picture);
   void
   on_draw_sb (const Cairo::RefPtr<Cairo::Context> &cr, int width, int height,
 	      Glib::ustring file);
@@ -89,45 +98,30 @@ private:
   void
   deleteContact ();
   void
-  deleteContactFunc ();
-  void
   networkOp ();
   void
   addFriends ();
   void
-  addFriendsFunc (Gtk::Window *window, Gtk::Entry *entry);
-  void
   editAddFriends ();
-  void
-  addFriendsSelected (int n_press, double x, double y,
-		      std::vector<Gtk::Label*> *labvect, Gtk::Label *lab,
-		      Glib::RefPtr<Gtk::GestureClick> clck, Gtk::Grid *contgr);
   void
   addFriendSlot (std::string *key, int *conind, std::mutex *disp1mtx);
   void
   sendMsg (Gtk::TextView *tv);
   void
-  creatReply (int numcl, double x, double y, Gtk::Frame *fr,
-	      Gtk::Label *message, Glib::RefPtr<Gtk::GestureClick> clck);
-  void
-  msgSentSlot (std::string *key, int *msgind, std::mutex *disp2mtx);
-  void
-  msgRcvdSlot (std::string *key, std::filesystem::path *p,
-	       std::mutex *disp3mtx);
+  sendMsgFile (std::string *txt);
   void
   editProfile ();
   void
   attachFileDialog ();
   void
-  attachFileFunc (int rid, Gtk::FileChooserDialog *fcd);
-  void
   fileRequestSlot (std::string *key, uint64_t *tm, uint64_t *filesize,
 		   std::string *filename, std::mutex *disp4mtx);
   void
-  fileRejectedSlot (std::string *keyr, std::mutex *disp5mtx);
+  fileRejectedSlot (std::string *keyr, std::filesystem::path *filer,
+		    std::mutex *disp5mtx);
   void
-  fileRcvdStatus (std::string *key, std::string *filename, std::mutex *dispNmtx,
-		  int variant);
+  fileRcvdStatus (std::string *key, std::filesystem::path *filename,
+		  std::mutex *dispNmtx, int variant);
   void
   friendDetails (Gtk::Button *button);
   void
@@ -135,7 +129,7 @@ private:
 	    Gtk::Button *button);
   void
   on_draw_frpd (const Cairo::RefPtr<Cairo::Context> &cr, int width, int height,
-		Glib::ustring file);
+		std::vector<char> *picture);
   void
   tempBlockCont ();
   void
@@ -147,15 +141,9 @@ private:
   void
   formIPv4vect (std::string ip);
   void
-  ipv6Window ();
-  void
-  ipv4Window ();
-  void
   formMsgWinGrid (std::vector<std::filesystem::path> &msg, size_t begin,
 		  size_t end, Gtk::Grid *grid, std::string key,
 		  std::string nick, int index, int varform);
-  void
-  resendWindow (std::string othkey, std::filesystem::path msgpath);
   void
   removeMsg (std::string othkey, std::filesystem::path msgpath,
 	     Gtk::Widget *widg);
@@ -172,11 +160,15 @@ private:
   void
   checkIfConnected (std::string *key, uint64_t *tm, std::mutex *mtx);
   void
-  friendRemoved (std::string *key, std::mutex *mtx);
+  editRelayList ();
+  bool
+  editProfileClose (Gtk::Window *window);
+  bool
+  sendMsgByKeyBoard (guint keyval, guint keycode, Gdk::ModifierType state);
   void
-  deleteNOp ();
-  void
-  deleteSettingsWindow (int apply);
+  spellCheck (Glib::RefPtr<Gtk::TextBuffer> textb);
+  bool
+  mainWindowClose ();
   std::string Username;
   std::string Password;
   std::array<char, 32> seed;
@@ -186,6 +178,7 @@ private:
   std::mutex conavmtx;
   int Deleteprof = 1;
   int Image = 0;
+  int msg_width_chars = 30;
   std::vector<Gtk::Entry*> profilevector;
   std::vector<std::tuple<int, std::string>> contacts;
   std::mutex contmtx;
@@ -208,13 +201,13 @@ private:
   Gtk::Grid *msg_win_gr = nullptr;
   std::vector<std::tuple<Gtk::Widget*, std::filesystem::path, Gtk::PopoverMenu*>> msg_grid_vect;
   std::mutex msg_grid_vectmtx;
-  NetworkOperations *oper = nullptr;
+  NetOperationsComm *oper = nullptr;
   Gtk::Label *repllabe = nullptr;
   Gtk::Button *replcancel = nullptr;
   Gtk::Grid *replgrid = nullptr;
   Gtk::Grid *Rightgrid = nullptr;
   Gtk::TextView *msgfrm = nullptr;
-  std::vector<std::tuple<std::string, int, Gtk::Label*>> sentstatus;
+  std::vector<std::tuple<std::string, std::filesystem::path, Gtk::Label*>> sentstatus;
   std::mutex sentstatmtx;
   std::vector<std::tuple<std::string, uint64_t, uint16_t, std::filesystem::path>> blockfreq; //key, time, status (waiting, rejected, accepted), path to file
   std::mutex blockfreqmtx;
@@ -236,6 +229,7 @@ private:
   std::vector<std::string> ipv4vect;
   std::mutex ipv4vectmtx;
   std::string Sharepath;
+  std::string Userthemepath;
   sigc::connection Scrwinovershot;
   double msgwinadj = -1;
   std::vector<std::tuple<std::string, Gtk::CheckButton*>> resendactive;
@@ -260,7 +254,12 @@ private:
   Glib::Dispatcher disp13;
   Glib::Dispatcher disp14;
   Glib::Dispatcher disp15;
+  Glib::Dispatcher disp16;
+  Glib::Dispatcher disp17;
   Glib::Dispatcher dispclose;
+
+  Gtk::ProgressBar *friend_block_bar = nullptr;
+
   std::vector<std::tuple<std::string, int, int>> winszs; //0-Win code name, 1-width, 2-height
   std::vector<std::tuple<std::string, uint64_t, Gtk::Label*>> chifc; //0-key, 1-time, 2-indicator
   std::mutex chifcmtx;
@@ -269,6 +268,8 @@ private:
   std::string Theme;
   Gtk::Window *Contdelwin = nullptr;
   SettingsWindow *Set_Win = nullptr;
+
+  bool grnotific = true;
 };
 
 #endif /* MAINWINDOW_H_ */

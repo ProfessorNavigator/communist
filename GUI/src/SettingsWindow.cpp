@@ -62,6 +62,33 @@ SettingsWindow::settingsWindow ()
   bx = Gtk::make_managed<Gtk::Box> (Gtk::Orientation::HORIZONTAL);
   lbr = Gtk::make_managed<Gtk::ListBoxRow> ();
   lbr->set_selectable (false);
+  Gtk::Label *themepathl = Gtk::make_managed<Gtk::Label> ();
+  themepathl->set_halign (Gtk::Align::START);
+  themepathl->set_margin (5);
+  themepathl->set_wrap_mode (Pango::WrapMode::WORD);
+  themepathl->set_wrap (true);
+  themepathl->set_text (gettext ("Theme directory path: "));
+  themepathl->set_justify (Gtk::Justification::LEFT);
+  bx->append (*themepathl);
+
+  Gtk::Entry *themepathval = Gtk::make_managed<Gtk::Entry> ();
+  themepathval->set_halign (Gtk::Align::END);
+  themepathval->set_valign (Gtk::Align::CENTER);
+  themepathval->set_margin (5);
+  Glib::RefPtr<Gtk::EntryBuffer> themepathvalbuf = Gtk::EntryBuffer::create ();
+  themepathvalbuf->set_text (mw->Userthemepath);
+  if (themepathvalbuf->get_length () > 0)
+    {
+      themepathval->set_width_chars (themepathvalbuf->get_length ());
+    }
+  themepathval->set_buffer (themepathvalbuf);
+  bx->append (*themepathval);
+  lbr->set_child (*bx);
+  listb->append (*lbr);
+
+  bx = Gtk::make_managed<Gtk::Box> (Gtk::Orientation::HORIZONTAL);
+  lbr = Gtk::make_managed<Gtk::ListBoxRow> ();
+  lbr->set_selectable (false);
   Gtk::Label *thmlb = Gtk::make_managed<Gtk::Label> ();
   thmlb->set_halign (Gtk::Align::START);
   thmlb->set_justify (Gtk::Justification::LEFT);
@@ -73,12 +100,14 @@ SettingsWindow::settingsWindow ()
   Gtk::ComboBoxText *cmbthm = Gtk::make_managed<Gtk::ComboBoxText> ();
   cmbthm->set_halign (Gtk::Align::END);
   cmbthm->set_margin (5);
-  std::filesystem::path thmp = std::filesystem::u8path (
-      std::string (mw->Sharepath + "/themes"));
-  for (auto &dirit : std::filesystem::directory_iterator (thmp))
+  std::filesystem::path thmp = std::filesystem::u8path (mw->Userthemepath);
+  if (std::filesystem::exists (thmp))
     {
-      std::filesystem::path p = dirit.path ();
-      cmbthm->append (Glib::ustring (p.filename ().u8string ()));
+      for (auto &dirit : std::filesystem::directory_iterator (thmp))
+	{
+	  std::filesystem::path p = dirit.path ();
+	  cmbthm->append (Glib::ustring (p.filename ().u8string ()));
+	}
     }
   mw->prefvectmtx.lock ();
   auto itprv = std::find_if (mw->prefvect.begin (), mw->prefvect.end (), []
@@ -102,17 +131,17 @@ SettingsWindow::settingsWindow ()
   bx->append (*cmbthm);
   lbr->set_child (*bx);
   listb->append (*lbr);
-
-  cmbthm->signal_changed ().connect ( [cmbthm, this]
+  MainWindow *mwl = mw;
+  cmbthm->signal_changed ().connect ( [cmbthm, mwl]
   {
     std::string tmp (cmbthm->get_active_text ());
-    this->mw->prefvectmtx.lock ();
-    auto itprv = std::find_if (this->mw->prefvect.begin (), this->mw->prefvect.end (), []
-  (auto &el)
-    {
-      return std::get<0>(el) == "Theme";
-    });
-    if (itprv != this->mw->prefvect.end ())
+    mwl->prefvectmtx.lock ();
+    auto itprv = std::find_if (mwl->prefvect.begin (), mwl->prefvect.end (), []
+    (auto &el)
+      {
+	return std::get<0>(el) == "Theme";
+      });
+    if (itprv != mwl->prefvect.end ())
       {
 	std::get<1> (*itprv) = tmp;
       }
@@ -121,9 +150,9 @@ SettingsWindow::settingsWindow ()
 	std::tuple<std::string, std::string> ttup;
 	std::get<0> (ttup) = "Theme";
 	std::get<1> (ttup) = tmp;
-	this->mw->prefvect.push_back (ttup);
+	mwl->prefvect.push_back (ttup);
       }
-    this->mw->prefvectmtx.unlock ();
+    mwl->prefvectmtx.unlock ();
   });
 
   bx = Gtk::make_managed<Gtk::Box> (Gtk::Orientation::HORIZONTAL);
@@ -223,16 +252,16 @@ SettingsWindow::settingsWindow ()
   lbr->set_child (*bx);
   listb->append (*lbr);
 
-  cmbtxt->signal_changed ().connect ( [cmbtxt, this]
+  cmbtxt->signal_changed ().connect ( [cmbtxt, mwl]
   {
     std::string tmp (cmbtxt->get_active_text ());
-    this->mw->prefvectmtx.lock ();
-    auto itprv = std::find_if (this->mw->prefvect.begin (), this->mw->prefvect.end (), []
-  (auto &el)
-    {
-      return std::get<0>(el) == "Language";
-    });
-    if (itprv != this->mw->prefvect.end ())
+    mwl->prefvectmtx.lock ();
+    auto itprv = std::find_if (mwl->prefvect.begin (), mwl->prefvect.end (), []
+    (auto &el)
+      {
+	return std::get<0>(el) == "Language";
+      });
+    if (itprv != mwl->prefvect.end ())
       {
 	std::get<1> (*itprv) = tmp;
       }
@@ -241,9 +270,9 @@ SettingsWindow::settingsWindow ()
 	std::tuple<std::string, std::string> ttup;
 	std::get<0> (ttup) = "Language";
 	std::get<1> (ttup) = tmp;
-	this->mw->prefvect.push_back (ttup);
+	mwl->prefvect.push_back (ttup);
       }
-    this->mw->prefvectmtx.unlock ();
+    mwl->prefvectmtx.unlock ();
   });
 
   bx = Gtk::make_managed<Gtk::Box> (Gtk::Orientation::HORIZONTAL);
@@ -270,15 +299,10 @@ SettingsWindow::settingsWindow ()
     });
   if (itprv != mw->prefvect.end ())
     {
-      std::stringstream strm;
-      std::locale loc ("C");
-      strm.imbue (loc);
-      strm << std::get<1> (*itprv);
-      int sel;
-      strm >> sel;
-      if (sel <= 1)
+      std::string nm = std::get<1> (*itprv);
+      if (nm == "local")
 	{
-	  netcmb->set_active (sel);
+	  netcmb->set_active (1);
 	}
       else
 	{
@@ -290,28 +314,38 @@ SettingsWindow::settingsWindow ()
       netcmb->set_active (0);
     }
   mw->prefvectmtx.unlock ();
-  netcmb->signal_changed ().connect ( [netcmb, this]
+  netcmb->signal_changed ().connect ( [netcmb, mwl]
   {
-    std::stringstream strm;
-    std::locale loc ("C");
-    strm.imbue (loc);
-    strm << netcmb->get_active_row_number ();
-    std::string ch = strm.str ();
-    this->mw->prefvectmtx.lock ();
-    auto itprv = std::find_if (this->mw->prefvect.begin (), this->mw->prefvect.end (), []
-  (auto &el)
-    {
-      return std::get<0>(el) == "Netmode";
-    });
-    if (itprv != this->mw->prefvect.end ())
+    int ch = netcmb->get_active_row_number ();
+    mwl->prefvectmtx.lock ();
+    auto itprv = std::find_if (mwl->prefvect.begin (), mwl->prefvect.end (), []
+    (auto &el)
       {
-	std::get<1> (*itprv) = ch;
+	return std::get<0>(el) == "Netmode";
+      });
+    if (itprv != mwl->prefvect.end ())
+      {
+	if (ch == 1)
+	  {
+	    std::get<1> (*itprv) = "local";
+	  }
+	else
+	  {
+	    std::get<1> (*itprv) = "internet";
+	  }
       }
     else
       {
-	this->mw->prefvect.push_back (std::make_tuple ("Netmode", ch));
+	if (ch == 1)
+	  {
+	    mwl->prefvect.push_back (std::make_tuple ("Netmode", "local"));
+	  }
+	else
+	  {
+	    mwl->prefvect.push_back (std::make_tuple ("Netmode", "internet"));
+	  }
       }
-    this->mw->prefvectmtx.unlock ();
+    mwl->prefvectmtx.unlock ();
   });
   bx->append (*netcmb);
   lbr->set_child (*bx);
@@ -449,28 +483,28 @@ SettingsWindow::settingsWindow ()
       autoremcmb->set_active (0);
     }
   mw->prefvectmtx.unlock ();
-  autoremcmb->signal_changed ().connect ( [autoremcmb, this]
+  autoremcmb->signal_changed ().connect ( [autoremcmb, mwl]
   {
     std::stringstream strm;
     std::locale loc ("C");
     strm.imbue (loc);
     strm << autoremcmb->get_active_row_number ();
     std::string ch = strm.str ();
-    this->mw->prefvectmtx.lock ();
-    auto itprv = std::find_if (this->mw->prefvect.begin (), this->mw->prefvect.end (), []
-  (auto &el)
-    {
-      return std::get<0>(el) == "Autoremove";
-    });
-    if (itprv != this->mw->prefvect.end ())
+    mwl->prefvectmtx.lock ();
+    auto itprv = std::find_if (mwl->prefvect.begin (), mwl->prefvect.end (), []
+    (auto &el)
+      {
+	return std::get<0>(el) == "Autoremove";
+      });
+    if (itprv != mwl->prefvect.end ())
       {
 	std::get<1> (*itprv) = ch;
       }
     else
       {
-	this->mw->prefvect.push_back (std::make_tuple ("Autoremove", ch));
+	mwl->prefvect.push_back (std::make_tuple ("Autoremove", ch));
       }
-    this->mw->prefvectmtx.unlock ();
+    mwl->prefvectmtx.unlock ();
   });
   bx->append (*autoremcmb);
   lbr->set_child (*bx);
@@ -767,6 +801,46 @@ SettingsWindow::settingsWindow ()
   bx = Gtk::make_managed<Gtk::Box> (Gtk::Orientation::HORIZONTAL);
   lbr = Gtk::make_managed<Gtk::ListBoxRow> ();
   lbr->set_selectable (false);
+  Gtk::Label *msgwchrl = Gtk::make_managed<Gtk::Label> ();
+  msgwchrl->set_halign (Gtk::Align::START);
+  msgwchrl->set_justify (Gtk::Justification::LEFT);
+  msgwchrl->set_margin (5);
+  msgwchrl->set_wrap_mode (Pango::WrapMode::WORD);
+  msgwchrl->set_text (gettext ("Message max width in chars:"));
+  bx->append (*msgwchrl);
+
+  Gtk::Entry *msgwchre = Gtk::make_managed<Gtk::Entry> ();
+  msgwchre->set_halign (Gtk::Align::END);
+  msgwchre->set_valign (Gtk::Align::CENTER);
+  msgwchre->set_margin (5);
+  Glib::RefPtr<Gtk::EntryBuffer> msgwchrebuf = Gtk::EntryBuffer::create ();
+  mw->prefvectmtx.lock ();
+  itprv = std::find_if (mw->prefvect.begin (), mw->prefvect.end (), []
+  (auto &el)
+    {
+      return std::get<0>(el) == "MsgWidth";
+    });
+  if (itprv != mw->prefvect.end ())
+    {
+      msgwchrebuf->set_text (Glib::ustring (std::get<1> (*itprv)));
+    }
+  else
+    {
+      msgwchrebuf->set_text ("30");
+    }
+  mw->prefvectmtx.unlock ();
+  if (msgwchrebuf->get_length () > 0)
+    {
+      msgwchre->set_width_chars (msgwchrebuf->get_length ());
+    }
+  msgwchre->set_buffer (msgwchrebuf);
+  bx->append (*msgwchre);
+  lbr->set_child (*bx);
+  listb->append (*lbr);
+
+  bx = Gtk::make_managed<Gtk::Box> (Gtk::Orientation::HORIZONTAL);
+  lbr = Gtk::make_managed<Gtk::ListBoxRow> ();
+  lbr->set_selectable (false);
   Gtk::Label *sendkeyl = Gtk::make_managed<Gtk::Label> ();
   sendkeyl->set_halign (Gtk::Align::START);
   sendkeyl->set_justify (Gtk::Justification::LEFT);
@@ -810,6 +884,47 @@ SettingsWindow::settingsWindow ()
     }
   mw->prefvectmtx.unlock ();
   bx->append (*sendkeycmb);
+  lbr->set_child (*bx);
+  listb->append (*lbr);
+
+  bx = Gtk::make_managed<Gtk::Box> (Gtk::Orientation::HORIZONTAL);
+  lbr = Gtk::make_managed<Gtk::ListBoxRow> ();
+  lbr->set_selectable (false);
+  Gtk::Label *grnotificl = Gtk::make_managed<Gtk::Label> ();
+  grnotificl->set_halign (Gtk::Align::START);
+  grnotificl->set_justify (Gtk::Justification::LEFT);
+  grnotificl->set_margin (5);
+  grnotificl->set_wrap_mode (Pango::WrapMode::WORD);
+  grnotificl->set_text (gettext ("Enable notification on message receiving"));
+  bx->append (*grnotificl);
+
+  Gtk::CheckButton *grnotificch = Gtk::make_managed<Gtk::CheckButton> ();
+  grnotificch->set_margin (5);
+  grnotificch->set_halign (Gtk::Align::CENTER);
+  grnotificch->set_valign (Gtk::Align::CENTER);
+  mw->prefvectmtx.lock ();
+  itprv = std::find_if (mw->prefvect.begin (), mw->prefvect.end (), []
+  (auto &el)
+    {
+      return std::get<0>(el) == "GrNotification";
+    });
+  if (itprv != mw->prefvect.end ())
+    {
+      if (std::get<1> (*itprv) == "yes")
+	{
+	  grnotificch->set_active (true);
+	}
+      else
+	{
+	  grnotificch->set_active (false);
+	}
+    }
+  else
+    {
+      grnotificch->set_active (true);
+    }
+  mw->prefvectmtx.unlock ();
+  bx->append (*grnotificch);
   lbr->set_child (*bx);
   listb->append (*lbr);
 
@@ -895,6 +1010,48 @@ SettingsWindow::settingsWindow ()
   mw->prefvectmtx.unlock ();
   soundpe->set_width_chars (50);
   bx->append (*soundpe);
+  lbr->set_child (*bx);
+  listb->append (*lbr);
+
+  bx = Gtk::make_managed<Gtk::Box> (Gtk::Orientation::HORIZONTAL);
+  lbr = Gtk::make_managed<Gtk::ListBoxRow> ();
+  lbr->set_selectable (false);
+  Gtk::Label *hole_punchl = Gtk::make_managed<Gtk::Label> ();
+  hole_punchl->set_halign (Gtk::Align::START);
+  hole_punchl->set_justify (Gtk::Justification::LEFT);
+  hole_punchl->set_margin (5);
+  hole_punchl->set_wrap_mode (Pango::WrapMode::WORD);
+  hole_punchl->set_text (
+      gettext ("Enable hole punch mechanism for symmetric NAT"));
+  bx->append (*hole_punchl);
+
+  Gtk::CheckButton *hole_punchch = Gtk::make_managed<Gtk::CheckButton> ();
+  hole_punchch->set_margin (5);
+  hole_punchch->set_halign (Gtk::Align::CENTER);
+  hole_punchch->set_valign (Gtk::Align::CENTER);
+  mw->prefvectmtx.lock ();
+  itprv = std::find_if (mw->prefvect.begin (), mw->prefvect.end (), []
+  (auto &el)
+    {
+      return std::get<0>(el) == "HolePunchMech";
+    });
+  if (itprv != mw->prefvect.end ())
+    {
+      if (std::get<1> (*itprv) == "active")
+	{
+	  hole_punchch->set_active (true);
+	}
+      else
+	{
+	  hole_punchch->set_active (false);
+	}
+    }
+  else
+    {
+      hole_punchch->set_active (false);
+    }
+  mw->prefvectmtx.unlock ();
+  bx->append (*hole_punchch);
   lbr->set_child (*bx);
   listb->append (*lbr);
 
@@ -988,6 +1145,137 @@ SettingsWindow::settingsWindow ()
   bx = Gtk::make_managed<Gtk::Box> (Gtk::Orientation::HORIZONTAL);
   lbr = Gtk::make_managed<Gtk::ListBoxRow> ();
   lbr->set_selectable (false);
+  Gtk::Label *enrellab = Gtk::make_managed<Gtk::Label> ();
+  enrellab->set_halign (Gtk::Align::START);
+  enrellab->set_justify (Gtk::Justification::LEFT);
+  enrellab->set_margin (5);
+  enrellab->set_wrap_mode (Pango::WrapMode::WORD);
+  enrellab->set_text (gettext ("Enable relay server"));
+  bx->append (*enrellab);
+
+  Gtk::CheckButton *enrelch = Gtk::make_managed<Gtk::CheckButton> ();
+  enrelch->set_margin (5);
+  enrelch->set_halign (Gtk::Align::CENTER);
+  enrelch->set_valign (Gtk::Align::CENTER);
+  mw->prefvectmtx.lock ();
+  itprv = std::find_if (mw->prefvect.begin (), mw->prefvect.end (), []
+  (auto &el)
+    {
+      return std::get<0>(el) == "RelaySrv";
+    });
+  if (itprv != mw->prefvect.end ())
+    {
+      if (std::get<1> (*itprv) == "enabled")
+	{
+	  enrelch->set_active (true);
+	}
+      else
+	{
+	  enrelch->set_active (false);
+	}
+    }
+  else
+    {
+      enrelch->set_active (false);
+    }
+  mw->prefvectmtx.unlock ();
+  bx->append (*enrelch);
+  lbr->set_child (*bx);
+  listb->append (*lbr);
+
+  bx = Gtk::make_managed<Gtk::Box> (Gtk::Orientation::HORIZONTAL);
+  lbr = Gtk::make_managed<Gtk::ListBoxRow> ();
+  lbr->set_selectable (false);
+  Gtk::Label *relaypl = Gtk::make_managed<Gtk::Label> ();
+  relaypl->set_halign (Gtk::Align::START);
+  relaypl->set_justify (Gtk::Justification::LEFT);
+  relaypl->set_margin (5);
+  relaypl->set_wrap_mode (Pango::WrapMode::WORD);
+  relaypl->set_text (gettext ("Relay port:"));
+  bx->append (*relaypl);
+
+  Gtk::Entry *relaype = Gtk::make_managed<Gtk::Entry> ();
+  relaype->set_halign (Gtk::Align::END);
+  relaype->set_valign (Gtk::Align::CENTER);
+  relaype->set_margin (5);
+  Glib::RefPtr<Gtk::EntryBuffer> relaypebuf = Gtk::EntryBuffer::create ();
+  mw->prefvectmtx.lock ();
+  itprv = std::find_if (mw->prefvect.begin (), mw->prefvect.end (), []
+  (auto &el)
+    {
+      return std::get<0>(el) == "Relayport";
+    });
+  if (itprv != mw->prefvect.end ())
+    {
+      if (Glib::ustring (std::get<1> (*itprv)) != "")
+	{
+	  relaypebuf->set_text (Glib::ustring (std::get<1> (*itprv)));
+	  relaype->set_buffer (relaypebuf);
+	}
+      else
+	{
+	  relaypebuf->set_text ("3029");
+	  relaype->set_buffer (relaypebuf);
+	}
+    }
+  else
+    {
+      relaypebuf->set_text ("3029");
+      relaype->set_buffer (relaypebuf);
+    }
+  mw->prefvectmtx.unlock ();
+  relaype->set_width_chars (5);
+  bx->append (*relaype);
+  lbr->set_child (*bx);
+  listb->append (*lbr);
+
+  bx = Gtk::make_managed<Gtk::Box> (Gtk::Orientation::HORIZONTAL);
+  lbr = Gtk::make_managed<Gtk::ListBoxRow> ();
+  lbr->set_selectable (false);
+  Gtk::Label *relaypathl = Gtk::make_managed<Gtk::Label> ();
+  relaypathl->set_halign (Gtk::Align::START);
+  relaypathl->set_justify (Gtk::Justification::LEFT);
+  relaypathl->set_margin (5);
+  relaypathl->set_wrap_mode (Pango::WrapMode::WORD);
+  relaypathl->set_text (gettext ("Relay list path:"));
+  bx->append (*relaypathl);
+
+  Gtk::Entry *relaypathe = Gtk::make_managed<Gtk::Entry> ();
+  relaypathe->set_halign (Gtk::Align::END);
+  relaypathe->set_valign (Gtk::Align::CENTER);
+  relaypathe->set_margin (5);
+  Glib::RefPtr<Gtk::EntryBuffer> relaypathebuf = Gtk::EntryBuffer::create ();
+  mw->prefvectmtx.lock ();
+  itprv = std::find_if (mw->prefvect.begin (), mw->prefvect.end (), []
+  (auto &el)
+    {
+      return std::get<0>(el) == "RelayListPath";
+    });
+  if (itprv != mw->prefvect.end ())
+    {
+      if (Glib::ustring (std::get<1> (*itprv)) != "")
+	{
+	  relaypathebuf->set_text (Glib::ustring (std::get<1> (*itprv)));
+	  relaypathe->set_buffer (relaypathebuf);
+	}
+      else
+	{
+	  relaypathe->set_placeholder_text (gettext ("default"));
+	}
+    }
+  else
+    {
+      relaypathe->set_placeholder_text (gettext ("default"));
+    }
+  mw->prefvectmtx.unlock ();
+  relaypathe->set_width_chars (50);
+  bx->append (*relaypathe);
+  lbr->set_child (*bx);
+  listb->append (*lbr);
+
+  bx = Gtk::make_managed<Gtk::Box> (Gtk::Orientation::HORIZONTAL);
+  lbr = Gtk::make_managed<Gtk::ListBoxRow> ();
+  lbr->set_selectable (false);
   Gtk::Label *directinetl = Gtk::make_managed<Gtk::Label> ();
   directinetl->set_halign (Gtk::Align::START);
   directinetl->set_justify (Gtk::Justification::LEFT);
@@ -1037,9 +1325,11 @@ SettingsWindow::settingsWindow ()
 
   apply->signal_clicked ().connect (
       sigc::bind (sigc::mem_fun (*this, &SettingsWindow::saveSettings), window,
-		  lifcsval, locip6val, locip4val, bootstre, msgsze, partsze,
-		  winszch, sendkeycmb, soundch, soundpe, shutmte, tmtteare,
-		  langchenbch, enstunch, stunpe, directinetch));
+		  themepathval, lifcsval, locip6val, locip4val, bootstre,
+		  msgsze, partsze, winszch, msgwchre, sendkeycmb, grnotificch,
+		  soundch, soundpe, shutmte, tmtteare, langchenbch,
+		  hole_punchch, enstunch, stunpe, enrelch, relaype, relaypathe,
+		  directinetch, mwl));
 
   Gtk::Button *cancel = Gtk::make_managed<Gtk::Button> ();
   cancel->set_halign (Gtk::Align::END);
@@ -1074,11 +1364,10 @@ SettingsWindow::settingsWindow ()
       scrl->set_min_content_width (0.7 * req.get_width ());
     }
 
-  window->signal_close_request ().connect ( [window, this]
+  window->signal_close_request ().connect ( [window]
   {
     window->hide ();
     delete window;
-    this->mw->deleteSettingsWindow (this->apply);
     return true;
   },
 					   false);
@@ -1086,16 +1375,21 @@ SettingsWindow::settingsWindow ()
 }
 
 void
-SettingsWindow::saveSettings (Gtk::Window *window, Gtk::Entry *lifcsval,
-			      Gtk::Entry *locip6val, Gtk::Entry *locip4val,
-			      Gtk::Entry *bootstre, Gtk::Entry *msgsze,
-			      Gtk::Entry *partsze, Gtk::CheckButton *winszch,
+SettingsWindow::saveSettings (Gtk::Window *window, Gtk::Entry *themepathval,
+			      Gtk::Entry *lifcsval, Gtk::Entry *locip6val,
+			      Gtk::Entry *locip4val, Gtk::Entry *bootstre,
+			      Gtk::Entry *msgsze, Gtk::Entry *partsze,
+			      Gtk::CheckButton *winszch, Gtk::Entry *msgwchre,
 			      Gtk::ComboBoxText *sendkeycmb,
+			      Gtk::CheckButton *grnotificch,
 			      Gtk::CheckButton *soundch, Gtk::Entry *soundpe,
 			      Gtk::Entry *shutmte, Gtk::Entry *tmtteare,
 			      Gtk::CheckButton *langchenbch,
+			      Gtk::CheckButton *hole_punchch,
 			      Gtk::CheckButton *enstunch, Gtk::Entry *stunpe,
-			      Gtk::CheckButton *directinetch)
+			      Gtk::CheckButton *enrelch, Gtk::Entry *relaype,
+			      Gtk::Entry *relaypathe,
+			      Gtk::CheckButton *directinetch, MainWindow *mwl)
 {
   std::string filename;
   std::filesystem::path filepath;
@@ -1108,13 +1402,13 @@ SettingsWindow::saveSettings (Gtk::Window *window, Gtk::Entry *lifcsval,
       std::filesystem::create_directories (filepath.parent_path ());
     }
 
-  mw->prefvectmtx.lock ();
-  auto itprv = std::find_if (mw->prefvect.begin (), mw->prefvect.end (), []
+  mwl->prefvectmtx.lock ();
+  auto itprv = std::find_if (mwl->prefvect.begin (), mwl->prefvect.end (), []
   (auto &el)
     {
       return std::get<0>(el) == "Listenifcs";
     });
-  if (itprv != mw->prefvect.end ())
+  if (itprv != mwl->prefvect.end ())
     {
       if (lifcsval->get_buffer ()->get_text () != "")
 	{
@@ -1130,22 +1424,56 @@ SettingsWindow::saveSettings (Gtk::Window *window, Gtk::Entry *lifcsval,
     {
       if (lifcsval->get_buffer ()->get_text () != "")
 	{
-	  mw->prefvect.push_back (
+	  mwl->prefvect.push_back (
 	      std::make_tuple ("Listenifcs",
 			       lifcsval->get_buffer ()->get_text ()));
 	}
       else
 	{
-	  mw->prefvect.push_back (
+	  mwl->prefvect.push_back (
 	      std::make_tuple ("Listenifcs", "0.0.0.0:0,[::]:0"));
 	}
     }
-  itprv = std::find_if (mw->prefvect.begin (), mw->prefvect.end (), []
+
+  itprv = std::find_if (mwl->prefvect.begin (), mwl->prefvect.end (), []
+  (auto &el)
+    {
+      return std::get<0>(el) == "Userthemepath";
+    });
+  if (itprv != mwl->prefvect.end ())
+    {
+      if (themepathval->get_buffer ()->get_text () != "")
+	{
+	  std::get<1> (*itprv) = std::string (
+	      themepathval->get_buffer ()->get_text ());
+	}
+      else
+	{
+	  std::get<1> (*itprv) = mwl->Sharepath + "/themes";
+	}
+    }
+  else
+    {
+      if (themepathval->get_buffer ()->get_text () != "")
+	{
+	  mwl->prefvect.push_back (
+	      std::make_tuple ("Userthemepath",
+			       themepathval->get_buffer ()->get_text ()));
+	}
+      else
+	{
+	  mwl->prefvect.push_back (
+	      std::make_tuple ("Userthemepath",
+			       std::string (mwl->Sharepath + "/themes")));
+	}
+    }
+
+  itprv = std::find_if (mwl->prefvect.begin (), mwl->prefvect.end (), []
   (auto &el)
     {
       return std::get<0>(el) == "Locip6port";
     });
-  if (itprv != mw->prefvect.end ())
+  if (itprv != mwl->prefvect.end ())
     {
       if (locip6val->get_buffer ()->get_text () != "")
 	{
@@ -1161,22 +1489,22 @@ SettingsWindow::saveSettings (Gtk::Window *window, Gtk::Entry *lifcsval,
     {
       if (locip6val->get_buffer ()->get_text () != "")
 	{
-	  mw->prefvect.push_back (
+	  mwl->prefvect.push_back (
 	      std::make_tuple ("Locip6port",
 			       locip6val->get_buffer ()->get_text ()));
 	}
       else
 	{
-	  mw->prefvect.push_back (
+	  mwl->prefvect.push_back (
 	      std::make_tuple ("Locip6port", "[ff15::13]:48666"));
 	}
     }
-  itprv = std::find_if (mw->prefvect.begin (), mw->prefvect.end (), []
+  itprv = std::find_if (mwl->prefvect.begin (), mwl->prefvect.end (), []
   (auto &el)
     {
       return std::get<0>(el) == "Locip4port";
     });
-  if (itprv != mw->prefvect.end ())
+  if (itprv != mwl->prefvect.end ())
     {
       if (locip4val->get_buffer ()->get_text () != "")
 	{
@@ -1192,22 +1520,22 @@ SettingsWindow::saveSettings (Gtk::Window *window, Gtk::Entry *lifcsval,
     {
       if (locip4val->get_buffer ()->get_text () != "")
 	{
-	  mw->prefvect.push_back (
+	  mwl->prefvect.push_back (
 	      std::make_tuple ("Locip4port",
 			       locip4val->get_buffer ()->get_text ()));
 	}
       else
 	{
-	  mw->prefvect.push_back (
+	  mwl->prefvect.push_back (
 	      std::make_tuple ("Locip4port", "239.192.150.8:48655"));
 	}
     }
-  itprv = std::find_if (mw->prefvect.begin (), mw->prefvect.end (), []
+  itprv = std::find_if (mwl->prefvect.begin (), mwl->prefvect.end (), []
   (auto &el)
     {
       return std::get<0>(el) == "Spellcheck";
     });
-  if (itprv != mw->prefvect.end ())
+  if (itprv != mwl->prefvect.end ())
     {
       if (langchenbch->get_active ())
 	{
@@ -1230,14 +1558,14 @@ SettingsWindow::saveSettings (Gtk::Window *window, Gtk::Entry *lifcsval,
 	{
 	  std::get<1> (ttup) = "0";
 	}
-      mw->prefvect.push_back (ttup);
+      mwl->prefvect.push_back (ttup);
     }
-  itprv = std::find_if (mw->prefvect.begin (), mw->prefvect.end (), []
+  itprv = std::find_if (mwl->prefvect.begin (), mwl->prefvect.end (), []
   (auto &el)
     {
       return std::get<0>(el) == "Bootstrapdht";
     });
-  if (itprv != mw->prefvect.end ())
+  if (itprv != mwl->prefvect.end ())
     {
       if (bootstre->get_buffer ()->get_text () != "")
 	{
@@ -1253,23 +1581,23 @@ SettingsWindow::saveSettings (Gtk::Window *window, Gtk::Entry *lifcsval,
     {
       if (bootstre->get_buffer ()->get_text () != "")
 	{
-	  mw->prefvect.push_back (
+	  mwl->prefvect.push_back (
 	      std::make_tuple ("Bootstrapdht",
 			       bootstre->get_buffer ()->get_text ()));
 	}
       else
 	{
-	  mw->prefvect.push_back (
+	  mwl->prefvect.push_back (
 	      std::make_tuple ("Bootstrapdht", "router.bittorrent.com:6881"));
 	}
     }
 
-  itprv = std::find_if (mw->prefvect.begin (), mw->prefvect.end (), []
+  itprv = std::find_if (mwl->prefvect.begin (), mwl->prefvect.end (), []
   (auto &el)
     {
       return std::get<0>(el) == "Maxmsgsz";
     });
-  if (itprv != mw->prefvect.end ())
+  if (itprv != mwl->prefvect.end ())
     {
       if (msgsze->get_buffer ()->get_text () != "")
 	{
@@ -1285,21 +1613,21 @@ SettingsWindow::saveSettings (Gtk::Window *window, Gtk::Entry *lifcsval,
     {
       if (msgsze->get_buffer ()->get_text () != "")
 	{
-	  mw->prefvect.push_back (
+	  mwl->prefvect.push_back (
 	      std::make_tuple ("Maxmsgsz", msgsze->get_buffer ()->get_text ()));
 	}
       else
 	{
-	  mw->prefvect.push_back (std::make_tuple ("Maxmsgsz", "1048576"));
+	  mwl->prefvect.push_back (std::make_tuple ("Maxmsgsz", "1048576"));
 	}
     }
 
-  itprv = std::find_if (mw->prefvect.begin (), mw->prefvect.end (), []
+  itprv = std::find_if (mwl->prefvect.begin (), mwl->prefvect.end (), []
   (auto &el)
     {
       return std::get<0>(el) == "Partsize";
     });
-  if (itprv != mw->prefvect.end ())
+  if (itprv != mwl->prefvect.end ())
     {
       if (partsze->get_buffer ()->get_text () != "")
 	{
@@ -1315,22 +1643,22 @@ SettingsWindow::saveSettings (Gtk::Window *window, Gtk::Entry *lifcsval,
     {
       if (partsze->get_buffer ()->get_text () != "")
 	{
-	  mw->prefvect.push_back (
+	  mwl->prefvect.push_back (
 	      std::make_tuple ("Partsize",
 			       partsze->get_buffer ()->get_text ()));
 	}
       else
 	{
-	  mw->prefvect.push_back (std::make_tuple ("Partsize", "1371"));
+	  mwl->prefvect.push_back (std::make_tuple ("Partsize", "1371"));
 	}
     }
 
-  itprv = std::find_if (mw->prefvect.begin (), mw->prefvect.end (), []
+  itprv = std::find_if (mwl->prefvect.begin (), mwl->prefvect.end (), []
   (auto &el)
     {
       return std::get<0>(el) == "Winsizesv";
     });
-  if (itprv != mw->prefvect.end ())
+  if (itprv != mwl->prefvect.end ())
     {
       if (winszch->get_active ())
 	{
@@ -1345,19 +1673,19 @@ SettingsWindow::saveSettings (Gtk::Window *window, Gtk::Entry *lifcsval,
     {
       if (winszch->get_active ())
 	{
-	  mw->prefvect.push_back (std::make_tuple ("Winsizesv", "active"));
+	  mwl->prefvect.push_back (std::make_tuple ("Winsizesv", "active"));
 	}
       else
 	{
-	  mw->prefvect.push_back (std::make_tuple ("Winsizesv", "notactive"));
+	  mwl->prefvect.push_back (std::make_tuple ("Winsizesv", "notactive"));
 	}
     }
-  itprv = std::find_if (mw->prefvect.begin (), mw->prefvect.end (), []
+  itprv = std::find_if (mwl->prefvect.begin (), mwl->prefvect.end (), []
   (auto &el)
     {
       return std::get<0>(el) == "SendKey";
     });
-  if (itprv != mw->prefvect.end ())
+  if (itprv != mwl->prefvect.end ())
     {
       int modei = sendkeycmb->get_active_row_number ();
       std::stringstream strm;
@@ -1373,15 +1701,43 @@ SettingsWindow::saveSettings (Gtk::Window *window, Gtk::Entry *lifcsval,
       std::locale loc ("C");
       strm.imbue (loc);
       strm << modei;
-      mw->prefvect.push_back (std::make_tuple ("SendKey", "0"));
+      mwl->prefvect.push_back (std::make_tuple ("SendKey", "0"));
     }
 
-  itprv = std::find_if (mw->prefvect.begin (), mw->prefvect.end (), []
+  itprv = std::find_if (mwl->prefvect.begin (), mwl->prefvect.end (), []
+  (auto &el)
+    {
+      return std::get<0>(el) == "GrNotification";
+    });
+  if (itprv != mwl->prefvect.end ())
+    {
+      if (grnotificch->get_active ())
+	{
+	  std::get<1> (*itprv) = "yes";
+	}
+      else
+	{
+	  std::get<1> (*itprv) = "no";
+	}
+    }
+  else
+    {
+      if (grnotificch->get_active ())
+	{
+	  mwl->prefvect.push_back (std::make_tuple ("GrNotification", "yes"));
+	}
+      else
+	{
+	  mwl->prefvect.push_back (std::make_tuple ("GrNotification", "no"));
+	}
+    }
+
+  itprv = std::find_if (mwl->prefvect.begin (), mwl->prefvect.end (), []
   (auto &el)
     {
       return std::get<0>(el) == "SoundOn";
     });
-  if (itprv != mw->prefvect.end ())
+  if (itprv != mwl->prefvect.end ())
     {
       if (soundch->get_active ())
 	{
@@ -1396,35 +1752,35 @@ SettingsWindow::saveSettings (Gtk::Window *window, Gtk::Entry *lifcsval,
     {
       if (soundch->get_active ())
 	{
-	  mw->prefvect.push_back (std::make_tuple ("SoundOn", "active"));
+	  mwl->prefvect.push_back (std::make_tuple ("SoundOn", "active"));
 	}
       else
 	{
-	  mw->prefvect.push_back (std::make_tuple ("SoundOn", "notactive"));
+	  mwl->prefvect.push_back (std::make_tuple ("SoundOn", "notactive"));
 	}
     }
 
-  itprv = std::find_if (mw->prefvect.begin (), mw->prefvect.end (), []
+  itprv = std::find_if (mwl->prefvect.begin (), mwl->prefvect.end (), []
   (auto &el)
     {
       return std::get<0>(el) == "SoundPath";
     });
-  if (itprv != mw->prefvect.end ())
+  if (itprv != mwl->prefvect.end ())
     {
       std::get<1> (*itprv) = std::string (soundpe->get_buffer ()->get_text ());
     }
   else
     {
-      mw->prefvect.push_back (
+      mwl->prefvect.push_back (
 	  std::make_tuple ("SoundPath", soundpe->get_buffer ()->get_text ()));
     }
 
-  itprv = std::find_if (mw->prefvect.begin (), mw->prefvect.end (), []
+  itprv = std::find_if (mwl->prefvect.begin (), mwl->prefvect.end (), []
   (auto &el)
     {
       return std::get<0>(el) == "ShutTmt";
     });
-  if (itprv != mw->prefvect.end ())
+  if (itprv != mwl->prefvect.end ())
     {
       if (shutmte->get_buffer ()->get_text () != "")
 	{
@@ -1440,21 +1796,21 @@ SettingsWindow::saveSettings (Gtk::Window *window, Gtk::Entry *lifcsval,
     {
       if (shutmte->get_buffer ()->get_text () != "")
 	{
-	  mw->prefvect.push_back (
+	  mwl->prefvect.push_back (
 	      std::make_tuple ("ShutTmt", shutmte->get_buffer ()->get_text ()));
 	}
       else
 	{
-	  mw->prefvect.push_back (std::make_tuple ("ShutTmt", "600"));
+	  mwl->prefvect.push_back (std::make_tuple ("ShutTmt", "600"));
 	}
     }
 
-  itprv = std::find_if (mw->prefvect.begin (), mw->prefvect.end (), []
+  itprv = std::find_if (mwl->prefvect.begin (), mwl->prefvect.end (), []
   (auto &el)
     {
       return std::get<0>(el) == "TmtTear";
     });
-  if (itprv != mw->prefvect.end ())
+  if (itprv != mwl->prefvect.end ())
     {
       if (tmtteare->get_buffer ()->get_text () != "")
 	{
@@ -1470,21 +1826,51 @@ SettingsWindow::saveSettings (Gtk::Window *window, Gtk::Entry *lifcsval,
     {
       if (tmtteare->get_buffer ()->get_text () != "")
 	{
-	  mw->prefvect.push_back (
+	  mwl->prefvect.push_back (
 	      std::make_tuple ("TmtTear",
 			       tmtteare->get_buffer ()->get_text ()));
 	}
       else
 	{
-	  mw->prefvect.push_back (std::make_tuple ("TmtTear", "20"));
+	  mwl->prefvect.push_back (std::make_tuple ("TmtTear", "20"));
 	}
     }
-  itprv = std::find_if (mw->prefvect.begin (), mw->prefvect.end (), []
+
+  itprv = std::find_if (mwl->prefvect.begin (), mwl->prefvect.end (), []
+  (auto &el)
+    {
+      return std::get<0>(el) == "HolePunchMech";
+    });
+  if (itprv != mwl->prefvect.end ())
+    {
+      if (hole_punchch->get_active ())
+	{
+	  std::get<1> (*itprv) = "active";
+	}
+      else
+	{
+	  std::get<1> (*itprv) = "notactive";
+	}
+    }
+  else
+    {
+      if (hole_punchch->get_active ())
+	{
+	  mwl->prefvect.push_back (std::make_tuple ("HolePunchMech", "active"));
+	}
+      else
+	{
+	  mwl->prefvect.push_back (
+	      std::make_tuple ("HolePunchMech", "notactive"));
+	}
+    }
+
+  itprv = std::find_if (mwl->prefvect.begin (), mwl->prefvect.end (), []
   (auto &el)
     {
       return std::get<0>(el) == "Stun";
     });
-  if (itprv != mw->prefvect.end ())
+  if (itprv != mwl->prefvect.end ())
     {
       if (enstunch->get_active ())
 	{
@@ -1499,33 +1885,34 @@ SettingsWindow::saveSettings (Gtk::Window *window, Gtk::Entry *lifcsval,
     {
       if (enstunch->get_active ())
 	{
-	  mw->prefvect.push_back (std::make_tuple ("Stun", "active"));
+	  mwl->prefvect.push_back (std::make_tuple ("Stun", "active"));
 	}
       else
 	{
-	  mw->prefvect.push_back (std::make_tuple ("Stun", "notactive"));
+	  mwl->prefvect.push_back (std::make_tuple ("Stun", "notactive"));
 	}
     }
-  itprv = std::find_if (mw->prefvect.begin (), mw->prefvect.end (), []
+
+  itprv = std::find_if (mwl->prefvect.begin (), mwl->prefvect.end (), []
   (auto &el)
     {
       return std::get<0>(el) == "Stunport";
     });
-  if (itprv != mw->prefvect.end ())
+  if (itprv != mwl->prefvect.end ())
     {
       std::get<1> (*itprv) = std::string (stunpe->get_buffer ()->get_text ());
     }
   else
     {
-      mw->prefvect.push_back (
+      mwl->prefvect.push_back (
 	  std::make_tuple ("Stunport", stunpe->get_buffer ()->get_text ()));
     }
-  itprv = std::find_if (mw->prefvect.begin (), mw->prefvect.end (), []
+  itprv = std::find_if (mwl->prefvect.begin (), mwl->prefvect.end (), []
   (auto &el)
     {
       return std::get<0>(el) == "DirectInet";
     });
-  if (itprv != mw->prefvect.end ())
+  if (itprv != mwl->prefvect.end ())
     {
       if (directinetch->get_active ())
 	{
@@ -1540,32 +1927,141 @@ SettingsWindow::saveSettings (Gtk::Window *window, Gtk::Entry *lifcsval,
     {
       if (directinetch->get_active ())
 	{
-	  mw->prefvect.push_back (std::make_tuple ("DirectInet", "direct"));
+	  mwl->prefvect.push_back (std::make_tuple ("DirectInet", "direct"));
 	}
       else
 	{
-	  mw->prefvect.push_back (std::make_tuple ("DirectInet", "notdirect"));
+	  mwl->prefvect.push_back (std::make_tuple ("DirectInet", "notdirect"));
 	}
     }
+  itprv = std::find_if (mwl->prefvect.begin (), mwl->prefvect.end (), []
+  (auto &el)
+    {
+      return std::get<0>(el) == "MsgWidth";
+    });
+  if (itprv != mwl->prefvect.end ())
+    {
+      if (msgwchre->get_buffer ()->get_text () != "")
+	{
+	  std::get<1> (*itprv) = std::string (
+	      msgwchre->get_buffer ()->get_text ());
+	}
+      else
+	{
+	  std::get<1> (*itprv) = "30";
+	}
+    }
+  else
+    {
+      if (msgwchre->get_buffer ()->get_text () != "")
+	{
+	  mwl->prefvect.push_back (
+	      std::make_tuple ("MsgWidth",
+			       msgwchre->get_buffer ()->get_text ()));
+	}
+      else
+	{
+	  mwl->prefvect.push_back (std::make_tuple ("MsgWidth", "30"));
+	}
+    }
+  itprv = std::find_if (mwl->prefvect.begin (), mwl->prefvect.end (), []
+  (auto &el)
+    {
+      return std::get<0>(el) == "RelaySrv";
+    });
+  if (itprv != mwl->prefvect.end ())
+    {
+      if (enrelch->get_active ())
+	{
+	  std::get<1> (*itprv) = "enabled";
+	}
+      else
+	{
+	  std::get<1> (*itprv) = "disabled";
+	}
+    }
+  else
+    {
+      std::tuple<std::string, std::string> ttup;
+      std::get<0> (ttup) = "RelaySrv";
+      if (enrelch->get_active ())
+	{
+	  std::get<1> (ttup) = "enabled";
+	}
+      else
+	{
+	  std::get<1> (ttup) = "disabled";
+	}
+      mwl->prefvect.push_back (ttup);
+    }
+  itprv = std::find_if (mwl->prefvect.begin (), mwl->prefvect.end (), []
+  (auto &el)
+    {
+      return std::get<0>(el) == "Relayport";
+    });
+  if (itprv != mwl->prefvect.end ())
+    {
+      if (relaype->get_buffer ()->get_text () != "")
+	{
+	  std::get<1> (*itprv) = std::string (
+	      relaype->get_buffer ()->get_text ());
+	}
+      else
+	{
+	  std::get<1> (*itprv) = "3029";
+	}
+    }
+  else
+    {
+      if (relaype->get_buffer ()->get_text () != "")
+	{
+	  mwl->prefvect.push_back (
+	      std::make_tuple ("Relayport",
+			       relaype->get_buffer ()->get_text ()));
+	}
+      else
+	{
+	  mwl->prefvect.push_back (std::make_tuple ("Relayport", "3029"));
+	}
+    }
+
+  itprv = std::find_if (mwl->prefvect.begin (), mwl->prefvect.end (), []
+  (auto &el)
+    {
+      return std::get<0>(el) == "RelayListPath";
+    });
+  if (itprv != mwl->prefvect.end ())
+    {
+      std::get<1> (*itprv) = std::string (
+	  relaypathe->get_buffer ()->get_text ());
+    }
+  else
+    {
+      mwl->prefvect.push_back (
+	  std::make_tuple ("RelayListPath",
+			   relaypathe->get_buffer ()->get_text ()));
+    }
+
   std::fstream f;
   f.open (filepath, std::ios_base::out | std::ios_base::binary);
-  for (size_t i = 0; i < mw->prefvect.size (); i++)
+  for (size_t i = 0; i < mwl->prefvect.size (); i++)
     {
-      std::string line = std::get<0> (mw->prefvect.at (i));
+      std::string line = std::get<0> (mwl->prefvect.at (i));
       line = line + ": ";
-      line = line + std::get<1> (mw->prefvect.at (i)) + "\n";
+      line = line + std::get<1> (mwl->prefvect.at (i)) + "\n";
       f.write (line.c_str (), line.size ());
     }
-  mw->prefvectmtx.unlock ();
+  mwl->prefvectmtx.unlock ();
   f.close ();
 
+  window->close ();
   Gtk::Window *windowinfo = new Gtk::Window;
-  windowinfo->set_application (mw->get_application ());
+  windowinfo->set_application (mwl->get_application ());
   windowinfo->set_modal (true);
-  windowinfo->set_transient_for (*mw);
+  windowinfo->set_transient_for (*mwl);
   windowinfo->set_name ("settingsWindow");
   windowinfo->get_style_context ()->add_provider (
-      mw->css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+      mwl->css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
   windowinfo->set_title (gettext ("Info"));
   Gtk::Grid *grid = Gtk::make_managed<Gtk::Grid> ();
   grid->set_halign (Gtk::Align::CENTER);
@@ -1587,7 +2083,7 @@ SettingsWindow::saveSettings (Gtk::Window *window, Gtk::Entry *lifcsval,
   close->set_halign (Gtk::Align::CENTER);
   close->set_margin (5);
   close->set_name ("applyButton");
-  close->get_style_context ()->add_provider (mw->css_provider,
+  close->get_style_context ()->add_provider (mwl->css_provider,
   GTK_STYLE_PROVIDER_PRIORITY_USER);
   close->set_label (gettext ("Close"));
   grid->attach (*close, 0, 1, 1, 1);
@@ -1596,17 +2092,16 @@ SettingsWindow::saveSettings (Gtk::Window *window, Gtk::Entry *lifcsval,
   grid->get_preferred_size (rq1, rq2);
   windowinfo->set_size_request (rq2.get_width (), rq2.get_height ());
 
-  close->signal_clicked ().connect ( [windowinfo, this]
+  close->signal_clicked ().connect ( [windowinfo]
   {
-    this->apply = 1;
     windowinfo->close ();
   });
 
-  windowinfo->signal_close_request ().connect ( [window, windowinfo]
+  windowinfo->signal_close_request ().connect ( [mwl, windowinfo]
   {
     windowinfo->hide ();
     delete windowinfo;
-    window->close ();
+    mwl->close ();
     return true;
   },
 					       false);

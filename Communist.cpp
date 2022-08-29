@@ -16,7 +16,6 @@
  */
 
 #include <gtkmm.h>
-#include <gcrypt.h>
 #include <libintl.h>
 #include "CommunistApp.h"
 #include "AuxFunc.h"
@@ -24,8 +23,6 @@
 int
 main (int argc, char *argv[])
 {
-  const char *rec = gcry_check_version (NULL);
-  std::cout << "Libgcrypt version: " << std::string (rec) << std::endl;
   std::string Sharepath;
   AuxFunc af;
   std::filesystem::path p (std::filesystem::u8path (af.get_selfpath ()));

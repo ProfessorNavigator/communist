@@ -1,0 +1,1 @@
+srcgui = ['GUI/src/AuxFunc.cpp', 'GUI/src/AuxWindows.cpp', 'GUI/src/CommunistApp.cpp', 'GUI/src/ContactOperations.cpp', 'GUI/src/MainWindow.cpp', 'GUI/src/MWFileOperations.cpp', 'GUI/src/MWMsgOperations.cpp', 'GUI/src/SettingsWindow.cpp']
