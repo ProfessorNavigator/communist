@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Communist\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-08-29 17:18+0400\n"
-"PO-Revision-Date: 2022-08-29 17:18+0400\n"
+"POT-Creation-Date: 2022-08-30 20:10+0400\n"
+"PO-Revision-Date: 2022-08-30 20:11+0400\n"
 "Last-Translator: \n"
 "Language-Team: Юрий Бобылев\n"
 "Language: ru_RU\n"
@@ -28,7 +28,7 @@ msgstr ""
 "X-Poedit-SearchPath-6: MWMsgOperations.cpp\n"
 "X-Poedit-SearchPath-7: SettingsWindow.cpp\n"
 
-#: AuxWindows.cpp:39 AuxWindows.cpp:1118
+#: AuxWindows.cpp:39 AuxWindows.cpp:1098
 msgid "Key"
 msgstr "Ключ"
 
@@ -36,9 +36,9 @@ msgstr "Ключ"
 msgid "Copy"
 msgstr "Копировать"
 
-#: AuxWindows.cpp:69 AuxWindows.cpp:268 AuxWindows.cpp:677 AuxWindows.cpp:1039
-#: AuxWindows.cpp:1251 AuxWindows.cpp:1325 MWFileOperations.cpp:316
-#: MWFileOperations.cpp:424 MainWindow.cpp:1851 MainWindow.cpp:2950
+#: AuxWindows.cpp:69 AuxWindows.cpp:268 AuxWindows.cpp:657 AuxWindows.cpp:1019
+#: AuxWindows.cpp:1231 AuxWindows.cpp:1305 MWFileOperations.cpp:316
+#: MWFileOperations.cpp:424 MainWindow.cpp:1842 MainWindow.cpp:2933
 #: SettingsWindow.cpp:2088
 msgid "Close"
 msgstr "Закрыть"
@@ -60,109 +60,109 @@ msgid "Surname: "
 msgstr "Фамилия: "
 
 #: AuxWindows.cpp:300
-msgid "File choose"
+msgid "File selection"
 msgstr "Выбор файла"
 
-#: AuxWindows.cpp:310 MWFileOperations.cpp:674
+#: AuxWindows.cpp:302 MainWindow.cpp:1699 MainWindow.cpp:2852
 msgid "Open"
 msgstr "Открыть"
 
-#: AuxWindows.cpp:313 AuxWindows.cpp:800 AuxWindows.cpp:912
-#: MWFileOperations.cpp:677 MainWindow.cpp:477 MainWindow.cpp:548
-#: MainWindow.cpp:1630 MainWindow.cpp:1702 MainWindow.cpp:2805
-#: MainWindow.cpp:2862 SettingsWindow.cpp:1340
+#: AuxWindows.cpp:302 AuxWindows.cpp:780 AuxWindows.cpp:892
+#: MWFileOperations.cpp:665 MainWindow.cpp:477 MainWindow.cpp:548
+#: MainWindow.cpp:1630 MainWindow.cpp:1699 MainWindow.cpp:2796
+#: MainWindow.cpp:2853 SettingsWindow.cpp:1340
 msgid "Cancel"
 msgstr "Отмена"
 
-#: AuxWindows.cpp:358
+#: AuxWindows.cpp:339
 msgid " File: "
 msgstr " Файл: "
 
-#: AuxWindows.cpp:421
+#: AuxWindows.cpp:401
 msgid "Choose IPv6"
 msgstr "Выбор IPv6"
 
-#: AuxWindows.cpp:435
+#: AuxWindows.cpp:415
 msgid ""
 "Program cannot automatically identify machine's IPv6. Please choose "
 "manually. Available variants are: "
 msgstr "Программа не может автоматически выбрать IPv6. Возможные варианты: "
 
-#: AuxWindows.cpp:459 AuxWindows.cpp:537 MainWindow.cpp:2865
+#: AuxWindows.cpp:439 AuxWindows.cpp:517
 msgid "Choose"
 msgstr "Выбрать"
 
-#: AuxWindows.cpp:500
+#: AuxWindows.cpp:480
 msgid "Choose IPv4"
 msgstr "Выбор IPv4"
 
-#: AuxWindows.cpp:513
+#: AuxWindows.cpp:493
 msgid ""
 "Program cannot automatically identify machine's IPv4. Please choose "
 "manually. Available variants are: "
 msgstr "Программа не может автоматически выбрать IPv4. Возможные варианты: "
 
-#: AuxWindows.cpp:583
+#: AuxWindows.cpp:563
 msgid "Friends request edit"
 msgstr "Редактирования списка отправленных заявок"
 
-#: AuxWindows.cpp:632 AuxWindows.cpp:726
+#: AuxWindows.cpp:612 AuxWindows.cpp:706
 msgid "Remove from list"
 msgstr "Удалить из списка"
 
-#: AuxWindows.cpp:771 MainWindow.cpp:846
+#: AuxWindows.cpp:751 MainWindow.cpp:846
 msgid "Add contact"
 msgstr "Добавить контакт"
 
-#: AuxWindows.cpp:776
+#: AuxWindows.cpp:756
 msgid "Public key:"
 msgstr "Публичный ключ:"
 
-#: AuxWindows.cpp:788
+#: AuxWindows.cpp:768
 msgid "Add"
 msgstr "Добавить"
 
-#: AuxWindows.cpp:856
+#: AuxWindows.cpp:836
 msgid "Select contact"
 msgstr "Выбор контакта"
 
-#: AuxWindows.cpp:896 MainWindow.cpp:463 MainWindow.cpp:534
+#: AuxWindows.cpp:876 MainWindow.cpp:463 MainWindow.cpp:534
 msgid "Confirm"
 msgstr "Подтвердить"
 
-#: AuxWindows.cpp:1017
+#: AuxWindows.cpp:997
 msgid "Error!"
 msgstr "Ошибка!"
 
-#: AuxWindows.cpp:1029
+#: AuxWindows.cpp:1009
 msgid "File you want to send does not exists"
 msgstr "Файл, который вы пытаетесь отправить, не существует"
 
-#: AuxWindows.cpp:1074
+#: AuxWindows.cpp:1054
 msgid "Contacts to send by relay"
 msgstr "Контакты для отправки сообщений через ретранслятор"
 
-#: AuxWindows.cpp:1109
+#: AuxWindows.cpp:1089
 msgid "Nick"
 msgstr "Псевдоним"
 
-#: AuxWindows.cpp:1127
+#: AuxWindows.cpp:1107
 msgid "Use relay"
 msgstr "Использовать ретранслятор"
 
-#: AuxWindows.cpp:1239 SettingsWindow.cpp:1323
+#: AuxWindows.cpp:1219 SettingsWindow.cpp:1323
 msgid "Apply"
 msgstr "Применить"
 
-#: AuxWindows.cpp:1310
+#: AuxWindows.cpp:1290
 msgid "Input user name!"
 msgstr "Введите имя пользователя!"
 
-#: AuxWindows.cpp:1314
+#: AuxWindows.cpp:1294
 msgid "Input password!"
 msgstr "Введите пароль!"
 
-#: AuxWindows.cpp:1318
+#: AuxWindows.cpp:1298
 msgid "Passwords do not match!"
 msgstr "Пароли не совпадают!"
 
@@ -178,7 +178,7 @@ msgstr "Я:"
 msgid "Message attached to file "
 msgstr "Сообщение к файлу "
 
-#: ContactOperations.cpp:674 MainWindow.cpp:857 MainWindow.cpp:3123
+#: ContactOperations.cpp:674 MainWindow.cpp:857 MainWindow.cpp:3106
 msgid "Remove contact"
 msgstr "Удалить контакт"
 
@@ -186,13 +186,13 @@ msgstr "Удалить контакт"
 msgid "Remove contact? This action will erase all messages forever."
 msgstr "Удалить контакт? Это действие безвозвратно удалит всю переписку."
 
-#: ContactOperations.cpp:690 MWFileOperations.cpp:607 MWFileOperations.cpp:777
-#: MWFileOperations.cpp:1095 MWMsgOperations.cpp:1119
+#: ContactOperations.cpp:690 MWFileOperations.cpp:607 MWFileOperations.cpp:1009
+#: MWMsgOperations.cpp:1119
 msgid "Yes"
 msgstr "Да"
 
-#: ContactOperations.cpp:706 MWFileOperations.cpp:622 MWFileOperations.cpp:790
-#: MWFileOperations.cpp:1109 MWMsgOperations.cpp:1131
+#: ContactOperations.cpp:706 MWFileOperations.cpp:622 MWFileOperations.cpp:1023
+#: MWMsgOperations.cpp:1131
 msgid "No"
 msgstr "Нет"
 
@@ -208,7 +208,7 @@ msgstr "Контакт удаляется"
 msgid "Sending "
 msgstr "Отправка "
 
-#: MWFileOperations.cpp:156 MWFileOperations.cpp:888 MWFileOperations.cpp:1020
+#: MWFileOperations.cpp:156 MWFileOperations.cpp:808 MWFileOperations.cpp:936
 msgid "Downloading/sending file progress"
 msgstr "Прогресс загрузки/отправки файла"
 
@@ -284,23 +284,19 @@ msgstr "Принять?"
 msgid "Path selection"
 msgstr "Выбор пути"
 
-#: MWFileOperations.cpp:758
-msgid "Warning!"
-msgstr "Предупреждение!"
+#: MWFileOperations.cpp:665 MainWindow.cpp:1597
+msgid "Save"
+msgstr "Сохранить"
 
-#: MWFileOperations.cpp:768
-msgid "File already exists, replace?"
-msgstr "Файл уже существует, заменить?"
-
-#: MWFileOperations.cpp:830 MWFileOperations.cpp:964
+#: MWFileOperations.cpp:750 MWFileOperations.cpp:880
 msgid "Downloading "
 msgstr "Загрузка "
 
-#: MWFileOperations.cpp:1075
+#: MWFileOperations.cpp:989
 msgid "Remove data"
 msgstr "Удалить данные"
 
-#: MWFileOperations.cpp:1089
+#: MWFileOperations.cpp:1003
 msgid "Remove received data?"
 msgstr "Удалить полученные данные?"
 
@@ -412,7 +408,7 @@ msgstr ""
 "name='action'>prefgr.aboutProg</attribute>\t\t\t\t</item>\t\t\t</section>\t</"
 "submenu></menu></interface>"
 
-#: MainWindow.cpp:1156 MainWindow.cpp:3210
+#: MainWindow.cpp:1156 MainWindow.cpp:3193
 msgid "Blocked"
 msgstr "Заблокирован"
 
@@ -444,11 +440,7 @@ msgstr "Имя (необязательно)"
 msgid "Surame (not compulsory)"
 msgstr "Фамилия (необязательно)"
 
-#: MainWindow.cpp:1597
-msgid "Save"
-msgstr "Сохранить"
-
-#: MainWindow.cpp:1611 MainWindow.cpp:2787
+#: MainWindow.cpp:1611 MainWindow.cpp:2778
 msgid "Clear"
 msgstr "Очистить"
 
@@ -460,75 +452,67 @@ msgstr "Выберите файл аватара"
 msgid "Remove image"
 msgstr "Удалить изображение"
 
-#: MainWindow.cpp:1698
-msgid "Choose image file"
-msgstr "Выберите файл аватара"
+#: MainWindow.cpp:1698 MainWindow.cpp:2850
+msgid "Open image"
+msgstr "Открыть изображение"
 
-#: MainWindow.cpp:1704
-msgid "OK"
-msgstr "Подтвердить"
-
-#: MainWindow.cpp:1831 MainWindow.cpp:2938
+#: MainWindow.cpp:1822 MainWindow.cpp:2921
 msgid "Error"
 msgstr "Ошибка"
 
-#: MainWindow.cpp:1839
+#: MainWindow.cpp:1830
 msgid "Generate the key!"
 msgstr "Сгенерируйте ключ!"
 
-#: MainWindow.cpp:1843 MainWindow.cpp:2944
+#: MainWindow.cpp:1834 MainWindow.cpp:2927
 msgid "Input nickname!"
 msgstr "Введите псевдоним!"
 
-#: MainWindow.cpp:2708
+#: MainWindow.cpp:2699
 msgid "Edit profile"
 msgstr "Редактировать профиль"
 
-#: MainWindow.cpp:2747
+#: MainWindow.cpp:2738
 msgid "Name (not compalsory)"
 msgstr "Имя (необязательно)"
 
-#: MainWindow.cpp:2765
+#: MainWindow.cpp:2756
 msgid "Surname (not compalsory)"
 msgstr "Фамилия (необязательно)"
 
-#: MainWindow.cpp:2772
+#: MainWindow.cpp:2763
 msgid "Save profile"
 msgstr "Сохранить профиль"
 
-#: MainWindow.cpp:2847
+#: MainWindow.cpp:2838
 msgid "Open avatar"
 msgstr "Открыть файл аватара"
 
-#: MainWindow.cpp:2859
-msgid "Avatar file choice"
-msgstr "Выбор аватара"
-
-#: MainWindow.cpp:2892
+#: MainWindow.cpp:2875
 msgid "Remove avatar"
 msgstr "Удалить аватар"
 
-#: MainWindow.cpp:3122
+#: MainWindow.cpp:3105
 msgid "Contact info"
 msgstr "Информация о контакте"
 
-#: MainWindow.cpp:3124
+#: MainWindow.cpp:3107
 msgid "Block (until restart)/Unblock"
 msgstr "Заблокировать (до перезапуска)/Разблокировать"
 
-#: MainWindow.cpp:3218
+#: MainWindow.cpp:3201
 msgid "Blocking contact"
 msgstr "Блокировка контакта"
 
-#: MainWindow.cpp:3233
+#: MainWindow.cpp:3216
 msgid "Blocking..."
 msgstr "Блокирую..."
 
-#: MainWindow.cpp:3362 MainWindow.cpp:3409
+#: MainWindow.cpp:3345 MainWindow.cpp:3392
 msgid "About"
 msgstr "О программе"
 
-#: MainWindow.cpp:3374
+#: MainWindow.cpp:3357
 msgid ""
 "Communist is simple \"peer to peer\" messenger.\n"
 "Author Yury Bobylev.\n"
@@ -551,11 +535,11 @@ msgstr ""
 "                        https://gitflic.ru/project/professornavigator/"
 "libcommunist"
 
-#: MainWindow.cpp:3455
+#: MainWindow.cpp:3438
 msgid "License"
 msgstr "Лицензия"
 
-#: MainWindow.cpp:3547
+#: MainWindow.cpp:3530
 msgid "online"
 msgstr "в сети"
 
@@ -719,3 +703,21 @@ msgid "Application will be closed now. Start it again to apply changes."
 msgstr ""
 "Приложение будет закрыто. Для того, чтобы настройки вступили в силу, "
 "запустите его вновь."
+
+#~ msgid "File choose"
+#~ msgstr "Выбор файла"
+
+#~ msgid "Warning!"
+#~ msgstr "Предупреждение!"
+
+#~ msgid "File already exists, replace?"
+#~ msgstr "Файл уже существует, заменить?"
+
+#~ msgid "Choose image file"
+#~ msgstr "Выберите файл аватара"
+
+#~ msgid "OK"
+#~ msgstr "Подтвердить"
+
+#~ msgid "Avatar file choice"
+#~ msgstr "Выбор аватара"

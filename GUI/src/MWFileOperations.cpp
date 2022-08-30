@@ -660,36 +660,20 @@ MWFileOperations::acceptButtonSlot (Gtk::Window *window, MainWindow *mwl,
 				    std::string keyloc, uint64_t tml,
 				    std::string fnmloc, uint64_t fs)
 {
-  Gtk::FileChooserDialog *fcd = new Gtk::FileChooserDialog (
-      *mwl, gettext ("Path selection"),
-      Gtk::FileChooser::Action::SELECT_FOLDER);
+  Glib::RefPtr<Gtk::FileChooserNative> fcd = Gtk::FileChooserNative::create (
+      gettext ("Path selection"), *mwl, Gtk::FileChooser::Action::SAVE,
+      gettext ("Save"), gettext ("Cancel"));
   fcd->set_transient_for (*mwl);
   std::string filename;
   AuxFunc af;
   af.homePath (&filename);
   Glib::RefPtr<Gio::File> fl = Gio::File::create_for_path (filename);
   fcd->set_current_folder (fl);
-  fcd->set_application (mwl->get_application ());
-  Gtk::Button *btn;
-  btn = fcd->add_button (gettext ("Open"), Gtk::ResponseType::APPLY);
-  btn->set_halign (Gtk::Align::END);
-  btn->set_margin (5);
-  btn = fcd->add_button (gettext ("Cancel"), Gtk::ResponseType::CANCEL);
-  btn->set_halign (Gtk::Align::START);
-  btn->set_margin (5);
+  fcd->set_current_name (Glib::ustring (fnmloc));
   fcd->signal_response ().connect (
       sigc::bind (sigc::mem_fun (*this, &MWFileOperations::openButtonSlot), fcd,
 		  mwl, keyloc, tml, fnmloc, fs));
-  fcd->signal_close_request ().connect ( [fcd]
-  {
-    fcd->hide ();
-    delete fcd;
-    return true;
-  },
-					false);
-
   fcd->show ();
-
   window->close ();
 }
 
@@ -721,85 +705,21 @@ MWFileOperations::rejectButtonSlot (Gtk::Window *window, MainWindow *mwl,
 }
 
 void
-MWFileOperations::openButtonSlot (int rid, Gtk::FileChooserDialog *fcd,
+MWFileOperations::openButtonSlot (int rid,
+				  Glib::RefPtr<Gtk::FileChooserNative> fcd,
 				  MainWindow *mwl, std::string keyloc,
 				  uint64_t tml, std::string fnmloc, uint64_t fs)
 {
-  if (rid == Gtk::ResponseType::APPLY)
+  if (rid == Gtk::ResponseType::ACCEPT)
     {
-      AuxFunc af;
       std::string loc;
       Glib::RefPtr<Gio::File> fl = fcd->get_file ();
-      if (fl)
-	{
-	  loc = fl->get_path () + "/" + fnmloc;
-	}
-      else
-	{
-	  fl = fcd->get_current_folder ();
-	  if (fl)
-	    {
-	      loc = fl->get_path () + "/" + fnmloc;
-	    }
-	  else
-	    {
-	      af.homePath (&loc);
-	      loc = loc + "/" + fnmloc;
-	    }
-	}
+      loc = fl->get_path ();
       std::filesystem::path fp = std::filesystem::u8path (loc);
       if (std::filesystem::exists (fp))
 	{
-	  Gtk::Window *window = new Gtk::Window;
-	  window->set_application (mwl->get_application ());
-	  window->set_name ("settingsWindow");
-	  window->get_style_context ()->add_provider (
-	      mwl->css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
-	  window->set_title (gettext ("Warning!"));
-	  window->set_modal (true);
-	  window->set_transient_for (*fcd);
-	  Gtk::Grid *gr = Gtk::make_managed<Gtk::Grid> ();
-	  gr->set_halign (Gtk::Align::CENTER);
-	  window->set_child (*gr);
-
-	  Gtk::Label *lab = Gtk::make_managed<Gtk::Label> ();
-	  lab->set_halign (Gtk::Align::CENTER);
-	  lab->set_margin (5);
-	  lab->set_text (gettext ("File already exists, replace?"));
-	  gr->attach (*lab, 0, 0, 2, 1);
-
-	  Gtk::Button *accept = Gtk::make_managed<Gtk::Button> ();
-	  accept->set_halign (Gtk::Align::CENTER);
-	  accept->set_margin (5);
-	  accept->set_name ("applyButton");
-	  accept->get_style_context ()->add_provider (
-	      mwl->css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
-	  accept->set_label (gettext ("Yes"));
-	  accept->signal_clicked ().connect (
-	      sigc::bind (
-		  sigc::mem_fun (*this, &MWFileOperations::warningAcceptButton),
-		  window, fcd, fp, mwl, keyloc, tml, fs));
-	  gr->attach (*accept, 0, 1, 1, 1);
-
-	  Gtk::Button *cancel = Gtk::make_managed<Gtk::Button> ();
-	  cancel->set_halign (Gtk::Align::CENTER);
-	  cancel->set_margin (5);
-	  cancel->set_name ("rejectButton");
-	  cancel->get_style_context ()->add_provider (
-	      mwl->css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
-	  cancel->set_label (gettext ("No"));
-	  cancel->signal_clicked ().connect (
-	      sigc::mem_fun (*window, &Gtk::Window::close));
-	  gr->attach (*cancel, 1, 1, 1, 1);
-
-	  window->signal_close_request ().connect ( [window]
-	  {
-	    window->hide ();
-	    delete window;
-	    return true;
-	  },
-						   false);
-	  window->show ();
+	  std::filesystem::remove_all (fp);
+	  warningAcceptButton (fp, mwl, keyloc, tml, fs);
 	}
       else
 	{
@@ -899,7 +819,6 @@ MWFileOperations::openButtonSlot (int rid, Gtk::FileChooserDialog *fcd,
 	      mwl->oper->fileAccept (keyloc, tml, fp);
 	    }
 	  mwl->blockfreqmtx.unlock ();
-	  fcd->close ();
 	}
 
     }
@@ -925,14 +844,11 @@ MWFileOperations::openButtonSlot (int rid, Gtk::FileChooserDialog *fcd,
 	  mwl->oper->fileReject (keyloc, tml);
 	}
       mwl->blockfreqmtx.unlock ();
-      fcd->close ();
     }
 }
 
 void
-MWFileOperations::warningAcceptButton (Gtk::Window *window,
-				       Gtk::FileChooserDialog *fcd,
-				       std::filesystem::path fp,
+MWFileOperations::warningAcceptButton (std::filesystem::path fp,
 				       MainWindow *mwl, std::string keyloc,
 				       uint64_t tml, uint64_t fs)
 {
@@ -1031,8 +947,6 @@ MWFileOperations::warningAcceptButton (Gtk::Window *window,
       mwl->oper->fileAccept (keyloc, tml, fp);
     }
   mwl->blockfreqmtx.unlock ();
-  window->close ();
-  fcd->close ();
 }
 
 void

@@ -1694,35 +1694,26 @@ MainWindow::keyGenerate (Gtk::Entry *key)
 void
 MainWindow::openImage ()
 {
-  Gtk::FileChooserDialog *dialog;
-  dialog = new Gtk::FileChooserDialog (gettext ("Choose image file"),
-				       Gtk::FileChooser::Action::OPEN);
-  dialog->set_transient_for (*this);
-  Gtk::Button *but;
-  but = dialog->add_button (gettext ("Cancel"), Gtk::ResponseType::CANCEL);
-  but->set_margin (5);
-  but = dialog->add_button (gettext ("OK"), Gtk::ResponseType::OK);
-  but->set_margin (5);
+  Glib::RefPtr<Gtk::FileChooserNative> dialog = Gtk::FileChooserNative::create (
+      gettext ("Open image"), *this, Gtk::FileChooser::Action::OPEN,
+      gettext ("Open"), gettext ("Cancel"));
   dialog->signal_response ().connect (
       sigc::bind (sigc::mem_fun (*this, &MainWindow::MainWindow::onopenImage),
 		  dialog));
-  Glib::RefPtr<Gtk::Application> app = this->get_application ();
-  app->add_window (*dialog);
   dialog->show ();
 }
 
 void
-MainWindow::onopenImage (int respons_id, Gtk::FileChooserDialog *dialog)
+MainWindow::onopenImage (int respons_id,
+			 Glib::RefPtr<Gtk::FileChooserNative> dialog)
 {
   Glib::ustring file;
-  if (respons_id == Gtk::ResponseType::OK)
+  if (respons_id == Gtk::ResponseType::ACCEPT)
     {
       file = dialog->get_file ()->get_path ();
       avatar->set_draw_func (
 	  sigc::bind (sigc::mem_fun (*this, &MainWindow::on_draw), file));
     }
-  dialog->hide ();
-  delete dialog;
 }
 
 void
@@ -2855,22 +2846,18 @@ MainWindow::editProfile ()
       addavatar->signal_clicked ().connect (
 	  [this, window]
 	  {
-	    Gtk::FileChooserDialog *dialog = new Gtk::FileChooserDialog (
-		gettext ("Avatar file choice"), Gtk::FileChooser::Action::OPEN);
+	    Glib::RefPtr<Gtk::FileChooserNative> dialog =
+		Gtk::FileChooserNative::create (gettext ("Open image"), *this,
+						Gtk::FileChooser::Action::OPEN,
+						gettext ("Open"),
+						gettext ("Cancel"));
 	    dialog->set_transient_for (*window);
-	    Gtk::Button *but;
-	    but = dialog->add_button (gettext ("Cancel"),
-				      Gtk::ResponseType::CANCEL);
-	    but->set_margin (5);
-	    but = dialog->add_button (gettext ("Choose"),
-				      Gtk::ResponseType::OK);
-	    but->set_margin (5);
 	    dialog->signal_response ().connect ( [dialog, this]
 	    (int respons_id)
 	      {
 
 		Glib::ustring file;
-		if (respons_id == Gtk::ResponseType::OK)
+		if (respons_id == Gtk::ResponseType::ACCEPT)
 		  {
 		    file = dialog->get_file ()->get_path ();
 		    this->avatar->set_draw_func (
@@ -2878,11 +2865,7 @@ MainWindow::editProfile ()
 				&MainWindow::on_draw),
 			    file));
 		  }
-		dialog->hide ();
-		delete dialog;
 	      });
-	    Glib::RefPtr<Gtk::Application> app = this->get_application ();
-	    app->add_window (*dialog);
 	    dialog->show ();
 	  });
       leftgrid->attach (*addavatar, 0, 1, 1, 1);

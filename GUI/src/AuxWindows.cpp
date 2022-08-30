@@ -296,48 +296,29 @@ AuxWindows::attachFileDialog ()
 {
   if (mw->selectedc != nullptr)
     {
-      Gtk::FileChooserDialog *fcd = new Gtk::FileChooserDialog (
-	  *mw, gettext ("File choose"), Gtk::FileChooser::Action::OPEN);
-      fcd->set_transient_for (*mw);
+      Glib::RefPtr<Gtk::FileChooserNative> fcd =
+	  Gtk::FileChooserNative::create (gettext ("File selection"), *mw,
+					  Gtk::FileChooser::Action::OPEN,
+					  gettext ("Open"), gettext ("Cancel"));
       std::string filename;
       AuxFunc af;
       af.homePath (&filename);
       Glib::RefPtr<Gio::File> fl = Gio::File::create_for_path (filename);
       fcd->set_current_folder (fl);
-      fcd->set_application (mw->get_application ());
-
-      Gtk::Button *btn;
-      btn = fcd->add_button (gettext ("Open"), Gtk::ResponseType::APPLY);
-      btn->set_halign (Gtk::Align::END);
-      btn->set_margin (5);
-      btn = fcd->add_button (gettext ("Cancel"), Gtk::ResponseType::CANCEL);
-      btn->set_halign (Gtk::Align::START);
-      btn->set_margin (5);
       MainWindow *mwl = mw;
       fcd->signal_response ().connect (
 	  sigc::bind (sigc::mem_fun (*this, &AuxWindows::attachFileFunc), fcd,
 		      mwl));
-      fcd->signal_close_request ().connect ( [fcd]
-      {
-	fcd->hide ();
-	delete fcd;
-	return true;
-      },
-					    false);
 
       fcd->show ();
     }
 }
 
 void
-AuxWindows::attachFileFunc (int rid, Gtk::FileChooserDialog *fcd,
+AuxWindows::attachFileFunc (int rid, Glib::RefPtr<Gtk::FileChooserNative> fcd,
 			    MainWindow *mwl)
 {
-  if (rid == Gtk::ResponseType::CANCEL)
-    {
-      fcd->close ();
-    }
-  if (rid == Gtk::ResponseType::APPLY)
+  if (rid == Gtk::ResponseType::ACCEPT)
     {
       Glib::RefPtr<Gio::File> fl = fcd->get_file ();
       std::string filename = fl->get_path ();
@@ -404,7 +385,6 @@ AuxWindows::attachFileFunc (int rid, Gtk::FileChooserDialog *fcd,
 	    }
 	}
       mwl->frvectmtx.unlock ();
-      fcd->close ();
     }
 }
 

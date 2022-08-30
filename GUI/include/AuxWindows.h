@@ -55,7 +55,8 @@ public:
 private:
   MainWindow *mw = nullptr;
   void
-  attachFileFunc (int rid, Gtk::FileChooserDialog *fcd, MainWindow *mwl);
+  attachFileFunc (int rid, Glib::RefPtr<Gtk::FileChooserNative> fcd,
+		  MainWindow *mwl);
   void
   addFriendsSelected (int n_press, double x, double y,
 		      std::vector<Gtk::Label*> *labvect, Gtk::Label *lab,

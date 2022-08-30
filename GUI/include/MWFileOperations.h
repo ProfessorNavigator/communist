@@ -54,12 +54,11 @@ private:
   rejectButtonSlot (Gtk::Window *window, MainWindow *mwl, std::string keyloc,
 		    uint64_t tml);
   void
-  openButtonSlot (int rid, Gtk::FileChooserDialog *fcd, MainWindow *mwl,
-		  std::string keyloc, uint64_t tml, std::string fnmloc,
-		  uint64_t fs);
+  openButtonSlot (int rid, Glib::RefPtr<Gtk::FileChooserNative> fcd,
+		  MainWindow *mwl, std::string keyloc, uint64_t tml,
+		  std::string fnmloc, uint64_t fs);
   void
-  warningAcceptButton (Gtk::Window *window, Gtk::FileChooserDialog *fcd,
-		       std::filesystem::path fp, MainWindow *mwl,
+  warningAcceptButton (std::filesystem::path fp, MainWindow *mwl,
 		       std::string keyloc, uint64_t tml, uint64_t fs);
   void
   cancelRcvFile (MainWindow *mwl, std::string keyloc, std::filesystem::path fp);

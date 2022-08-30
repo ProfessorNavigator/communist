@@ -71,7 +71,7 @@ private:
   void
   openImage ();
   void
-  onopenImage (int respons_id, Gtk::FileChooserDialog *dialog);
+  onopenImage (int respons_id, Glib::RefPtr<Gtk::FileChooserNative> dialog);
   void
   on_draw (const Cairo::RefPtr<Cairo::Context> &cr, int width, int height,
 	   Glib::ustring file);
