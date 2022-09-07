@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Communist\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-08-30 20:10+0400\n"
-"PO-Revision-Date: 2022-08-30 20:11+0400\n"
+"POT-Creation-Date: 2022-09-07 16:44+0400\n"
+"PO-Revision-Date: 2022-09-07 16:45+0400\n"
 "Last-Translator: \n"
 "Language-Team: Юрий Бобылев\n"
 "Language: ru_RU\n"
@@ -39,7 +39,7 @@ msgstr "Копировать"
 #: AuxWindows.cpp:69 AuxWindows.cpp:268 AuxWindows.cpp:657 AuxWindows.cpp:1019
 #: AuxWindows.cpp:1231 AuxWindows.cpp:1305 MWFileOperations.cpp:316
 #: MWFileOperations.cpp:424 MainWindow.cpp:1842 MainWindow.cpp:2933
-#: SettingsWindow.cpp:2088
+#: SettingsWindow.cpp:2160
 msgid "Close"
 msgstr "Закрыть"
 
@@ -70,7 +70,7 @@ msgstr "Открыть"
 #: AuxWindows.cpp:302 AuxWindows.cpp:780 AuxWindows.cpp:892
 #: MWFileOperations.cpp:665 MainWindow.cpp:477 MainWindow.cpp:548
 #: MainWindow.cpp:1630 MainWindow.cpp:1699 MainWindow.cpp:2796
-#: MainWindow.cpp:2853 SettingsWindow.cpp:1340
+#: MainWindow.cpp:2853 SettingsWindow.cpp:1380
 msgid "Cancel"
 msgstr "Отмена"
 
@@ -150,7 +150,7 @@ msgstr "Псевдоним"
 msgid "Use relay"
 msgstr "Использовать ретранслятор"
 
-#: AuxWindows.cpp:1219 SettingsWindow.cpp:1323
+#: AuxWindows.cpp:1219 SettingsWindow.cpp:1363
 msgid "Apply"
 msgstr "Применить"
 
@@ -638,67 +638,71 @@ msgstr ""
 "разорванным:"
 
 #: SettingsWindow.cpp:768
+msgid "Technical messages timeout in seconds:"
+msgstr "Пауза между техническими сообщениями в секундах:"
+
+#: SettingsWindow.cpp:808
 msgid "Save window size before closing"
 msgstr "Сохранять размеры главного окна перед закрытием"
 
-#: SettingsWindow.cpp:809
+#: SettingsWindow.cpp:849
 msgid "Message max width in chars:"
 msgstr "Ширина сообщения в символах:"
 
-#: SettingsWindow.cpp:849
+#: SettingsWindow.cpp:889
 msgid "Send message by"
 msgstr "Отправка сообщений по нажатию"
 
-#: SettingsWindow.cpp:898
+#: SettingsWindow.cpp:938
 msgid "Enable notification on message receiving"
 msgstr "Включить уведомления о входящих сообщениях"
 
-#: SettingsWindow.cpp:939
+#: SettingsWindow.cpp:979
 msgid "Enable message received sound"
 msgstr "Включить звук уведомления о входящих сообщениях"
 
-#: SettingsWindow.cpp:980
+#: SettingsWindow.cpp:1020
 msgid "Message sound path:"
 msgstr "Путь к файлу звукового сигнала:"
 
-#: SettingsWindow.cpp:1003 SettingsWindow.cpp:1008 SettingsWindow.cpp:1263
-#: SettingsWindow.cpp:1268
+#: SettingsWindow.cpp:1043 SettingsWindow.cpp:1048 SettingsWindow.cpp:1303
+#: SettingsWindow.cpp:1308
 msgid "default"
 msgstr "по умолчанию"
 
-#: SettingsWindow.cpp:1025
+#: SettingsWindow.cpp:1065
 msgid "Enable hole punch mechanism for symmetric NAT"
 msgstr "Включить механизм пробития симметричного NAT"
 
-#: SettingsWindow.cpp:1066
+#: SettingsWindow.cpp:1106
 msgid "Enable local STUN server"
 msgstr "Включить STUN сервер"
 
-#: SettingsWindow.cpp:1107
+#: SettingsWindow.cpp:1147
 msgid "STUN port:"
 msgstr "Порт для STUN:"
 
-#: SettingsWindow.cpp:1153
+#: SettingsWindow.cpp:1193
 msgid "Enable relay server"
 msgstr "Включить сервер-ретранслятор"
 
-#: SettingsWindow.cpp:1194
+#: SettingsWindow.cpp:1234
 msgid "Relay port:"
 msgstr "Порт для операций с ретрансляторами:"
 
-#: SettingsWindow.cpp:1240
+#: SettingsWindow.cpp:1280
 msgid "Relay list path:"
 msgstr "Путь до файла со списком ретрансляторов:"
 
-#: SettingsWindow.cpp:1284
+#: SettingsWindow.cpp:1324
 msgid "Direct connection to Internet"
 msgstr "Прямое соединение с Интернетом"
 
-#: SettingsWindow.cpp:2065
+#: SettingsWindow.cpp:2137
 msgid "Info"
 msgstr "Информация"
 
-#: SettingsWindow.cpp:2074
+#: SettingsWindow.cpp:2146
 msgid "Application will be closed now. Start it again to apply changes."
 msgstr ""
 "Приложение будет закрыто. Для того, чтобы настройки вступили в силу, "

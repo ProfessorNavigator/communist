@@ -760,6 +760,46 @@ SettingsWindow::settingsWindow ()
   bx = Gtk::make_managed<Gtk::Box> (Gtk::Orientation::HORIZONTAL);
   lbr = Gtk::make_managed<Gtk::ListBoxRow> ();
   lbr->set_selectable (false);
+  Gtk::Label *mainttmtl = Gtk::make_managed<Gtk::Label> ();
+  mainttmtl->set_halign (Gtk::Align::START);
+  mainttmtl->set_justify (Gtk::Justification::LEFT);
+  mainttmtl->set_margin (5);
+  mainttmtl->set_wrap_mode (Pango::WrapMode::WORD);
+  mainttmtl->set_text (gettext ("Technical messages timeout in seconds:"));
+  bx->append (*mainttmtl);
+
+  Gtk::Entry *mainttmte = Gtk::make_managed<Gtk::Entry> ();
+  mainttmte->set_halign (Gtk::Align::END);
+  mainttmte->set_valign (Gtk::Align::CENTER);
+  mainttmte->set_margin (5);
+  Glib::RefPtr<Gtk::EntryBuffer> mainttmtebuf = Gtk::EntryBuffer::create ();
+  mw->prefvectmtx.lock ();
+  itprv = std::find_if (mw->prefvect.begin (), mw->prefvect.end (), []
+  (auto &el)
+    {
+      return std::get<0>(el) == "Maintpause";
+    });
+  if (itprv != mw->prefvect.end ())
+    {
+      mainttmtebuf->set_text (Glib::ustring (std::get<1> (*itprv)));
+    }
+  else
+    {
+      mainttmtebuf->set_text ("5");
+    }
+  mw->prefvectmtx.unlock ();
+  if (mainttmtebuf->get_length () > 0)
+    {
+      mainttmte->set_width_chars (mainttmtebuf->get_length ());
+    }
+  mainttmte->set_buffer (mainttmtebuf);
+  bx->append (*mainttmte);
+  lbr->set_child (*bx);
+  listb->append (*lbr);
+
+  bx = Gtk::make_managed<Gtk::Box> (Gtk::Orientation::HORIZONTAL);
+  lbr = Gtk::make_managed<Gtk::ListBoxRow> ();
+  lbr->set_selectable (false);
   Gtk::Label *winszl = Gtk::make_managed<Gtk::Label> ();
   winszl->set_halign (Gtk::Align::START);
   winszl->set_justify (Gtk::Justification::LEFT);
@@ -1327,7 +1367,7 @@ SettingsWindow::settingsWindow ()
       sigc::bind (sigc::mem_fun (*this, &SettingsWindow::saveSettings), window,
 		  themepathval, lifcsval, locip6val, locip4val, bootstre,
 		  msgsze, partsze, winszch, msgwchre, sendkeycmb, grnotificch,
-		  soundch, soundpe, shutmte, tmtteare, langchenbch,
+		  soundch, soundpe, shutmte, tmtteare, mainttmte, langchenbch,
 		  hole_punchch, enstunch, stunpe, enrelch, relaype, relaypathe,
 		  directinetch, mwl));
 
@@ -1384,6 +1424,7 @@ SettingsWindow::saveSettings (Gtk::Window *window, Gtk::Entry *themepathval,
 			      Gtk::CheckButton *grnotificch,
 			      Gtk::CheckButton *soundch, Gtk::Entry *soundpe,
 			      Gtk::Entry *shutmte, Gtk::Entry *tmtteare,
+			      Gtk::Entry *mainttmte,
 			      Gtk::CheckButton *langchenbch,
 			      Gtk::CheckButton *hole_punchch,
 			      Gtk::CheckButton *enstunch, Gtk::Entry *stunpe,
@@ -1833,6 +1874,37 @@ SettingsWindow::saveSettings (Gtk::Window *window, Gtk::Entry *themepathval,
       else
 	{
 	  mwl->prefvect.push_back (std::make_tuple ("TmtTear", "20"));
+	}
+    }
+
+  itprv = std::find_if (mwl->prefvect.begin (), mwl->prefvect.end (), []
+  (auto &el)
+    {
+      return std::get<0>(el) == "Maintpause";
+    });
+  if (itprv != mwl->prefvect.end ())
+    {
+      if (mainttmte->get_buffer ()->get_text () != "")
+	{
+	  std::get<1> (*itprv) = std::string (
+	      mainttmte->get_buffer ()->get_text ());
+	}
+      else
+	{
+	  std::get<1> (*itprv) = "5";
+	}
+    }
+  else
+    {
+      if (mainttmte->get_buffer ()->get_text () != "")
+	{
+	  mwl->prefvect.push_back (
+	      std::make_tuple ("Maintpause",
+			       mainttmte->get_buffer ()->get_text ()));
+	}
+      else
+	{
+	  mwl->prefvect.push_back (std::make_tuple ("Maintpause", "5"));
 	}
     }
 

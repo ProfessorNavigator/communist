@@ -47,11 +47,11 @@ private:
 		Gtk::Entry *msgwchre, Gtk::ComboBoxText *sendkeycmb,
 		Gtk::CheckButton *soundch, Gtk::CheckButton *grnotificch,
 		Gtk::Entry *soundpe, Gtk::Entry *shutmte, Gtk::Entry *tmtteare,
-		Gtk::CheckButton *langchenbch, Gtk::CheckButton *hole_punchch,
-		Gtk::CheckButton *enstunch, Gtk::Entry *stunpe,
-		Gtk::CheckButton *enrelch, Gtk::Entry *relaype,
-		Gtk::Entry *relaypathe, Gtk::CheckButton *directinetch,
-		MainWindow *mwl);
+		Gtk::Entry *mainttmte, Gtk::CheckButton *langchenbch,
+		Gtk::CheckButton *hole_punchch, Gtk::CheckButton *enstunch,
+		Gtk::Entry *stunpe, Gtk::CheckButton *enrelch,
+		Gtk::Entry *relaype, Gtk::Entry *relaypathe,
+		Gtk::CheckButton *directinetch, MainWindow *mwl);
   MainWindow *mw = nullptr;
 };
 

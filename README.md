@@ -10,7 +10,7 @@ Communist is a simple GTK 4 based p2p messenger. It uses torrent DHT combined wi
 
 ### Linux
 
-`git clone https://github.com/ProfessorNavigator/communist.git`\
+`git clone https://github.com/ProfessorNavigator/communist.git`
 `cd communist`\
 `meson -Dbuildtype=release build`\
 `ninja -C build install`
@@ -95,6 +95,8 @@ Spell checking is carried out by libhuspell. You can enable/disable it completel
  `Contact connection...` parameter shows after how many seconds contact state will be considered as 'offline'. In this case attempts to connect will be stopped until program receives new ip address from DHT.
  
  `Connection broken...` parameter shows after how many seconds contact will be considered as disconnected (after that label 'online' on contacts' button will disappear).
+ 
+ `Technical messages timeout...` - timeout between connection maintenance messages in seconds. This messages program will send to each contact in case "internet" mode is set and if this contact is not blocked. Do not set this parameter bigger then Connection broken... parameter. 
  
  `Save window size...` - if checked Communist will restore main window size on next launch.
  
