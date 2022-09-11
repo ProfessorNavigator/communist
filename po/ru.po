@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Communist\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-09-07 16:44+0400\n"
-"PO-Revision-Date: 2022-09-07 16:45+0400\n"
+"POT-Creation-Date: 2022-09-10 15:38+0400\n"
+"PO-Revision-Date: 2022-09-10 15:38+0400\n"
 "Last-Translator: \n"
 "Language-Team: Юрий Бобылев\n"
 "Language: ru_RU\n"
@@ -356,7 +356,7 @@ msgstr "Повторите пароль:"
 msgid "Login"
 msgstr "Вход"
 
-#: MainWindow.cpp:666
+#: MainWindow.cpp:666 MainWindow.cpp:3347
 msgid "Communist"
 msgstr "Коммунист"
 
@@ -508,38 +508,30 @@ msgstr "Блокировка контакта"
 msgid "Blocking..."
 msgstr "Блокирую..."
 
-#: MainWindow.cpp:3345 MainWindow.cpp:3392
-msgid "About"
-msgstr "О программе"
-
-#: MainWindow.cpp:3357
+#: MainWindow.cpp:3384
 msgid ""
 "Communist is simple \"peer to peer\" messenger.\n"
 "Author Yury Bobylev.\n"
-"Program use next libraries:\n"
+"\n"
+"Program uses next libraries:\n"
 "GTK https://www.gtk.org\n"
 "ICU https://icu.unicode.org\n"
 "Hunspell http://hunspell.github.io/\n"
 "libcommunist https://github.com/ProfessorNavigator/libcommunist\n"
-"                        https://gitflic.ru/project/professornavigator/"
-"libcommunist"
+"https://gitflic.ru/project/professornavigator/libcommunist"
 msgstr ""
 "Коммунист - простая программа для отправки сообщений \"устройство-устройство"
 "\"\n"
 "Автор Юрий Бобылев.\n"
+"\n"
 "В программе используются следующие библиотеки:\n"
 "GTK https://www.gtk.org\n"
 "ICU https://icu.unicode.org\n"
 "Hunspell http://hunspell.github.io/\n"
 "libcommunist https://github.com/ProfessorNavigator/libcommunist\n"
-"                        https://gitflic.ru/project/professornavigator/"
-"libcommunist"
+"https://gitflic.ru/project/professornavigator/libcommunist"
 
-#: MainWindow.cpp:3438
-msgid "License"
-msgstr "Лицензия"
-
-#: MainWindow.cpp:3530
+#: MainWindow.cpp:3484
 msgid "online"
 msgstr "в сети"
 
@@ -707,6 +699,12 @@ msgid "Application will be closed now. Start it again to apply changes."
 msgstr ""
 "Приложение будет закрыто. Для того, чтобы настройки вступили в силу, "
 "запустите его вновь."
+
+#~ msgid "About"
+#~ msgstr "О программе"
+
+#~ msgid "License"
+#~ msgstr "Лицензия"
 
 #~ msgid "File choose"
 #~ msgstr "Выбор файла"

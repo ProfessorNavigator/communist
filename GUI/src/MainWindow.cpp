@@ -3340,60 +3340,19 @@ MainWindow::autoRemoveMsg ()
 void
 MainWindow::aboutProg ()
 {
-  Gtk::Window *window = new Gtk::Window;
-  window->set_application (this->get_application ());
-  window->set_title (gettext ("About"));
-  Gtk::Notebook *noteb = Gtk::make_managed<Gtk::Notebook> ();
-  noteb->set_halign (Gtk::Align::CENTER);
-  window->set_child (*noteb);
+  Gtk::AboutDialog *aboutd = new Gtk::AboutDialog;
+  aboutd->set_transient_for (*this);
+  aboutd->set_application (this->get_application ());
 
-  std::fstream f;
-  std::string filename;
+  aboutd->set_program_name (gettext ("Communist"));
+  aboutd->set_version ("2.0.2");
+  aboutd->set_copyright ("Copyright 2022 Yury Bobylev <bobilev_yury@mail.ru>");
   AuxFunc af;
-  std::filesystem::path filepath;
-  Glib::RefPtr<Gtk::TextBuffer> txtab = Gtk::TextBuffer::create ();
-  Glib::ustring abbuf =
-      gettext (
-	  "Communist is simple \"peer to peer\" messenger.\n"
-	  "Author Yury Bobylev.\n"
-	  "Program use next libraries:\n"
-	  "GTK https://www.gtk.org\n"
-	  "ICU https://icu.unicode.org\n"
-	  "Hunspell http://hunspell.github.io/\n"
-	  "libcommunist https://github.com/ProfessorNavigator/libcommunist\n"
-	  "                        https://gitflic.ru/project/professornavigator/libcommunist");
-  txtab->set_text (abbuf);
-  Gtk::TextView *tvab = Gtk::make_managed<Gtk::TextView> ();
-  tvab->set_buffer (txtab);
-  tvab->set_editable (false);
-  tvab->set_margin (5);
-  Gdk::Rectangle scrres = screenRes ();
-  Gtk::ScrolledWindow *scrab = Gtk::make_managed<Gtk::ScrolledWindow> ();
-  scrab->set_policy (Gtk::PolicyType::AUTOMATIC, Gtk::PolicyType::AUTOMATIC);
-  scrab->set_halign (Gtk::Align::CENTER);
-
-  if (scrres.get_width () < 700)
-    {
-      scrab->set_min_content_width (scrres.get_width () * 0.7);
-    }
-  else
-    {
-      scrab->set_min_content_width (700);
-    }
-  if (scrres.get_height () < 700)
-    {
-      scrab->set_min_content_height (scrres.get_height () * 0.7);
-    }
-  else
-    {
-      scrab->set_min_content_height (700);
-    }
-  scrab->set_child (*tvab);
-  noteb->append_page (*scrab, gettext ("About"));
-
-  filename = Sharepath + "/COPYING";
-  filepath = std::filesystem::u8path (filename);
-  Glib::RefPtr<Gtk::TextBuffer> txtlc = Gtk::TextBuffer::create ();
+  std::filesystem::path p = std::filesystem::u8path (af.get_selfpath ());
+  std::string filename = Sharepath + "/COPYING";
+  std::filesystem::path filepath = std::filesystem::u8path (filename);
+  std::fstream f;
+  Glib::ustring abbuf;
   f.open (filepath, std::ios_base::in | std::ios_base::binary);
   if (f.is_open ())
     {
@@ -3402,49 +3361,44 @@ MainWindow::aboutProg ()
       ab.resize (sz);
       f.read (&ab[0], ab.size ());
       f.close ();
-      Glib::ustring abbuf (ab.begin (), ab.end ());
-      txtlc->set_text (abbuf);
+      abbuf = Glib::ustring (ab.begin (), ab.end ());
     }
   else
     {
-      std::cerr << "License file not found" << std::endl;
+      std::cerr << "Licence file not found" << std::endl;
     }
 
-  Gtk::TextView *tvlc = Gtk::make_managed<Gtk::TextView> ();
-  tvlc->set_buffer (txtlc);
-  tvlc->set_editable (false);
-  tvlc->set_margin (5);
-
-  Gtk::ScrolledWindow *scrlc = Gtk::make_managed<Gtk::ScrolledWindow> ();
-  scrlc->set_policy (Gtk::PolicyType::AUTOMATIC, Gtk::PolicyType::AUTOMATIC);
-  scrlc->set_halign (Gtk::Align::CENTER);
-  if (scrres.get_width () < 700)
+  if (abbuf.size () == 0)
     {
-      scrlc->set_min_content_width (scrres.get_width () * 0.7);
+      aboutd->set_license_type (Gtk::License::GPL_3_0_ONLY);
     }
   else
     {
-      scrlc->set_min_content_width (700);
+      aboutd->set_license (abbuf);
     }
-  if (scrres.get_height () < 700)
-    {
-      scrlc->set_min_content_height (scrres.get_height () * 0.7);
-    }
-  else
-    {
-      scrlc->set_min_content_height (700);
-    }
-  scrlc->set_child (*tvlc);
-  noteb->append_page (*scrlc, gettext ("License"));
 
-  window->signal_close_request ().connect ( [window]
+  filename = Sharepath + "/themes/default/ico.png";
+  Glib::RefPtr<Gio::File> logofile = Gio::File::create_for_path (filename);
+  aboutd->set_logo (Gdk::Texture::create_from_file (logofile));
+  abbuf = gettext (
+      "Communist is simple \"peer to peer\" messenger.\n"
+      "Author Yury Bobylev.\n\n"
+      "Program uses next libraries:\n"
+      "GTK https://www.gtk.org\n"
+      "ICU https://icu.unicode.org\n"
+      "Hunspell http://hunspell.github.io/\n"
+      "libcommunist https://github.com/ProfessorNavigator/libcommunist\n"
+      "https://gitflic.ru/project/professornavigator/libcommunist");
+  aboutd->set_comments (abbuf);
+
+  aboutd->signal_close_request ().connect ( [aboutd]
   {
-    window->hide ();
-    delete window;
+    aboutd->hide ();
+    delete aboutd;
     return true;
   },
 					   false);
-  window->show ();
+  aboutd->show ();
 }
 
 void
