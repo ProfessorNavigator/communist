@@ -10,7 +10,7 @@ Communist is a simple GTK 4 based p2p messenger. It uses torrent DHT combined wi
 
 ### Linux
 
-`git clone https://github.com/ProfessorNavigator/communist.git`
+`git clone https://github.com/ProfessorNavigator/communist.git`\
 `cd communist`\
 `meson -Dbuildtype=release build`\
 `ninja -C build install`
