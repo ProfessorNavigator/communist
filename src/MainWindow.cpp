@@ -735,50 +735,59 @@ MainWindow::mainWindow()
     Gtk::Builder::create();
 
   Glib::ustring buffer =
-    gettext(
-      "<interface>"
-      "<menu id='menubar'>"
-      "	<submenu>"
-      "		<attribute name='label' translatable='yes'>Contacts</attribute>"
-      "			<section>"
-      "				<item>"
-      "					<attribute name='label' translatable='yes'>Edit sent request table</attribute>"
-      "					<attribute name='action'>prefgr.editReqList</attribute>"
-      "				</item>"
-      "				<item>"
-      "					<attribute name='label' translatable='yes'>Edit contacts to send by relay</attribute>"
-      "					<attribute name='action'>prefgr.relayList</attribute>"
-      "				</item>"
-      "			</section>"
-      "	</submenu>"
-      "	<submenu>"
-      "		<attribute name='label' translatable='yes'>Instruments</attribute>"
-      "			<section>"
-      "				<item>"
-      "					<attribute name='label' translatable='yes'>Edit profile</attribute>"
-      "					<attribute name='action'>prefgr.editpr</attribute>"
-      "				</item>"
-      "				<item>"
-      "					<attribute name='label' translatable='yes'>Own key</attribute>"
-      "					<attribute name='action'>prefgr.ownkey</attribute>"
-      "				</item>"
-      "                         <item>"
-      "					<attribute name='label' translatable='yes'>Settings</attribute>"
-      "					<attribute name='action'>prefgr.editSettings</attribute>"
-      "				</item>"
-      "			</section>"
-      "	</submenu>"
-      "	<submenu>"
-      "		<attribute name='label' translatable='yes'>About</attribute>"
-      "			<section>"
-      "				<item>"
-      "					<attribute name='label' translatable='yes'>About Communist</attribute>"
-      "					<attribute name='action'>prefgr.aboutProg</attribute>"
-      "				</item>"
-      "			</section>"
-      "	</submenu>"
-      "</menu>"
-      "</interface>");
+    "<interface>"
+    "<menu id='menubar'>"
+    "	<submenu>"
+    "		<attribute name='label'>" +
+    Glib::ustring(gettext("Contacts")) + "</attribute>"
+    "			<section>"
+    "				<item>"
+    "					<attribute name='label'>" +
+    Glib::ustring(gettext("Edit sent request table")) +
+    "</attribute>"
+    "					<attribute name='action'>prefgr.editReqList</attribute>"
+    "				</item>"
+    "				<item>"
+    "					<attribute name='label'>" + Glib::ustring(
+      gettext("Edit contacts to send by relay")) + "</attribute>"
+    "					<attribute name='action'>prefgr.relayList</attribute>"
+    "				</item>"
+    "			</section>"
+    "	</submenu>"
+    "	<submenu>"
+    "		<attribute name='label'>" + Glib::ustring(
+      gettext("Instruments")) + "</attribute>"
+    "			<section>"
+    "				<item>"
+    "					<attribute name='label'>" + Glib::ustring(
+      gettext("Edit profile")) + "</attribute>"
+    "					<attribute name='action'>prefgr.editpr</attribute>"
+    "				</item>"
+    "				<item>"
+    "					<attribute name='label'>" + Glib::ustring(
+      gettext("Own key")) + "</attribute>"
+    "					<attribute name='action'>prefgr.ownkey</attribute>"
+    "				</item>"
+    "                         <item>"
+    "					<attribute name='label'>" + Glib::ustring(
+      gettext("Settings")) + "</attribute>"
+    "					<attribute name='action'>prefgr.editSettings</attribute>"
+    "				</item>"
+    "			</section>"
+    "	</submenu>"
+    "	<submenu>"
+    "		<attribute name='label'>" + Glib::ustring(
+      gettext("About")) + "</attribute>"
+    "			<section>"
+    "				<item>"
+    "					<attribute name='label'>" + Glib::ustring(
+      gettext("About Communist")) + "</attribute>"
+    "					<attribute name='action'>prefgr.aboutProg</attribute>"
+    "				</item>"
+    "			</section>"
+    "	</submenu>"
+    "</menu>"
+    "</interface>";
   builder->add_from_string(buffer);
   Gtk::Box *box = Gtk::make_managed<Gtk::Box>();
   auto object = builder->get_object("menubar");

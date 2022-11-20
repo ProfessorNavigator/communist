@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Communist\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-20 18:10+0400\n"
-"PO-Revision-Date: 2022-11-20 18:11+0400\n"
+"POT-Creation-Date: 2022-11-20 19:17+0400\n"
+"PO-Revision-Date: 2022-11-20 19:22+0400\n"
 "Last-Translator: \n"
 "Language-Team: Юрий Бобылев\n"
 "Language: ru_RU\n"
@@ -40,7 +40,7 @@ msgstr "Копировать"
 #: src/AuxWindows.cpp:70 src/AuxWindows.cpp:281 src/AuxWindows.cpp:688
 #: src/AuxWindows.cpp:1067 src/AuxWindows.cpp:1286 src/AuxWindows.cpp:1363
 #: src/MWFileOperations.cpp:329 src/MWFileOperations.cpp:438
-#: src/MainWindow.cpp:1939 src/MainWindow.cpp:3104 src/SettingsWindow.cpp:2304
+#: src/MainWindow.cpp:1948 src/MainWindow.cpp:3113 src/SettingsWindow.cpp:2304
 msgid "Close"
 msgstr "Закрыть"
 
@@ -64,14 +64,14 @@ msgstr "Фамилия: "
 msgid "File selection"
 msgstr "Выбор файла"
 
-#: src/AuxWindows.cpp:317 src/MainWindow.cpp:1782 src/MainWindow.cpp:3022
+#: src/AuxWindows.cpp:317 src/MainWindow.cpp:1791 src/MainWindow.cpp:3031
 msgid "Open"
 msgstr "Открыть"
 
 #: src/AuxWindows.cpp:317 src/AuxWindows.cpp:816 src/AuxWindows.cpp:936
 #: src/MWFileOperations.cpp:685 src/MainWindow.cpp:493 src/MainWindow.cpp:566
-#: src/MainWindow.cpp:1710 src/MainWindow.cpp:1782 src/MainWindow.cpp:2966
-#: src/MainWindow.cpp:3023 src/SettingsWindow.cpp:1478
+#: src/MainWindow.cpp:1719 src/MainWindow.cpp:1791 src/MainWindow.cpp:2975
+#: src/MainWindow.cpp:3032 src/SettingsWindow.cpp:1478
 msgid "Cancel"
 msgstr "Отмена"
 
@@ -105,13 +105,13 @@ msgstr "Программа не может автоматически выбра
 
 #: src/AuxWindows.cpp:588
 msgid "Friends request edit"
-msgstr "Редактирования списка отправленных заявок"
+msgstr "Редактирование списка отправленных заявок"
 
 #: src/AuxWindows.cpp:642 src/AuxWindows.cpp:738
 msgid "Remove from list"
 msgstr "Удалить из списка"
 
-#: src/AuxWindows.cpp:786 src/MainWindow.cpp:882
+#: src/AuxWindows.cpp:786 src/MainWindow.cpp:891
 msgid "Add contact"
 msgstr "Добавить контакт"
 
@@ -180,7 +180,7 @@ msgstr "Я:"
 msgid "Message attached to file "
 msgstr "Сообщение к файлу "
 
-#: src/ContactOperations.cpp:687 src/MainWindow.cpp:893 src/MainWindow.cpp:3289
+#: src/ContactOperations.cpp:687 src/MainWindow.cpp:902 src/MainWindow.cpp:3298
 msgid "Remove contact"
 msgstr "Удалить контакт"
 
@@ -287,7 +287,7 @@ msgstr "Принять?"
 msgid "Path selection"
 msgstr "Выбор пути"
 
-#: src/MWFileOperations.cpp:685 src/MainWindow.cpp:1676
+#: src/MWFileOperations.cpp:685 src/MainWindow.cpp:1685
 msgid "Save"
 msgstr "Сохранить"
 
@@ -339,7 +339,7 @@ msgstr "Вы уверены?"
 msgid "Wait, application is closing..."
 msgstr "Идёт завершение приложения..."
 
-#: src/MainWindow.cpp:432 src/MainWindow.cpp:1621
+#: src/MainWindow.cpp:432 src/MainWindow.cpp:1630
 msgid "Profile creation"
 msgstr "Создание профиля"
 
@@ -359,165 +359,144 @@ msgstr "Повторите пароль:"
 msgid "Login"
 msgstr "Вход"
 
-#: src/MainWindow.cpp:688 src/MainWindow.cpp:3544
+#: src/MainWindow.cpp:688 src/MainWindow.cpp:3553
 msgid "Communist"
 msgstr "Коммунист"
 
-#: src/MainWindow.cpp:739
-msgid ""
-"<interface><menu id='menubar'>\t<submenu>\t\t<attribute name='label' "
-"translatable='yes'>Contacts</"
-"attribute>\t\t\t<section>\t\t\t\t<item>\t\t\t\t\t<attribute name='label' "
-"translatable='yes'>Edit sent request table</attribute>\t\t\t\t\t<attribute "
-"name='action'>prefgr.editReqList</attribute>\t\t\t\t</"
-"item>\t\t\t\t<item>\t\t\t\t\t<attribute name='label' translatable='yes'>Edit "
-"contacts to send by relay</attribute>\t\t\t\t\t<attribute "
-"name='action'>prefgr.relayList</attribute>\t\t\t\t</item>\t\t\t</section>\t</"
-"submenu>\t<submenu>\t\t<attribute name='label' "
-"translatable='yes'>Instruments</"
-"attribute>\t\t\t<section>\t\t\t\t<item>\t\t\t\t\t<attribute name='label' "
-"translatable='yes'>Edit profile</attribute>\t\t\t\t\t<attribute "
-"name='action'>prefgr.editpr</attribute>\t\t\t\t</"
-"item>\t\t\t\t<item>\t\t\t\t\t<attribute name='label' translatable='yes'>Own "
-"key</attribute>\t\t\t\t\t<attribute name='action'>prefgr.ownkey</"
-"attribute>\t\t\t\t</item>                         <item>\t\t\t\t\t<attribute "
-"name='label' translatable='yes'>Settings</attribute>\t\t\t\t\t<attribute "
-"name='action'>prefgr.editSettings</attribute>\t\t\t\t</item>\t\t\t</"
-"section>\t</submenu>\t<submenu>\t\t<attribute name='label' "
-"translatable='yes'>About</"
-"attribute>\t\t\t<section>\t\t\t\t<item>\t\t\t\t\t<attribute name='label' "
-"translatable='yes'>About Communist</attribute>\t\t\t\t\t<attribute "
-"name='action'>prefgr.aboutProg</attribute>\t\t\t\t</item>\t\t\t</section>\t</"
-"submenu></menu></interface>"
+#: src/MainWindow.cpp:742
+msgid "Contacts"
+msgstr "Контакты"
+
+#: src/MainWindow.cpp:746
+msgid "Edit sent request table"
+msgstr "Редактировать список отправленных заявок"
+
+#: src/MainWindow.cpp:752
+msgid "Edit contacts to send by relay"
 msgstr ""
-"<interface><menu id='menubar'>\t<submenu>\t\t<attribute name='label' "
-"translatable='yes'>Контакты</"
-"attribute>\t\t\t<section>\t\t\t\t<item>\t\t\t\t\t<attribute name='label' "
-"translatable='yes'>Редактировать список отправленных заявок</"
-"attribute>\t\t\t\t\t<attribute name='action'>prefgr.editReqList</"
-"attribute>\t\t\t\t</item>\t\t\t\t<item>\t\t\t\t\t<attribute name='label' "
-"translatable='yes'>Редактировать список контактов для пересылки сообщений "
-"через ретранслятор</attribute>\t\t\t\t\t<attribute name='action'>prefgr."
-"relayList</attribute>\t\t\t\t</item>\t\t\t</section>\t</"
-"submenu>\t<submenu>\t\t<attribute name='label' "
-"translatable='yes'>Инструменты</"
-"attribute>\t\t\t<section>\t\t\t\t<item>\t\t\t\t\t<attribute name='label' "
-"translatable='yes'>Редактировать профиль</attribute>\t\t\t\t\t<attribute "
-"name='action'>prefgr.editpr</attribute>\t\t\t\t</"
-"item>\t\t\t\t<item>\t\t\t\t\t<attribute name='label' "
-"translatable='yes'>Узнать свой ключ</attribute>\t\t\t\t\t<attribute "
-"name='action'>prefgr.ownkey</attribute>\t\t\t\t</"
-"item>                         <item>\t\t\t\t\t<attribute name='label' "
-"translatable='yes'>Общие настройки</attribute>\t\t\t\t\t<attribute "
-"name='action'>prefgr.editSettings</attribute>\t\t\t\t</item>\t\t\t</"
-"section>\t</submenu>\t<submenu>\t\t<attribute name='label' "
-"translatable='yes'>О программе</"
-"attribute>\t\t\t<section>\t\t\t\t<item>\t\t\t\t\t<attribute name='label' "
-"translatable='yes'>О Коммунисте</attribute>\t\t\t\t\t<attribute "
-"name='action'>prefgr.aboutProg</attribute>\t\t\t\t</item>\t\t\t</section>\t</"
-"submenu></menu></interface>"
+"Редактировать список контактов для отправки сообщений через ретранслятор"
 
-#: src/MainWindow.cpp:1208 src/MainWindow.cpp:3385
-msgid "Blocked"
-msgstr "Заблокирован"
+#: src/MainWindow.cpp:759
+msgid "Instruments"
+msgstr "Инструменты"
 
-#: src/MainWindow.cpp:1250
-msgid "Attach file"
-msgstr "Прикрепить файл"
-
-#: src/MainWindow.cpp:1313
-msgid "Send message"
-msgstr "Отправить"
-
-#: src/MainWindow.cpp:1632
-msgid "Generate key (compulsory)"
-msgstr "Сгенерируйте ключ (обязательно)"
-
-#: src/MainWindow.cpp:1642
-msgid "Generate"
-msgstr "Сгенерировать"
-
-#: src/MainWindow.cpp:1655
-msgid "Nickname (compulsory)"
-msgstr "Псевдоним (обязательно)"
-
-#: src/MainWindow.cpp:1662
-msgid "Name (not compulsory)"
-msgstr "Имя (необязательно)"
-
-#: src/MainWindow.cpp:1669
-msgid "Surame (not compulsory)"
-msgstr "Фамилия (необязательно)"
-
-#: src/MainWindow.cpp:1690 src/MainWindow.cpp:2947
-msgid "Clear"
-msgstr "Очистить"
-
-#: src/MainWindow.cpp:1738
-msgid "Choose image"
-msgstr "Выберите файл аватара"
-
-#: src/MainWindow.cpp:1752
-msgid "Remove image"
-msgstr "Удалить изображение"
-
-#: src/MainWindow.cpp:1780 src/MainWindow.cpp:3020
-msgid "Open image"
-msgstr "Открыть изображение"
-
-#: src/MainWindow.cpp:1919 src/MainWindow.cpp:3092
-msgid "Error"
-msgstr "Ошибка"
-
-#: src/MainWindow.cpp:1927
-msgid "Generate the key!"
-msgstr "Сгенерируйте ключ!"
-
-#: src/MainWindow.cpp:1931 src/MainWindow.cpp:3098
-msgid "Input nickname!"
-msgstr "Введите псевдоним!"
-
-#: src/MainWindow.cpp:2861
+#: src/MainWindow.cpp:763 src/MainWindow.cpp:2870
 msgid "Edit profile"
 msgstr "Редактировать профиль"
 
-#: src/MainWindow.cpp:2904
+#: src/MainWindow.cpp:768
+msgid "Own key"
+msgstr "Свой ключ"
+
+#: src/MainWindow.cpp:773 src/SettingsWindow.cpp:41
+msgid "Settings"
+msgstr "Настройки"
+
+#: src/MainWindow.cpp:780
+msgid "About"
+msgstr "О программе"
+
+#: src/MainWindow.cpp:784
+msgid "About Communist"
+msgstr "О Коммунисте"
+
+#: src/MainWindow.cpp:1217 src/MainWindow.cpp:3394
+msgid "Blocked"
+msgstr "Заблокирован"
+
+#: src/MainWindow.cpp:1259
+msgid "Attach file"
+msgstr "Прикрепить файл"
+
+#: src/MainWindow.cpp:1322
+msgid "Send message"
+msgstr "Отправить"
+
+#: src/MainWindow.cpp:1641
+msgid "Generate key (compulsory)"
+msgstr "Сгенерируйте ключ (обязательно)"
+
+#: src/MainWindow.cpp:1651
+msgid "Generate"
+msgstr "Сгенерировать"
+
+#: src/MainWindow.cpp:1664
+msgid "Nickname (compulsory)"
+msgstr "Псевдоним (обязательно)"
+
+#: src/MainWindow.cpp:1671
+msgid "Name (not compulsory)"
+msgstr "Имя (необязательно)"
+
+#: src/MainWindow.cpp:1678
+msgid "Surame (not compulsory)"
+msgstr "Фамилия (необязательно)"
+
+#: src/MainWindow.cpp:1699 src/MainWindow.cpp:2956
+msgid "Clear"
+msgstr "Очистить"
+
+#: src/MainWindow.cpp:1747
+msgid "Choose image"
+msgstr "Выберите файл аватара"
+
+#: src/MainWindow.cpp:1761
+msgid "Remove image"
+msgstr "Удалить изображение"
+
+#: src/MainWindow.cpp:1789 src/MainWindow.cpp:3029
+msgid "Open image"
+msgstr "Открыть изображение"
+
+#: src/MainWindow.cpp:1928 src/MainWindow.cpp:3101
+msgid "Error"
+msgstr "Ошибка"
+
+#: src/MainWindow.cpp:1936
+msgid "Generate the key!"
+msgstr "Сгенерируйте ключ!"
+
+#: src/MainWindow.cpp:1940 src/MainWindow.cpp:3107
+msgid "Input nickname!"
+msgstr "Введите псевдоним!"
+
+#: src/MainWindow.cpp:2913
 msgid "Name (not compalsory)"
 msgstr "Имя (необязательно)"
 
-#: src/MainWindow.cpp:2924
+#: src/MainWindow.cpp:2933
 msgid "Surname (not compalsory)"
 msgstr "Фамилия (необязательно)"
 
-#: src/MainWindow.cpp:2931
+#: src/MainWindow.cpp:2940
 msgid "Save profile"
 msgstr "Сохранить профиль"
 
-#: src/MainWindow.cpp:3008
+#: src/MainWindow.cpp:3017
 msgid "Open avatar"
 msgstr "Открыть файл аватара"
 
-#: src/MainWindow.cpp:3045
+#: src/MainWindow.cpp:3054
 msgid "Remove avatar"
 msgstr "Удалить аватар"
 
-#: src/MainWindow.cpp:3288
+#: src/MainWindow.cpp:3297
 msgid "Contact info"
 msgstr "Информация о контакте"
 
-#: src/MainWindow.cpp:3291
+#: src/MainWindow.cpp:3300
 msgid "Block (until restart)/Unblock"
 msgstr "Заблокировать (до перезапуска)/Разблокировать"
 
-#: src/MainWindow.cpp:3394
+#: src/MainWindow.cpp:3403
 msgid "Blocking contact"
 msgstr "Блокировка контакта"
 
-#: src/MainWindow.cpp:3409
+#: src/MainWindow.cpp:3418
 msgid "Blocking..."
 msgstr "Блокирую..."
 
-#: src/MainWindow.cpp:3586
+#: src/MainWindow.cpp:3595
 msgid ""
 "Communist is simple \"peer to peer\" messenger.\n"
 "Author Yury Bobylev.\n"
@@ -540,13 +519,9 @@ msgstr ""
 "libcommunist https://github.com/ProfessorNavigator/libcommunist\n"
 "https://gitflic.ru/project/professornavigator/libcommunist"
 
-#: src/MainWindow.cpp:3690
+#: src/MainWindow.cpp:3699
 msgid "online"
 msgstr "в сети"
-
-#: src/SettingsWindow.cpp:41
-msgid "Settings"
-msgstr "Настройки"
 
 #: src/SettingsWindow.cpp:73
 msgid "Theme directory path: "
@@ -709,8 +684,60 @@ msgstr ""
 "Приложение будет закрыто. Для того, чтобы настройки вступили в силу, "
 "запустите его вновь."
 
-#~ msgid "About"
-#~ msgstr "О программе"
+#~ msgid ""
+#~ "<interface><menu id='menubar'>\t<submenu>\t\t<attribute name='label' "
+#~ "translatable='yes'>Contacts</"
+#~ "attribute>\t\t\t<section>\t\t\t\t<item>\t\t\t\t\t<attribute name='label' "
+#~ "translatable='yes'>Edit sent request table</"
+#~ "attribute>\t\t\t\t\t<attribute name='action'>prefgr.editReqList</"
+#~ "attribute>\t\t\t\t</item>\t\t\t\t<item>\t\t\t\t\t<attribute name='label' "
+#~ "translatable='yes'>Edit contacts to send by relay</"
+#~ "attribute>\t\t\t\t\t<attribute name='action'>prefgr.relayList</"
+#~ "attribute>\t\t\t\t</item>\t\t\t</section>\t</"
+#~ "submenu>\t<submenu>\t\t<attribute name='label' "
+#~ "translatable='yes'>Instruments</"
+#~ "attribute>\t\t\t<section>\t\t\t\t<item>\t\t\t\t\t<attribute name='label' "
+#~ "translatable='yes'>Edit profile</attribute>\t\t\t\t\t<attribute "
+#~ "name='action'>prefgr.editpr</attribute>\t\t\t\t</"
+#~ "item>\t\t\t\t<item>\t\t\t\t\t<attribute name='label' "
+#~ "translatable='yes'>Own key</attribute>\t\t\t\t\t<attribute "
+#~ "name='action'>prefgr.ownkey</attribute>\t\t\t\t</"
+#~ "item>                         <item>\t\t\t\t\t<attribute name='label' "
+#~ "translatable='yes'>Settings</attribute>\t\t\t\t\t<attribute "
+#~ "name='action'>prefgr.editSettings</attribute>\t\t\t\t</item>\t\t\t</"
+#~ "section>\t</submenu>\t<submenu>\t\t<attribute name='label' "
+#~ "translatable='yes'>About</"
+#~ "attribute>\t\t\t<section>\t\t\t\t<item>\t\t\t\t\t<attribute name='label' "
+#~ "translatable='yes'>About Communist</attribute>\t\t\t\t\t<attribute "
+#~ "name='action'>prefgr.aboutProg</attribute>\t\t\t\t</item>\t\t\t</"
+#~ "section>\t</submenu></menu></interface>"
+#~ msgstr ""
+#~ "<interface><menu id='menubar'>\t<submenu>\t\t<attribute name='label' "
+#~ "translatable='yes'>Контакты</"
+#~ "attribute>\t\t\t<section>\t\t\t\t<item>\t\t\t\t\t<attribute name='label' "
+#~ "translatable='yes'>Редактировать список отправленных заявок</"
+#~ "attribute>\t\t\t\t\t<attribute name='action'>prefgr.editReqList</"
+#~ "attribute>\t\t\t\t</item>\t\t\t\t<item>\t\t\t\t\t<attribute name='label' "
+#~ "translatable='yes'>Редактировать список контактов для пересылки сообщений "
+#~ "через ретранслятор</attribute>\t\t\t\t\t<attribute name='action'>prefgr."
+#~ "relayList</attribute>\t\t\t\t</item>\t\t\t</section>\t</"
+#~ "submenu>\t<submenu>\t\t<attribute name='label' "
+#~ "translatable='yes'>Инструменты</"
+#~ "attribute>\t\t\t<section>\t\t\t\t<item>\t\t\t\t\t<attribute name='label' "
+#~ "translatable='yes'>Редактировать профиль</attribute>\t\t\t\t\t<attribute "
+#~ "name='action'>prefgr.editpr</attribute>\t\t\t\t</"
+#~ "item>\t\t\t\t<item>\t\t\t\t\t<attribute name='label' "
+#~ "translatable='yes'>Узнать свой ключ</attribute>\t\t\t\t\t<attribute "
+#~ "name='action'>prefgr.ownkey</attribute>\t\t\t\t</"
+#~ "item>                         <item>\t\t\t\t\t<attribute name='label' "
+#~ "translatable='yes'>Общие настройки</attribute>\t\t\t\t\t<attribute "
+#~ "name='action'>prefgr.editSettings</attribute>\t\t\t\t</item>\t\t\t</"
+#~ "section>\t</submenu>\t<submenu>\t\t<attribute name='label' "
+#~ "translatable='yes'>О программе</"
+#~ "attribute>\t\t\t<section>\t\t\t\t<item>\t\t\t\t\t<attribute name='label' "
+#~ "translatable='yes'>О Коммунисте</attribute>\t\t\t\t\t<attribute "
+#~ "name='action'>prefgr.aboutProg</attribute>\t\t\t\t</item>\t\t\t</"
+#~ "section>\t</submenu></menu></interface>"
 
 #~ msgid "License"
 #~ msgstr "Лицензия"
