@@ -33,29 +33,30 @@ class MWMsgOperations
 {
   friend class ContactOperations;
 public:
-  MWMsgOperations (MainWindow *Mw);
+  MWMsgOperations(MainWindow *Mw);
   virtual
-  ~MWMsgOperations ();
+  ~MWMsgOperations();
   void
-  sendMsg (Glib::ustring ustxt);
+  sendMsg(Glib::ustring ustxt);
   void
-  msgRcvdSlot (std::string *key, std::filesystem::path *p,
-	       std::mutex *disp3mtx);
+  msgRcvdSlot(std::string *key, std::filesystem::path *p,
+              std::mutex *disp3mtx);
   void
-  removeMsg (std::string othkey, std::filesystem::path msgpath,
-	     Gtk::Widget *widg);
+  removeMsg(std::string othkey, std::filesystem::path msgpath,
+            Gtk::Widget *widg);
   void
-  msgSentSlot (std::string *key, std::filesystem::path *msgind,
-	       std::mutex *disp2mtx);
+  msgSentSlot(std::string *key, std::filesystem::path *msgind,
+              std::mutex *disp2mtx);
 private:
   MainWindow *mw = nullptr;
   void
-  creatReply (int numcl, double x, double y, Gtk::Frame *fr,
-	      Gtk::Label *message, Glib::RefPtr<Gtk::GestureClick> clck,
-	      MainWindow *mwl);
+  creatReply(int numcl, double x, double y, Gtk::Frame *fr,
+             Gtk::Label *message, Glib::RefPtr<Gtk::GestureClick> clck,
+             MainWindow *mwl);
   void
-  removeMsgFunc (Gtk::Window *window, MainWindow *mwl, std::string othkey,
-		 std::filesystem::path msgpath, Gtk::Widget *widg);
+  removeMsgFunc(Gtk::Window *window, MainWindow *mwl,
+                std::string othkey,
+                std::filesystem::path msgpath, Gtk::Widget *widg);
 };
 
 #endif /* SRC_MWMSGOPERATIONS_H_ */

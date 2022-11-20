@@ -14,41 +14,37 @@
  along with Communist. If not,
  see <https://www.gnu.org/licenses/>.
  */
+#ifndef AUXFUNC_H_
+#define AUXFUNC_H_
 
-#ifndef SRC_CONTACTOPERATIONS_H_
-#define SRC_CONTACTOPERATIONS_H_
-
-#include <gtkmm.h>
 #include <string>
 #include <vector>
-#include <tuple>
-#include <mutex>
-#include "MainWindow.h"
-#include "MWMsgOperations.h"
+#include <fstream>
+#include <filesystem>
+#include <unicode/ucnv.h>
+#include <unicode/unistr.h>
+#include <iostream>
 
-class MainWindow;
+#ifdef _WIN32
+#include <Windows.h>
+#endif
 
-class ContactOperations
+class AuxFunc
 {
 public:
-  ContactOperations (MainWindow *Mw);
+  AuxFunc();
   virtual
-  ~ContactOperations ();
+  ~AuxFunc();
   void
-  selectContact (Gtk::ScrolledWindow *scr, std::string selkey,
-		 std::string selnick);
+  homePath(std::string *filename);
+  std::string
+  get_selfpath();
   void
-  formMsgWinGrid (std::vector<std::filesystem::path> &msg, size_t begin,
-		  size_t end, Gtk::Grid *grid, std::string key,
-		  std::string nick, int index, int varform);
-  void
-  deleteContact ();
-  void
-  friendRemoved (std::string *key, std::mutex *mtx);
-private:
-  MainWindow *mw = nullptr;
-  void
-  deleteContactFunc (MainWindow *mwl);
+  toutf8(std::string &line);
+  std::string
+  utf8to(std::string line);
+  std::string
+  stringToLower(std::string line);
 };
 
-#endif /* SRC_CONTACTOPERATIONS_H_ */
+#endif /* AUXFUNC_H_ */

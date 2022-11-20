@@ -21,15 +21,16 @@
 #include "AuxFunc.h"
 
 int
-main (int argc, char *argv[])
+main(int argc, char *argv[])
 {
   std::string Sharepath;
   AuxFunc af;
-  std::filesystem::path p (std::filesystem::u8path (af.get_selfpath ()));
-  Sharepath = p.parent_path ().u8string () + "/../share/locale";
-  bindtextdomain ("communist", Sharepath.c_str ());
-  bind_textdomain_codeset ("communist", "UTF-8");
-  textdomain ("communist");
-  auto app = CommunistApp::create ();
-  return app->run (argc, argv);
+  std::filesystem::path p(std::filesystem::u8path(
+                            af.get_selfpath()));
+  Sharepath = p.parent_path().u8string() + "/../share/locale";
+  bindtextdomain("communist", Sharepath.c_str());
+  bind_textdomain_codeset("communist", "UTF-8");
+  textdomain("communist");
+  auto app = CommunistApp::create();
+  return app->run(argc, argv);
 }

@@ -33,25 +33,27 @@ class MainWindow;
 class SettingsWindow
 {
 public:
-  SettingsWindow (MainWindow *Mw);
+  SettingsWindow(MainWindow *Mw);
   virtual
-  ~SettingsWindow ();
+  ~SettingsWindow();
   void
-  settingsWindow ();
+  settingsWindow();
 private:
   void
-  saveSettings (Gtk::Window *window, Gtk::Entry *themepathval,
-		Gtk::Entry *lifcsval, Gtk::Entry *locip6val,
-		Gtk::Entry *locip4val, Gtk::Entry *bootstre, Gtk::Entry *msgsze,
-		Gtk::Entry *partsze, Gtk::CheckButton *winszch,
-		Gtk::Entry *msgwchre, Gtk::ComboBoxText *sendkeycmb,
-		Gtk::CheckButton *soundch, Gtk::CheckButton *grnotificch,
-		Gtk::Entry *soundpe, Gtk::Entry *shutmte, Gtk::Entry *tmtteare,
-		Gtk::Entry *mainttmte, Gtk::CheckButton *langchenbch,
-		Gtk::CheckButton *hole_punchch, Gtk::CheckButton *enstunch,
-		Gtk::Entry *stunpe, Gtk::CheckButton *enrelch,
-		Gtk::Entry *relaype, Gtk::Entry *relaypathe,
-		Gtk::CheckButton *directinetch, MainWindow *mwl);
+  saveSettings(Gtk::Window *window, Gtk::Entry *themepathval,
+               Gtk::Entry *lifcsval, Gtk::Entry *locip6val,
+               Gtk::Entry *locip4val, Gtk::Entry *bootstre,
+               Gtk::Entry *msgsze,
+               Gtk::Entry *partsze, Gtk::CheckButton *winszch,
+               Gtk::Entry *msgwchre, Gtk::ComboBoxText *sendkeycmb,
+               Gtk::CheckButton *soundch, Gtk::CheckButton *grnotificch,
+               Gtk::Entry *soundpe, Gtk::Entry *shutmte,
+               Gtk::Entry *tmtteare,
+               Gtk::Entry *mainttmte, Gtk::CheckButton *langchenbch,
+               Gtk::CheckButton *hole_punchch, Gtk::CheckButton *enstunch,
+               Gtk::Entry *stunpe, Gtk::CheckButton *enrelch,
+               Gtk::Entry *relaype, Gtk::Entry *relaypathe,
+               Gtk::CheckButton *directinetch, MainWindow *mwl);
   MainWindow *mw = nullptr;
 };
 
