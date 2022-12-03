@@ -1,0 +1,7 @@
+build/
+_build/
+builddir/
+subprojects/libcommunist
+.vscode
+.fenv
+.flatpak
