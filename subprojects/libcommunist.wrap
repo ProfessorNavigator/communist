@@ -1,0 +1,7 @@
+[wrap-git]
+url = https://github.com/ProfessorNavigator/libcommunist
+revision = master
+depth = 1
+
+[provide]
+dependency_names = libcommunist
