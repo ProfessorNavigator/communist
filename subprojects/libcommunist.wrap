@@ -4,4 +4,4 @@ revision = master
 depth = 1
 
 [provide]
-dependency_names = libcommunist
+libcommunist = libcommunist_dep
