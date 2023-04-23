@@ -3,7 +3,7 @@ subdir ('src')
 src = ['main.cpp', srcfile]
 gtkmm = dependency ('gtkmm-4.0', method : 'pkg-config')
 icu = dependency ('icu-i18n', method : 'pkg-config')
-libcommunist = dependency ('libcommunist', method : 'pkg-config')
+libcommunist = dependency ('libcommunist', method : 'pkg-config', fallback : ['libcommunist','libcommunist_dep'])
 hunspell = dependency ('hunspell', method : 'pkg-config')
 thread_dep = dependency ('threads')
 subdir ('po')
