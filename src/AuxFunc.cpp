@@ -1,5 +1,5 @@
 /*
- Copyright 2022 Yury Bobylev <bobilev_yury@mail.ru>
+ Copyright 2022-2023 Yury Bobylev <bobilev_yury@mail.ru>
 
  This file is part of Communist.
  Communist is free software: you can redistribute it and/or
@@ -39,38 +39,38 @@ AuxFunc::homePath(std::string *filename)
     {
       fnm = getenv("HOMEDRIVE");
       if(fnm)
-        {
-          *filename = std::string(getenv("HOMEDRIVE"));
-        }
+	{
+	  *filename = std::string(getenv("HOMEDRIVE"));
+	}
       else
-        {
-          fnm = getenv("HOMEPATH");
-          if(fnm)
-            {
-              *filename = std::string(getenv("HOMEPATH"));
-            }
-          else
-            {
-              fnm = getenv("HOME");
-              if(fnm)
-                {
-                  *filename = std::string(getenv("HOME"));
-                }
-              else
-                {
-                  fnm = getenv("SystemDrive");
-                  if(fnm)
-                    {
-                      *filename = std::string(getenv("SystemDrive"));
-                    }
-                  else
-                    {
-                      std::cerr << "Cannot find user home folder" << std::endl;
-                      exit(1);
-                    }
-                }
-            }
-        }
+	{
+	  fnm = getenv("HOMEPATH");
+	  if(fnm)
+	    {
+	      *filename = std::string(getenv("HOMEPATH"));
+	    }
+	  else
+	    {
+	      fnm = getenv("HOME");
+	      if(fnm)
+		{
+		  *filename = std::string(getenv("HOME"));
+		}
+	      else
+		{
+		  fnm = getenv("SystemDrive");
+		  if(fnm)
+		    {
+		      *filename = std::string(getenv("SystemDrive"));
+		    }
+		  else
+		    {
+		      std::cerr << "Cannot find user home folder" << std::endl;
+		      exit(1);
+		    }
+		}
+	    }
+	}
     }
   toutf8(*filename);
 }
@@ -98,9 +98,8 @@ AuxFunc::toutf8(std::string &line)
   std::vector<UChar> target(srclen);
   UErrorCode status = U_ZERO_ERROR;
   UConverter *conv = ucnv_open(NULL, &status);
-  int32_t len = ucnv_toUChars(conv, target.data(), srclen,
-                              line.c_str(),
-                              srclen, &status);
+  int32_t len = ucnv_toUChars(conv, target.data(), srclen, line.c_str(), srclen,
+			      &status);
   if(!U_SUCCESS(status))
     {
       std::cerr << u_errorName(status) << std::endl;
@@ -131,9 +130,8 @@ AuxFunc::utf8to(std::string line)
     {
       data[i] = ustr.charAt(i);
     }
-  size_t cb = ucnv_fromUChars(c, target2.data(),
-                              ustr.length(), data,
-                              ustr.length(), &status);
+  size_t cb = ucnv_fromUChars(c, target2.data(), ustr.length(), data,
+			      ustr.length(), &status);
   if(!U_SUCCESS(status))
     {
       std::cerr << u_errorName(status) << std::endl;
@@ -143,12 +141,11 @@ AuxFunc::utf8to(std::string line)
       status = U_ZERO_ERROR;
       target2.clear();
       target2.resize(cb);
-      ucnv_fromUChars(c, target2.data(), cb, data, ustr.length(),
-                      &status);
+      ucnv_fromUChars(c, target2.data(), cb, data, ustr.length(), &status);
       if(!U_SUCCESS(status))
-        {
-          std::cerr << u_errorName(status) << std::endl;
-        }
+	{
+	  std::cerr << u_errorName(status) << std::endl;
+	}
     }
   line.clear();
   line = std::string(target2.begin(), target2.end());
@@ -161,8 +158,7 @@ std::string
 AuxFunc::stringToLower(std::string line)
 {
   std::string innerline = line;
-  icu::UnicodeString ustr = icu::UnicodeString::fromUTF8(
-                              innerline.c_str());
+  icu::UnicodeString ustr = icu::UnicodeString::fromUTF8(innerline.c_str());
   ustr.toLower();
   line.clear();
   ustr.toUTF8String(line);

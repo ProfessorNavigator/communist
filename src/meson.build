@@ -1,1 +1,1 @@
-srcfile = files(['AuxFunc.cpp', 'AuxWindows.cpp', 'CommunistApp.cpp', 'ContactOperations.cpp', 'MainWindow.cpp', 'MWFileOperations.cpp', 'MWMsgOperations.cpp', 'SettingsWindow.cpp'])
+srcfile = files(['AuxFunc.cpp', 'AuxWindows.cpp', 'Communist.cpp', 'CommunistApp.cpp', 'ContactOperations.cpp', 'MainWindow.cpp', 'MWFileOperations.cpp', 'MWMsgOperations.cpp', 'SettingsWindow.cpp'])

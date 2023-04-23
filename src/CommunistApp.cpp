@@ -1,5 +1,5 @@
 /*
- Copyright 2022 Yury Bobylev <bobilev_yury@mail.ru>
+ Copyright 2022-2023 Yury Bobylev <bobilev_yury@mail.ru>
 
  This file is part of Communist.
  Communist is free software: you can redistribute it and/or
@@ -17,7 +17,7 @@
 #include "CommunistApp.h"
 
 CommunistApp::CommunistApp() :
-  Gtk::Application("ru.mail.bobilev_yury.Communist")
+    Gtk::Application("ru.mail.bobilev_yury.Communist")
 {
   // TODO Auto-generated constructor stub
 
@@ -31,8 +31,7 @@ CommunistApp::~CommunistApp()
 Glib::RefPtr<CommunistApp>
 CommunistApp::create()
 {
-  return Glib::make_refptr_for_instance<CommunistApp>
-         (new CommunistApp());
+  return Glib::make_refptr_for_instance<CommunistApp>(new CommunistApp());
 }
 
 MainWindow*
@@ -46,12 +45,12 @@ CommunistApp::create_appwindow()
     winv = this->get_windows();
     for(size_t i = 0; i < winv.size(); i++)
       {
-        Gtk::Window *win = winv[i];
-        if(win != mw)
-          {
-            win->hide();
-            delete win;
-          }
+	Gtk::Window *win = winv[i];
+	if(win != mw)
+	  {
+	    win->hide();
+	    delete win;
+	  }
       }
     delete mw;
   });

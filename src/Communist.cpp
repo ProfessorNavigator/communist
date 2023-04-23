@@ -1,5 +1,5 @@
 /*
- Copyright 2022 Yury Bobylev <bobilev_yury@mail.ru>
+ Copyright 2022-2023 Yury Bobylev <bobilev_yury@mail.ru>
 
  This file is part of Communist.
  Communist is free software: you can redistribute it and/or
@@ -25,8 +25,7 @@ main(int argc, char *argv[])
 {
   std::string Sharepath;
   AuxFunc af;
-  std::filesystem::path p(std::filesystem::u8path(
-                            af.get_selfpath()));
+  std::filesystem::path p(std::filesystem::u8path(af.get_selfpath()));
   Sharepath = p.parent_path().u8string() + "/../share/locale";
   bindtextdomain("communist", Sharepath.c_str());
   bind_textdomain_codeset("communist", "UTF-8");
